@@ -79,7 +79,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # This is where Django will collect static files for production
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # This tells Django where your app-level static assets are
 STATICFILES_DIRS = [
