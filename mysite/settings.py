@@ -78,13 +78,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-# This is where Django will collect static files for production
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-
-# This tells Django where your app-level static assets are
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'picupapp', 'static'),
+    os.path.join(BASE_DIR, 'static')  # <-- points to your /static folder with img/logo.png
 ]
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic only
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
