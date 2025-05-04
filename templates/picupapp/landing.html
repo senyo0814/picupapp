@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Landing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+        <h1 class="text-xl font-bold mb-4">Welcome, {{ username }}!</h1>
+
+        <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center">
+            {% csrf_token %}
+            <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
+            <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+            <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
+                <p class="text-gray-600">Drop files here or click to select</p>
+            </div>
+            <div id="preview" class="mt-4 grid grid-cols-2 gap-4"></div>
+            <button type="submit" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
+                Upload Photos
+            </button>
+        </form>
+
+        <hr class="my-6">
+
+        <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {% for photo in photos %}
+                <div class="bg-white rounded shadow p-2">
+                    <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
+                    <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
+                    {% if photo.uploaded_by == request.user %}
+                    <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
+                        {% csrf_token %}
+                        <button type="submit" class="text-red-600 text-sm hover:underline">Delete</button>
+                    </form>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <p>No photos yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('bg-blue-100');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-blue-100');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-blue-100');
+            fileInput.files = e.dataTransfer.files;
+            showPreview(e.dataTransfer.files);
+        });
+
+        fileInput.addEventListener('change', () => {
+            showPreview(fileInput.files);
+        });
+
+        function showPreview(files) {
+            preview.innerHTML = '';
+            Array.from(files).forEach(file => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = e => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'rounded shadow w-full';
+                        preview.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
