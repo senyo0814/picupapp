@@ -77,8 +77,23 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'picupapp/static')]
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # for collectstatic
+
+# This is where Django will collect static files for production
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# This tells Django where your app-level static assets are
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'picupapp', 'static'),
+]
+
+# WhiteNoise for serving static files
+MIDDLEWARE = [
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    # ... your other middleware ...
+]
+
+# Optional: Enable gzip and caching for production
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
