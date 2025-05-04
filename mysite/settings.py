@@ -86,15 +86,6 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'picupapp', 'static'),
 ]
 
-# WhiteNoise for serving static files
-MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    # ... your other middleware ...
-]
-
-# Optional: Enable gzip and caching for production
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
