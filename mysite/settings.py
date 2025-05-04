@@ -10,14 +10,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-v_3dyhn@1+08$&x7u#h
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = [
-    '.mypicupapp.com',
-    '127.0.0.1',
-    'localhost',
-    'mypicupapp-270799429435.us-west1.run.app',
-    'picupapp.onrender.com',  # Add this to fix the current error
-]
-
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
 # Application definition
 INSTALLED_APPS = [
@@ -92,13 +85,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CSRF settings for both dev & prod
-CSRF_TRUSTED_ORIGINS = [
-    'https://*.cloudshell.dev',
-    'https://*.webshell.dev',
-    'https://mypicupapp-270799429435.us-west1.run.app',
-    'https://mypicupapp.com',
-    'https://www.mypicupapp.com',
-]
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://localhost").split(",")
 
 CSRF_ALLOWED_ORIGIN_REGEXES = [
     r"^https://8080-.*\.cloudshell\.dev$",

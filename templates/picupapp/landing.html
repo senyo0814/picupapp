@@ -6,7 +6,7 @@
 </head>
 <body class="bg-gray-100 p-6">
     <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-        <h1 class="text-xl font-bold mb-4">Welcome, {{ username }}!</h1>
+        <h1 class="text-xl font-bold mb-4">Welcome to My PicUp App, {{ username }}!</h1>
 
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center">
             {% csrf_token %}

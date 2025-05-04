@@ -14,7 +14,10 @@ services:
         fromDatabase:
           name: picupapp-db
           property: connectionString
-
+      - key: ALLOWED_HOSTS
+        value: "picupapp.onrender.com,.mypicupapp.com,127.0.0.1,localhost,mypicupapp-270799429435.us-west1.run.app,mypicupapp.com,www.mypicupapp.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com,https://mypicupapp-270799429435.us-west1.run.app"
   - type: pserv
     name: picupapp-db
     env: postgres
