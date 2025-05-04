@@ -14,8 +14,10 @@ ALLOWED_HOSTS = [
     '.mypicupapp.com',
     '127.0.0.1',
     'localhost',
-    'mypicupapp-270799429435.us-west1.run.app'
+    'mypicupapp-270799429435.us-west1.run.app',
+    'picupapp.onrender.com',  # Add this to fix the current error
 ]
+
 
 # Application definition
 INSTALLED_APPS = [
