@@ -1,23 +1,27 @@
+{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
     <title>Photo Map</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        #map { height: 600px; width: 100%; }
+        #map { height: 60vh; width: 100%; }
         .image-preview { max-width: 200px; display: block; margin: 5px 0; }
+        body { font-family: sans-serif; padding: 1rem; background: #f9f9f9; }
     </style>
 </head>
 <body>
-    <h2>Photo Map</h2>
-    <div>
+    <h2 class="text-xl font-bold mb-4">📍 Photo Map</h2>
+
+    <div class="mb-4">
         <label>
             <input type="checkbox" id="toggleMine" checked />
-            Show Only My Photos ({{ username }})
+            Show Only My Photos (<strong>{{ username }}</strong>)
         </label>
     </div>
-    <div id="map" class="w-full" style="height: 60vh;"></div>
-    
+
+    <div id="map"></div>
+
     <script>
         const userPhotos = {{ user_photos|safe }};
         const otherPhotos = {{ other_photos|safe }};
@@ -29,34 +33,43 @@
                 zoom: 6,
                 center: { lat: 37.7749, lng: -122.4194 }
             });
+
             renderMarkers(userPhotos);
         }
 
         function renderMarkers(photos) {
-            // Clear previous markers
+            // Clear old markers
             markers.forEach(m => m.setMap(null));
             markers = [];
 
+            const bounds = new google.maps.LatLngBounds();
+
             photos.forEach(photo => {
+                const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
-                    position: { lat: photo.latitude, lng: photo.longitude },
+                    position: pos,
                     map: map
                 });
 
-                const infowindow = new google.maps.InfoWindow({
-                    content: `
+                const popup = `
+                    <div class="text-sm">
                         <img src="${photo.image_url}" class="image-preview" />
-                        <strong>${photo.user}</strong><br>
-                        ${photo.comment}
-                    `
-                });
+                        <p><strong>${photo.user}</strong></p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-gray-500 text-xs">${photo.taken}</p>
+                    </div>
+                `;
 
-                marker.addListener("click", () => {
-                    infowindow.open(map, marker);
-                });
-
+                const infowindow = new google.maps.InfoWindow({ content: popup });
+                marker.addListener("click", () => infowindow.open(map, marker));
                 markers.push(marker);
+
+                bounds.extend(pos);
             });
+
+            if (photos.length > 0) {
+                map.fitBounds(bounds);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {

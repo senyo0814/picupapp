@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
+from datetime import datetime
+import logging
 
 class PhotoUpload(models.Model):
     image = models.ImageField(upload_to='uploads/')
@@ -10,22 +12,34 @@ class PhotoUpload(models.Model):
     comment = models.TextField(blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    photo_taken_date = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 
     def save(self, *args, **kwargs):
+        # Save initially to generate file path
         super().save(*args, **kwargs)
         try:
             img = Image.open(self.image.path)
             exif_data = self.get_exif_data(img)
+
             coords = self.get_lat_lon(exif_data)
+            photo_date = self.get_photo_taken_date(exif_data)
+
+            updated_fields = []
             if coords:
                 self.latitude, self.longitude = coords
-                super().save(update_fields=['latitude', 'longitude'])
+                updated_fields += ['latitude', 'longitude']
+            if photo_date:
+                self.photo_taken_date = photo_date
+                updated_fields.append('photo_taken_date')
+
+            if updated_fields:
+                super().save(update_fields=updated_fields)
+
         except Exception:
-            import logging
-            logging.getLogger(__name__).exception("Error extracting EXIF GPS data")
+            logging.getLogger(__name__).exception("Error extracting EXIF data")
 
     def get_exif_data(self, image):
         """Extract EXIF data from image."""
@@ -41,6 +55,8 @@ class PhotoUpload(models.Model):
                     sub_decoded = GPSTAGS.get(t, t)
                     gps_data[sub_decoded] = value[t]
                 exif_data["GPSInfo"] = gps_data
+            elif decoded == "DateTimeOriginal":
+                exif_data["DateTimeOriginal"] = value
         return exif_data
 
     def get_lat_lon(self, exif_data):
@@ -65,3 +81,13 @@ class PhotoUpload(models.Model):
             return lat, lon
         except Exception:
             return None
+
+    def get_photo_taken_date(self, exif_data):
+        """Convert DateTimeOriginal to Python datetime."""
+        date_str = exif_data.get("DateTimeOriginal")
+        if date_str:
+            try:
+                return datetime.strptime(date_str, "%Y:%m:%d %H:%M:%S")
+            except ValueError:
+                pass
+        return None

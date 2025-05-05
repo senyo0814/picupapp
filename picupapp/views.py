@@ -6,23 +6,25 @@ from django.http import HttpResponse
 from .models import PhotoUpload
 from django.conf import settings
 import logging
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-# Login view
+# --- Auth Views ---
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user is not None:
+        if user:
             login(request, user)
             return redirect('picupapp:landing')
-        else:
-            return render(request, 'picupapp/login.html', {'error': 'Invalid credentials'})
+        return render(request, 'picupapp/login.html', {'error': 'Invalid credentials'})
     return render(request, 'picupapp/login.html')
 
-# Register view
 def register_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -34,15 +36,71 @@ def register_view(request):
         return redirect('picupapp:landing')
     return render(request, 'picupapp/register.html')
 
-# Landing page
+# --- Utility to extract GPS ---
+
+def extract_gps_and_datetime(file):
+    try:
+        img = Image.open(file)
+        exif_data = img._getexif()
+        gps_info = {}
+        datetime_taken = None
+
+        if not exif_data:
+            return None, None, None
+
+        for tag, value in exif_data.items():
+            decoded = TAGS.get(tag)
+            if decoded == "DateTimeOriginal":
+                datetime_taken = value
+            if decoded == "GPSInfo":
+                for t in value:
+                    sub_decoded = GPSTAGS.get(t)
+                    gps_info[sub_decoded] = value[t]
+
+        def convert_to_degrees(value):
+            d = float(value[0][0]) / float(value[0][1])
+            m = float(value[1][0]) / float(value[1][1])
+            s = float(value[2][0]) / float(value[2][1])
+            return d + (m / 60.0) + (s / 3600.0)
+
+        lat = lon = None
+        if 'GPSLatitude' in gps_info and 'GPSLatitudeRef' in gps_info:
+            lat = convert_to_degrees(gps_info['GPSLatitude'])
+            if gps_info['GPSLatitudeRef'] != 'N':
+                lat = -lat
+
+        if 'GPSLongitude' in gps_info and 'GPSLongitudeRef' in gps_info:
+            lon = convert_to_degrees(gps_info['GPSLongitude'])
+            if gps_info['GPSLongitudeRef'] != 'E':
+                lon = -lon
+
+        if datetime_taken:
+            datetime_taken = datetime.strptime(datetime_taken, "%Y:%m:%d %H:%M:%S")
+
+        return lat, lon, datetime_taken
+    except Exception as e:
+        logger.warning(f"EXIF parse failed: {e}")
+        return None, None, None
+
+# --- Landing View ---
+
 @login_required
 def landing(request):
     try:
         photos = PhotoUpload.objects.order_by('-uploaded_at')
 
         if request.method == 'POST':
-            for f in request.FILES.getlist('images'):
-                PhotoUpload.objects.create(image=f, uploaded_by=request.user)
+            for idx, f in enumerate(request.FILES.getlist('images')):
+                lat, lon, taken_date = extract_gps_and_datetime(f)
+                comment = request.POST.get(f'comment_{idx}', '')
+                photo = PhotoUpload.objects.create(
+                    image=f,
+                    uploaded_by=request.user,
+                    comment=comment,
+                    latitude=lat,
+                    longitude=lon,
+                    photo_taken_date=taken_date
+                )
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
@@ -54,7 +112,8 @@ def landing(request):
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
 
-# Delete photo
+# --- Delete Photo ---
+
 @login_required
 def delete_photo(request, photo_id):
     photo = get_object_or_404(PhotoUpload, id=photo_id, uploaded_by=request.user)
@@ -62,12 +121,14 @@ def delete_photo(request, photo_id):
     photo.delete()
     return redirect('picupapp:landing')
 
-# Logout
+# --- Logout ---
+
 def logout_view(request):
     logout(request)
     return redirect('picupapp:login')
 
-# ✅ New: Map view
+# --- Map View ---
+
 @login_required
 def map_pics_view(request):
     user_photos = PhotoUpload.objects.filter(
@@ -85,6 +146,7 @@ def map_pics_view(request):
                 "longitude": p.longitude,
                 "image_url": settings.MEDIA_URL + str(p.image),
                 "comment": p.comment or "",
+                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "Unknown",
                 "user": p.uploaded_by.username
             }
             for p in photos
@@ -95,4 +157,3 @@ def map_pics_view(request):
         'other_photos': serialize(other_photos),
         'username': request.user.username
     })
-
