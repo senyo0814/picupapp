@@ -1,49 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Mapped Photos</title>
+    <title>Photo Map</title>
     <style>
-        #map {
-            height: 600px;
-            width: 100%;
-        }
-        .image-preview {
-            max-width: 200px;
-            display: block;
-            margin: 5px 0;
-        }
+        #map { height: 600px; width: 100%; }
+        .image-preview { max-width: 200px; display: block; margin: 5px 0; }
     </style>
 </head>
 <body>
-    <h2>User Uploaded Photo Map</h2>
+    <h2>Photo Map</h2>
+    <div>
+        <label>
+            <input type="checkbox" id="toggleMine" checked />
+            Show Only My Photos ({{ username }})
+        </label>
+    </div>
     <div id="map"></div>
 
     <script>
-        const photos = {{ photos|safe }};
+        const userPhotos = {{ user_photos|safe }};
+        const otherPhotos = {{ other_photos|safe }};
+        let markers = [];
+        let map;
+
         function initMap() {
-            const defaultCenter = { lat: 37.7749, lng: -122.4194 }; // Default to SF
-            const map = new google.maps.Map(document.getElementById('map'), {
+            map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 6,
-                center: defaultCenter
+                center: { lat: 37.7749, lng: -122.4194 }
             });
+            renderMarkers(userPhotos);
+        }
+
+        function renderMarkers(photos) {
+            // Clear previous markers
+            markers.forEach(m => m.setMap(null));
+            markers = [];
 
             photos.forEach(photo => {
-                if (photo.latitude && photo.longitude) {
-                    const marker = new google.maps.Marker({
-                        position: { lat: photo.latitude, lng: photo.longitude },
-                        map: map
-                    });
+                const marker = new google.maps.Marker({
+                    position: { lat: photo.latitude, lng: photo.longitude },
+                    map: map
+                });
 
-                    const infowindow = new google.maps.InfoWindow({
-                        content: `<img class="image-preview" src="${photo.image_url}" /><br>${photo.comment || ''}`
-                    });
+                const infowindow = new google.maps.InfoWindow({
+                    content: `
+                        <img src="${photo.image_url}" class="image-preview" />
+                        <strong>${photo.user}</strong><br>
+                        ${photo.comment}
+                    `
+                });
 
-                    marker.addListener("click", () => {
-                        infowindow.open(map, marker);
-                    });
-                }
+                marker.addListener("click", () => {
+                    infowindow.open(map, marker);
+                });
+
+                markers.push(marker);
             });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('toggleMine').addEventListener('change', function () {
+                if (this.checked) {
+                    renderMarkers(userPhotos);
+                } else {
+                    renderMarkers([...userPhotos, ...otherPhotos]);
+                }
+            });
+        });
     </script>
 
     <script async defer

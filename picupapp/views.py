@@ -70,14 +70,29 @@ def logout_view(request):
 # ✅ New: Map view
 @login_required
 def map_pics_view(request):
-    photos = PhotoUpload.objects.exclude(latitude=None).exclude(longitude=None)
-    photo_data = [
-        {
-            "latitude": photo.latitude,
-            "longitude": photo.longitude,
-            "image_url": settings.MEDIA_URL + str(photo.image),
-            "comment": photo.comment or ""
-        }
-        for photo in photos
-    ]
-    return render(request, 'picupapp/mappics.html', {'photos': photo_data})
+    user_photos = PhotoUpload.objects.filter(
+        uploaded_by=request.user
+    ).exclude(latitude=None).exclude(longitude=None)
+
+    other_photos = PhotoUpload.objects.exclude(
+        uploaded_by=request.user
+    ).exclude(latitude=None).exclude(longitude=None)
+
+    def serialize(photos):
+        return [
+            {
+                "latitude": p.latitude,
+                "longitude": p.longitude,
+                "image_url": settings.MEDIA_URL + str(p.image),
+                "comment": p.comment or "",
+                "user": p.uploaded_by.username
+            }
+            for p in photos
+        ]
+
+    return render(request, 'picupapp/mappics.html', {
+        'user_photos': serialize(user_photos),
+        'other_photos': serialize(other_photos),
+        'username': request.user.username
+    })
+

@@ -36,6 +36,13 @@
 
         <hr class="my-6">
 
+        <!-- Button to go to mappics.html -->
+        <div class="flex justify-end mb-4">
+            <a href="{% url 'picupapp:mappics' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                View Photo Map
+            </a>
+        </div>
+
         <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {% for photo in photos %}
