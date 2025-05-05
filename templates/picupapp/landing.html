@@ -164,16 +164,14 @@
             });
         }
 
-        function getGPSDecimal(coord, ref) {
+        function getGPSDecimal(coord, refTag) {
             if (!coord || !Array.isArray(coord) || coord.length !== 3) return null;
 
             const getValue = (entry) => {
-                if (entry && typeof entry === 'object') {
-                    if ('numerator' in entry && 'denominator' in entry) {
-                        return entry.numerator / entry.denominator;
-                    } else if ('value' in entry) {
-                        return entry.value;
-                    }
+                if (entry?.numerator && entry?.denominator) {
+                    return entry.numerator / entry.denominator;
+                } else if (entry?.value !== undefined) {
+                    return entry.value;
                 }
                 return parseFloat(entry);
             };
@@ -185,9 +183,13 @@
             if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
 
             let result = d + m / 60 + s / 3600;
+
+            const ref = refTag?.description?.[0]; // get 'N', 'S', 'E', or 'W'
             if (ref === 'S' || ref === 'W') result *= -1;
+
             return result.toFixed(6);
         }
+
     </script>
 </body>
 </html>
