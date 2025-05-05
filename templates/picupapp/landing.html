@@ -32,8 +32,8 @@
             <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left"></div>
 
-            <div class="overflow-x-auto">
-                <table id="metadata-table" class="table-auto mt-6 w-full text-sm text-left border border-gray-300 hidden">
+            <div class="w-full overflow-x-auto mt-6" id="metadata-wrapper" style="display: none;">
+                <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300">         
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="border px-4 py-2">Image</th>
@@ -153,7 +153,7 @@
                                 <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
                             </tr>
                         `;
-                        metadataTable.classList.remove('hidden');
+                        document.getElementById('metadata-wrapper').style.display = 'block';
                     } catch (err) {
                         console.warn("EXIF read error:", err);
                     }
