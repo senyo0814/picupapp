@@ -9,6 +9,7 @@ import logging
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -87,13 +88,22 @@ def extract_gps_and_datetime(file):
 @login_required
 def landing(request):
     try:
-        photos = PhotoUpload.objects.order_by('-uploaded_at')
+        all_photos = PhotoUpload.objects.order_by('-uploaded_at')
+        valid_photos = []
+
+        for photo in all_photos:
+            if photo.image and os.path.exists(photo.image.path):
+                valid_photos.append(photo)
+            else:
+                # Delete stale DB entry if image file no longer exists
+                logger.warning(f"Deleting missing image entry: {photo.image}")
+                photo.delete()
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
                 lat, lon, taken_date = extract_gps_and_datetime(f)
                 comment = request.POST.get(f'comment_{idx}', '')
-                photo = PhotoUpload.objects.create(
+                PhotoUpload.objects.create(
                     image=f,
                     uploaded_by=request.user,
                     comment=comment,
@@ -104,14 +114,14 @@ def landing(request):
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
-            'photos': photos,
+            'photos': valid_photos,
             'username': request.user.username
         })
 
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
-
+        
 # --- Delete Photo ---
 
 @login_required

@@ -63,19 +63,21 @@
         <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {% for photo in photos %}
-                <div class="bg-white rounded shadow p-2">
-                    <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
-                    <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
-                    {% if photo.comment %}
-                        <p class="text-sm mt-1 text-gray-700 italic">"{{ photo.comment }}"</p>
-                    {% endif %}
-                    {% if photo.uploaded_by == request.user %}
-                    <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
-                        {% csrf_token %}
-                        <button type="submit" class="text-red-600 text-sm hover:underline">Delete</button>
-                    </form>
-                    {% endif %}
-                </div>
+                {% if photo.image %}
+                    <div class="bg-white rounded shadow p-2">
+                        <img src="{{ photo.image.url }}?v={{ photo.uploaded_at.timestamp }}" alt="Photo" class="rounded w-full" />
+                        <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
+                        {% if photo.comment %}
+                            <p class="text-sm mt-1 text-gray-700 italic">"{{ photo.comment }}"</p>
+                        {% endif %}
+                        {% if photo.uploaded_by == request.user %}
+                        <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-600 text-sm hover:underline">Delete</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                {% endif %}
             {% empty %}
                 <p>No photos yet.</p>
             {% endfor %}

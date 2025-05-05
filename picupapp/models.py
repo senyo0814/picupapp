@@ -18,14 +18,19 @@ class PhotoUpload(models.Model):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 
     def save(self, *args, **kwargs):
-        # Save initially to generate file path
         super().save(*args, **kwargs)
         try:
             img = Image.open(self.image.path)
             exif_data = self.get_exif_data(img)
 
+            print(">>> Extracted EXIF Data:")
+            print(exif_data)
+
             coords = self.get_lat_lon(exif_data)
             photo_date = self.get_photo_taken_date(exif_data)
+
+            print(">>> Parsed Coordinates:", coords)
+            print(">>> Parsed Date Taken:", photo_date)
 
             updated_fields = []
             if coords:
@@ -38,7 +43,8 @@ class PhotoUpload(models.Model):
             if updated_fields:
                 super().save(update_fields=updated_fields)
 
-        except Exception:
+        except Exception as e:
+            print(">>> EXIF extraction failed:", e)
             logging.getLogger(__name__).exception("Error extracting EXIF data")
 
     def get_exif_data(self, image):
