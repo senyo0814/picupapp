@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse
 from .models import PhotoUpload
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
@@ -65,3 +66,18 @@ def delete_photo(request, photo_id):
 def logout_view(request):
     logout(request)
     return redirect('picupapp:login')
+
+# ✅ New: Map view
+@login_required
+def map_pics_view(request):
+    photos = PhotoUpload.objects.exclude(latitude=None).exclude(longitude=None)
+    photo_data = [
+        {
+            "latitude": photo.latitude,
+            "longitude": photo.longitude,
+            "image_url": settings.MEDIA_URL + str(photo.image),
+            "comment": photo.comment or ""
+        }
+        for photo in photos
+    ]
+    return render(request, 'picupapp/mappics.html', {'photos': photo_data})
