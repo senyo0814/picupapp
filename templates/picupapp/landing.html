@@ -139,12 +139,10 @@
                 exifReader.onload = async e => {
                     try {
                         const tags = await ExifReader.load(e.target.result);
-                        console.log("Exif tags for", file.name, tags);
-
                         const date = tags.DateTimeOriginal?.description || 'N/A';
                         const model = tags.Model?.description || 'N/A';
-                        const lat = getGPSDecimal(tags.GPSLatitude, tags.GPSLatitudeRef);
-                        const lon = getGPSDecimal(tags.GPSLongitude, tags.GPSLongitudeRef);
+                        const lat = getGPSDecimal(tags.GPSLatitude?.value, tags.GPSLatitudeRef);
+                        const lon = getGPSDecimal(tags.GPSLongitude?.value, tags.GPSLongitudeRef);
 
                         metadataBody.innerHTML += `
                             <tr>
@@ -165,7 +163,7 @@
         }
 
         function getGPSDecimal(coord, refTag) {
-            if (!coord || !Array.isArray(coord) || coord.length !== 3) return null;
+            if (!coord || coord.length !== 3) return null;
 
             const getValue = (entry) => {
                 if (entry?.numerator && entry?.denominator) {
@@ -184,7 +182,7 @@
 
             let result = d + m / 60 + s / 3600;
 
-            const ref = refTag?.description?.[0]; // get 'N', 'S', 'E', or 'W'
+            const ref = refTag?.description?.[0]; // Get first letter of ref, like "N", "W"
             if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
