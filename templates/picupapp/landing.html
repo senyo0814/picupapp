@@ -32,7 +32,6 @@
             <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left"></div>
 
-            <!-- Responsive metadata table wrapper -->
             <div id="metadata-wrapper" class="w-full overflow-x-auto mt-6" style="display: none;">
                 <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300">
                     <thead class="bg-gray-100">
@@ -118,7 +117,7 @@
             Array.from(files).forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
 
-                // Image preview
+                // Preview
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
                     const img = document.createElement('img');
@@ -135,7 +134,7 @@
                 };
                 previewReader.readAsDataURL(file);
 
-                // EXIF metadata
+                // EXIF
                 const exifReader = new FileReader();
                 exifReader.onload = async e => {
                     try {
@@ -167,11 +166,12 @@
             if (!coord || !Array.isArray(coord) || coord.length !== 3) return null;
 
             const getValue = (entry) => {
-                if (typeof entry === 'object' && 'numerator' in entry && 'denominator' in entry) {
-                    return entry.numerator / entry.denominator;
-                }
-                if (typeof entry === 'object' && 'value' in entry) {
-                    return entry.value;
+                if (entry && typeof entry === 'object') {
+                    if ('numerator' in entry && 'denominator' in entry) {
+                        return entry.numerator / entry.denominator;
+                    } else if ('value' in entry) {
+                        return entry.value;
+                    }
                 }
                 return parseFloat(entry);
             };
@@ -182,12 +182,10 @@
 
             if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
 
-            let result = d + (m / 60) + (s / 3600);
+            let result = d + m / 60 + s / 3600;
             if (ref === 'S' || ref === 'W') result *= -1;
-
             return result.toFixed(6);
         }
-
     </script>
 </body>
 </html>
