@@ -3,16 +3,17 @@
 <html>
 <head>
     <title>Landing</title>
-    <link rel="manifest" href="/static/manifest.json">
-    <link rel="apple-touch-icon" href="/static/img/logo192.png">    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="apple-touch-icon" href="/static/img/logo192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="PicUp">
     <meta name="theme-color" content="#2196f3">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exifreader@4.12.0/dist/exif-reader.min.js"></script>
 </head>
-<body class="bg-gray-100 p-6">
-    <div class="max-w-3xl mx-auto bg-white p-6 rounded shadow">
+<body class="bg-gray-100 p-4 sm:p-6">
+    <div class="w-full max-w-3xl mx-auto bg-white p-4 sm:p-6 rounded shadow">
         <div class="flex flex-col items-center mb-4">
             <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-32" />
             <p class="mt-2 text-xl font-bold text-gray-800">PicUp</p>
@@ -27,8 +28,24 @@
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
-            <div id="preview" class="mt-4 grid grid-cols-2 gap-4"></div>
+
+            <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left"></div>
+
+            <div class="overflow-x-auto">
+                <table id="metadata-table" class="table-auto mt-6 w-full text-sm text-left border border-gray-300 hidden">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="border px-4 py-2">Image</th>
+                            <th class="border px-4 py-2">Date Taken</th>
+                            <th class="border px-4 py-2">Camera</th>
+                            <th class="border px-4 py-2">Latitude</th>
+                            <th class="border px-4 py-2">Longitude</th>
+                        </tr>
+                    </thead>
+                    <tbody id="metadata-body"></tbody>
+                </table>
+            </div>
 
             <button type="submit" class="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
                 Upload Photos
@@ -37,7 +54,6 @@
 
         <hr class="my-6">
 
-        <!-- Button to go to mappics.html -->
         <div class="flex justify-end mb-4">
             <a href="{% url 'picupapp:mappics' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
                 View Photo Map
@@ -71,25 +87,23 @@
         const fileInput = document.getElementById('file-input');
         const preview = document.getElementById('preview');
         const commentContainer = document.getElementById('comment-container');
+        const metadataTable = document.getElementById('metadata-table');
+        const metadataBody = document.getElementById('metadata-body');
 
         dropZone.addEventListener('click', () => fileInput.click());
-
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('bg-blue-100');
         });
-
         dropZone.addEventListener('dragleave', () => {
             dropZone.classList.remove('bg-blue-100');
         });
-
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-100');
             fileInput.files = e.dataTransfer.files;
             showPreview(e.dataTransfer.files);
         });
-
         fileInput.addEventListener('change', () => {
             showPreview(fileInput.files);
         });
@@ -103,7 +117,7 @@
             Array.from(files).forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
 
-                // Use FileReader for preview (DataURL)
+                // 1. Show image preview
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
                     const img = document.createElement('img');
@@ -120,7 +134,7 @@
                 };
                 previewReader.readAsDataURL(file);
 
-                // Use separate FileReader for EXIF (ArrayBuffer)
+                // 2. Read EXIF metadata
                 const exifReader = new FileReader();
                 exifReader.onload = async e => {
                     try {
@@ -141,23 +155,22 @@
                         `;
                         metadataTable.classList.remove('hidden');
                     } catch (err) {
-                        console.warn("No EXIF data found or error reading:", err);
+                        console.warn("EXIF read error:", err);
                     }
                 };
                 exifReader.readAsArrayBuffer(file);
             });
         }
 
-function getGPSDecimal(coord, ref) {
-    if (!coord || !ref) return null;
-    const d = coord[0].value;
-    const m = coord[1].value;
-    const s = coord[2].value;
-    let result = d + m / 60 + s / 3600;
-    if (ref === 'S' || ref === 'W') result *= -1;
-    return result.toFixed(6);
-}
-
+        function getGPSDecimal(coord, ref) {
+            if (!coord || !ref) return null;
+            const d = coord[0].value;
+            const m = coord[1].value;
+            const s = coord[2].value;
+            let result = d + m / 60 + s / 3600;
+            if (ref === 'S' || ref === 'W') result *= -1;
+            return result.toFixed(6);
+        }
     </script>
 </body>
 </html>
