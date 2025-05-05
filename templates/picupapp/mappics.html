@@ -2,6 +2,7 @@
 <html>
 <head>
     <title>Photo Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #map { height: 600px; width: 100%; }
         .image-preview { max-width: 200px; display: block; margin: 5px 0; }
@@ -15,8 +16,8 @@
             Show Only My Photos ({{ username }})
         </label>
     </div>
-    <div id="map"></div>
-
+    <div id="map" class="w-full" style="height: 60vh;"></div>
+    
     <script>
         const userPhotos = {{ user_photos|safe }};
         const otherPhotos = {{ other_photos|safe }};
