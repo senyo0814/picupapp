@@ -25,6 +25,9 @@
     <script>
         const userPhotos = {{ user_photos|safe }};
         const otherPhotos = {{ other_photos|safe }};
+        console.log("USER PHOTOS:", userPhotos);
+        console.log("OTHER PHOTOS:", otherPhotos);
+
         let markers = [];
         let map;
 
