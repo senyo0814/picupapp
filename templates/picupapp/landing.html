@@ -139,6 +139,8 @@
                 exifReader.onload = async e => {
                     try {
                         const tags = await ExifReader.load(e.target.result);
+                        console.log("Exif tags for", file.name, tags);
+
                         const date = tags.DateTimeOriginal?.description || 'N/A';
                         const model = tags.Model?.description || 'N/A';
                         const lat = getGPSDecimal(tags.GPSLatitude, tags.GPSLatitudeRef);
