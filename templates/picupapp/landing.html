@@ -164,14 +164,30 @@
         }
 
         function getGPSDecimal(coord, ref) {
-            if (!coord || !ref) return null;
-            const d = coord[0].value;
-            const m = coord[1].value;
-            const s = coord[2].value;
-            let result = d + m / 60 + s / 3600;
+            if (!coord || !Array.isArray(coord) || coord.length !== 3) return null;
+
+            const getValue = (entry) => {
+                if (typeof entry === 'object' && 'numerator' in entry && 'denominator' in entry) {
+                    return entry.numerator / entry.denominator;
+                }
+                if (typeof entry === 'object' && 'value' in entry) {
+                    return entry.value;
+                }
+                return parseFloat(entry);
+            };
+
+            const d = getValue(coord[0]);
+            const m = getValue(coord[1]);
+            const s = getValue(coord[2]);
+
+            if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+
+            let result = d + (m / 60) + (s / 3600);
             if (ref === 'S' || ref === 'W') result *= -1;
+
             return result.toFixed(6);
         }
+
     </script>
 </body>
 </html>
