@@ -32,8 +32,9 @@
             <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left"></div>
 
-            <div class="w-full overflow-x-auto mt-6" id="metadata-wrapper" style="display: none;">
-                <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300">         
+            <!-- Responsive metadata table wrapper -->
+            <div id="metadata-wrapper" class="w-full overflow-x-auto mt-6" style="display: none;">
+                <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300">
                     <thead class="bg-gray-100">
                         <tr>
                             <th class="border px-4 py-2">Image</th>
@@ -87,18 +88,18 @@
         const fileInput = document.getElementById('file-input');
         const preview = document.getElementById('preview');
         const commentContainer = document.getElementById('comment-container');
-        const metadataTable = document.getElementById('metadata-table');
+        const metadataWrapper = document.getElementById('metadata-wrapper');
         const metadataBody = document.getElementById('metadata-body');
 
         dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', (e) => {
+        dropZone.addEventListener('dragover', e => {
             e.preventDefault();
             dropZone.classList.add('bg-blue-100');
         });
         dropZone.addEventListener('dragleave', () => {
             dropZone.classList.remove('bg-blue-100');
         });
-        dropZone.addEventListener('drop', (e) => {
+        dropZone.addEventListener('drop', e => {
             e.preventDefault();
             dropZone.classList.remove('bg-blue-100');
             fileInput.files = e.dataTransfer.files;
@@ -112,12 +113,12 @@
             preview.innerHTML = '';
             commentContainer.innerHTML = '';
             metadataBody.innerHTML = '';
-            metadataTable.classList.add('hidden');
+            metadataWrapper.style.display = 'none';
 
             Array.from(files).forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
 
-                // 1. Show image preview
+                // Image preview
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
                     const img = document.createElement('img');
@@ -134,7 +135,7 @@
                 };
                 previewReader.readAsDataURL(file);
 
-                // 2. Read EXIF metadata
+                // EXIF metadata
                 const exifReader = new FileReader();
                 exifReader.onload = async e => {
                     try {
@@ -153,7 +154,7 @@
                                 <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
                             </tr>
                         `;
-                        document.getElementById('metadata-wrapper').style.display = 'block';
+                        metadataWrapper.style.display = 'block';
                     } catch (err) {
                         console.warn("EXIF read error:", err);
                     }
