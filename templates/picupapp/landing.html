@@ -181,8 +181,8 @@
                         const tags = await ExifReader.load(e.target.result);
                         const date = tags.DateTimeOriginal?.description || 'N/A';
                         const model = tags.Model?.description || 'N/A';
-                        const lat = getGPSDecimal(tags.GPSLatitude?.value, tags.GPSLatitudeRef);
-                        const lon = getGPSDecimal(tags.GPSLongitude?.value, tags.GPSLongitudeRef);
+                        const lat = getGPSDecimal(tags.GPSLatitude?.value || tags.GPSLatitude, tags.GPSLatitudeRef);
+                        const lon = getGPSDecimal(tags.GPSLongitude?.value || tags.GPSLongitude, tags.GPSLongitudeRef);
 
                         metadataBody.innerHTML += `
                             <tr>
@@ -218,32 +218,30 @@
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
 
-            const frac = (val) => {
-                if (val?.numerator !== undefined && val?.denominator !== undefined) {
-                    return val.numerator / val.denominator;
-                } else if (typeof val === 'number') {
-                    return val;
+            const toDecimal = (value) => {
+                if (typeof value === 'number') return value;
+                if (value?.numerator !== undefined && value?.denominator !== undefined) {
+                    return value.numerator / value.denominator;
                 }
-                return parseFloat(val);
+                if (Array.isArray(value) && value.length === 2) {
+                    return parseFloat(value[0]) / parseFloat(value[1]);
+                }
+                return parseFloat(value) || 0;
             };
 
-            const d = frac(coord[0]);
-            const m = frac(coord[1]);
-            const s = frac(coord[2]);
-
-            if (isNaN(d) || isNaN(m) || isNaN(s)) {
-                console.warn("Invalid GPS components:", coord);
-                return null;
-            }
+            const d = toDecimal(coord[0]);
+            const m = toDecimal(coord[1]);
+            const s = toDecimal(coord[2]);
 
             let decimal = d + (m / 60) + (s / 3600);
 
-            const ref = (typeof refTag === 'string') ? refTag.trim().toUpperCase() : '';
+            const ref = (typeof refTag === 'string') ? refTag.trim().toUpperCase()
+                    : refTag?.description?.trim().toUpperCase() || '';
+
             if (ref === 'S' || ref === 'W') decimal *= -1;
 
             return decimal.toFixed(6);
         }
-
     </script>
 </body>
 </html>
