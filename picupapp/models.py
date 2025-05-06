@@ -17,32 +17,7 @@ class PhotoUpload(models.Model):
     def __str__(self):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-        try:
-            # Reopen from storage to ensure compatibility on cloud platforms
-            img = Image.open(self.image)
-            exif_data = self.get_exif_data(img)
-
-            coords = self.get_lat_lon(exif_data)
-            photo_date = self.get_photo_taken_date(exif_data)
-
-            updated_fields = []
-
-            if coords and not (self.latitude and self.longitude):
-                self.latitude, self.longitude = coords
-                updated_fields += ['latitude', 'longitude']
-
-            if photo_date and not self.photo_taken_date:
-                self.photo_taken_date = photo_date
-                updated_fields.append('photo_taken_date')
-
-            if updated_fields:
-                super().save(update_fields=updated_fields)
-
-        except Exception as e:
-            logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
-
+    
     def get_exif_data(self, image):
         """Extract EXIF data from image."""
         exif_data = {}
@@ -93,3 +68,30 @@ class PhotoUpload(models.Model):
             except ValueError:
                 pass
         return None
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        try:
+            # Reopen from storage to ensure compatibility on cloud platforms
+            img = Image.open(self.image)
+            exif_data = self.get_exif_data(img)
+
+            coords = self.get_lat_lon(exif_data)
+            photo_date = self.get_photo_taken_date(exif_data)
+
+            updated_fields = []
+
+            if coords and not (self.latitude and self.longitude):
+                self.latitude, self.longitude = coords
+                updated_fields += ['latitude', 'longitude']
+
+            if photo_date and not self.photo_taken_date:
+                self.photo_taken_date = photo_date
+                updated_fields.append('photo_taken_date')
+
+            if updated_fields:
+                super().save(update_fields=updated_fields)
+
+        except Exception as e:
+            logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
+
