@@ -66,11 +66,15 @@ def extract_gps_and_datetime(file):
 
         def get_gps_decimal(coord, ref):
             try:
-                d = coord[0][0] / coord[0][1]
-                m = coord[1][0] / coord[1][1]
-                s = coord[2][0] / coord[2][1]
+                def frac(val):
+                    return float(val[0]) / float(val[1]) if isinstance(val, tuple) else float(val)
+
+                d = frac(coord[0])
+                m = frac(coord[1])
+                s = frac(coord[2])
+
                 decimal = d + (m / 60.0) + (s / 3600.0)
-                if ref and ref.upper() in ['S', 'W']:
+                if ref and str(ref).upper() in ['S', 'W']:
                     decimal *= -1
                 return round(decimal, 6)
             except Exception as e:
@@ -131,16 +135,22 @@ def landing(request):
                     lon = lon or lon_exif
                     taken_date = taken_date or taken_exif
 
+                try:
+                    lat = round(float(lat), 6) if lat else None
+                    lon = round(float(lon), 6) if lon else None
+                except Exception as conv_e:
+                    logger.warning(f"Latitude/Longitude conversion error: {conv_e}")
+                    lat = lon = None
+
                 comment = request.POST.get(f'comment_{idx}', '')
                 PhotoUpload.objects.create(
                     image=f,
                     uploaded_by=request.user,
                     comment=comment,
-                    latitude=float(lat) if lat not in [None, '', 'undefined', 'NaN'] else None,
-                    longitude=float(lon) if lon not in [None, '', 'undefined', 'NaN'] else None,
+                    latitude=lat,
+                    longitude=lon,
                     photo_taken_date=taken_date
                 )
-
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
