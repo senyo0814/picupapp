@@ -181,8 +181,15 @@
                         const tags = await ExifReader.load(e.target.result);
                         const date = tags.DateTimeOriginal?.description || 'N/A';
                         const model = tags.Model?.description || 'N/A';
-                        const lat = getGPSDecimal(tags.GPSLatitude?.value || tags.GPSLatitude, tags.GPSLatitudeRef);
-                        const lon = getGPSDecimal(tags.GPSLongitude?.value || tags.GPSLongitude, tags.GPSLongitudeRef);
+                        const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
+                        const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
+
+                        const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
+                        const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
+
+                        const lat = getGPSDecimal(latCoord, latRef);
+                        const lon = getGPSDecimal(lonCoord, lonRef);
+
 
                         metadataBody.innerHTML += `
                             <tr>
