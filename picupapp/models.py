@@ -69,20 +69,18 @@ class PhotoUpload(models.Model):
                 pass
         return None
 
+    from .exif_utils import extract_gps_and_datetime  # if stored separately
+
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         try:
-            # Reopen from storage to ensure compatibility on cloud platforms
-            img = Image.open(self.image)
-            exif_data = self.get_exif_data(img)
-
-            coords = self.get_lat_lon(exif_data)
-            photo_date = self.get_photo_taken_date(exif_data)
+            # Reopen file to ensure it's readable from storage (especially on cloud platforms)
+            lat, lon, photo_date = extract_gps_and_datetime(self.image)
 
             updated_fields = []
 
-            if coords and not (self.latitude and self.longitude):
-                self.latitude, self.longitude = coords
+            if lat is not None and lon is not None and not (self.latitude and self.longitude):
+                self.latitude, self.longitude = lat, lon
                 updated_fields += ['latitude', 'longitude']
 
             if photo_date and not self.photo_taken_date:
@@ -93,5 +91,5 @@ class PhotoUpload(models.Model):
                 super().save(update_fields=updated_fields)
 
         except Exception as e:
-            logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
+            logging.getLogger(__name__).exception(f"EXIF extraction failed during save: {e}")
 
