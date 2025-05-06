@@ -214,7 +214,6 @@
                 exifReader.readAsArrayBuffer(file);
             });
         }
-
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
 
@@ -233,9 +232,10 @@
 
             if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
 
-            let result = d + (m / 60.0) + (s / 3600.0);
+            let result = d + m / 60.0 + s / 3600.0;
 
-            const ref = (typeof refTag === 'object' ? refTag.description : refTag)?.trim().toUpperCase();
+            // Force ref to uppercase string, even if it's an object or undefined
+            const ref = ((refTag?.description ?? refTag) + '').trim().toUpperCase();
             if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
