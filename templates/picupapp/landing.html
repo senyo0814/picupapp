@@ -235,12 +235,12 @@
 
             let result = d + m / 60 + s / 3600;
 
-            const ref = refTag?.description?.trim().charAt(0);
+            // ✅ Fix: refTag may already be a string like 'N', 'S', etc.
+            const ref = typeof refTag === 'string' ? refTag.trim().toUpperCase() : '';
             if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
         }
-
     </script>
 </body>
 </html>
