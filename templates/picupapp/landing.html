@@ -218,29 +218,32 @@
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
 
-            const toDecimal = (value) => {
-                if (typeof value === 'number') return value;
-                if (value?.numerator !== undefined && value?.denominator !== undefined) {
-                    return value.numerator / value.denominator;
+            const getValue = (entry) => {
+                if (entry?.numerator && entry?.denominator) {
+                    return entry.numerator / entry.denominator;
+                } else if (Array.isArray(entry) && entry.length === 2) {
+                    return parseFloat(entry[0]) / parseFloat(entry[1]);
+                } else if (typeof entry === 'number') {
+                    return entry;
                 }
-                if (Array.isArray(value) && value.length === 2) {
-                    return parseFloat(value[0]) / parseFloat(value[1]);
-                }
-                return parseFloat(value) || 0;
+                return parseFloat(entry);
             };
 
-            const d = toDecimal(coord[0]);
-            const m = toDecimal(coord[1]);
-            const s = toDecimal(coord[2]);
+            const d = getValue(coord[0]);
+            const m = getValue(coord[1]);
+            const s = getValue(coord[2]);
 
-            let decimal = d + (m / 60) + (s / 3600);
+            if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
 
-            const ref = (typeof refTag === 'string') ? refTag.trim().toUpperCase()
-                    : refTag?.description?.trim().toUpperCase() || '';
+            let result = d + m / 60 + s / 3600;
 
-            if (ref === 'S' || ref === 'W') decimal *= -1;
+            const ref = typeof refTag === 'string'
+                ? refTag.trim().toUpperCase()
+                : refTag?.description?.trim().toUpperCase();
 
-            return decimal.toFixed(6);
+            if (ref === 'S' || ref === 'W') result *= -1;
+
+            return result.toFixed(6);
         }
     </script>
 </body>
