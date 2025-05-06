@@ -219,12 +219,10 @@
             if (!coord || coord.length !== 3) return null;
 
             const getValue = (entry) => {
-                if (entry?.numerator && entry?.denominator) {
+                if (entry?.numerator !== undefined && entry?.denominator !== undefined) {
                     return entry.numerator / entry.denominator;
                 } else if (Array.isArray(entry) && entry.length === 2) {
                     return parseFloat(entry[0]) / parseFloat(entry[1]);
-                } else if (typeof entry === 'number') {
-                    return entry;
                 }
                 return parseFloat(entry);
             };
@@ -235,13 +233,10 @@
 
             if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
 
-            let result = d + m / 60 + s / 3600;
+            let result = d + (m / 60.0) + (s / 3600.0);
 
-            const ref = typeof refTag === 'string'
-                ? refTag.trim().toUpperCase()
-                : refTag?.description?.trim().toUpperCase();
-
-            if (ref === 'W' || ref === 'S') result *= -1;
+            const ref = (typeof refTag === 'object' ? refTag.description : refTag)?.trim().toUpperCase();
+            if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
         }
