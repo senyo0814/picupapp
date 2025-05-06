@@ -241,7 +241,7 @@
                 ? refTag.trim().toUpperCase()
                 : refTag?.description?.trim().toUpperCase();
 
-            if (ref === 'S' || ref === 'W') result *= -1;
+            if (ref === 'W' || ref === 'S') result *= -1;
 
             return result.toFixed(6);
         }
