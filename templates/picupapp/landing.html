@@ -194,10 +194,23 @@
                             </tr>
                         `;
                         metadataWrapper.style.display = 'block';
+
+                        // Create hidden inputs for latitude, longitude, and date
+                        if (lat !== null && lon !== null) {
+                            const hiddenInputs = document.createElement('div');
+                            hiddenInputs.innerHTML = `
+                                <input type="hidden" name="latitude_${index}" value="${lat}">
+                                <input type="hidden" name="longitude_${index}" value="${lon}">
+                                <input type="hidden" name="photo_taken_${index}" value="${date}">
+                            `;
+                            document.getElementById('upload-form').appendChild(hiddenInputs);
+                        }
+
                     } catch (err) {
                         console.warn("EXIF read error:", err);
                     }
                 };
+
                 exifReader.readAsArrayBuffer(file);
             });
         }

@@ -126,18 +126,34 @@ def landing(request):
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
-                # Read into a BytesIO copy
                 import io
                 copy = io.BytesIO(f.read())
-                lat, lon, taken_date = extract_gps_and_datetime(copy)
                 f.seek(0)
+
+                # Try to get lat/lon/taken from hidden fields (sent by JS)
+                lat = request.POST.get(f'latitude_{idx}')
+                lon = request.POST.get(f'longitude_{idx}')
+                taken_str = request.POST.get(f'photo_taken_{idx}')
+
+                try:
+                    taken_date = datetime.strptime(taken_str, "%Y:%m:%d %H:%M:%S") if taken_str else None
+                except ValueError:
+                    taken_date = None
+
+                # If lat/lon missing, fallback to EXIF
+                if not lat or not lon:
+                    lat_exif, lon_exif, taken_exif = extract_gps_and_datetime(copy)
+                    lat = lat or lat_exif
+                    lon = lon or lon_exif
+                    taken_date = taken_date or taken_exif
+
                 comment = request.POST.get(f'comment_{idx}', '')
                 PhotoUpload.objects.create(
                     image=f,
                     uploaded_by=request.user,
                     comment=comment,
-                    latitude=lat,
-                    longitude=lon,
+                    latitude=lat if lat else None,
+                    longitude=lon if lon else None,
                     photo_taken_date=taken_date
                 )
             return redirect('picupapp:landing')

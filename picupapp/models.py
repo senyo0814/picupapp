@@ -17,24 +17,21 @@ class PhotoUpload(models.Model):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 
     def save(self, *args, **kwargs):
+        is_new = self._state.adding  # Check if new object
+
+        if is_new and self.image:
+            try:
+                lat, lon, photo_date = extract_gps_and_datetime(self.image)
+
+                if lat is not None:
+                    self.latitude = lat
+                if lon is not None:
+                    self.longitude = lon
+                if photo_date:
+                    self.photo_taken_date = photo_date
+
+            except Exception as e:
+                logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
+
         super().save(*args, **kwargs)
-        try:
-            # Use the EXIF utility function
-            lat, lon, photo_date = extract_gps_and_datetime(self.image)
 
-            updated_fields = []
-
-            if lat is not None and lon is not None and (self.latitude is None or self.longitude is None):
-                self.latitude = lat
-                self.longitude = lon
-                updated_fields += ['latitude', 'longitude']
-
-            if photo_date and self.photo_taken_date is None:
-                self.photo_taken_date = photo_date
-                updated_fields.append('photo_taken_date')
-
-            if updated_fields:
-                super().save(update_fields=updated_fields)
-
-        except Exception as e:
-            logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
