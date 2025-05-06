@@ -242,7 +242,10 @@
             let result = d + m / 60.0 + s / 3600.0;
 
             // Force ref to uppercase string, even if it's an object or undefined
-            const ref = ((refTag?.description ?? refTag) + '').trim().toUpperCase();
+            const ref = typeof refTag === 'object' && 'description' in refTag
+                ? refTag.description.trim().toUpperCase()
+                : String(refTag).trim().toUpperCase();
+
             if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
