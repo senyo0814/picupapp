@@ -65,7 +65,9 @@
             {% for photo in photos %}
                 {% if photo.image %}
                     <div class="bg-white rounded shadow p-2">
-                        <img src="{{ photo.image.url }}?v={{ photo.uploaded_at.timestamp }}" alt="Photo" class="rounded w-full" />
+                        <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}')" class="w-full">
+                            <img src="{{ photo.image.url }}?v={{ photo.uploaded_at.timestamp }}" alt="Photo" class="rounded w-full" />
+                        </button>
                         <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
                         {% if photo.comment %}
                             <p class="text-sm mt-1 text-gray-700 italic">"{{ photo.comment }}"</p>
@@ -83,6 +85,42 @@
             {% endfor %}
         </div>
     </div>
+
+    <!-- Modal -->
+    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded p-4 max-w-xl w-full relative">
+            <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
+            <div class="text-sm space-y-1">
+                <p><strong>Comment:</strong> <span id="modalComment"></span></p>
+                <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
+                <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
+                <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
+                <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showExifModal(url, comment, uploaded, taken, lat, lon) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalComment').innerText = comment;
+            document.getElementById('modalUploaded').innerText = uploaded;
+            document.getElementById('modalTaken').innerText = taken;
+            document.getElementById('modalLat').innerText = lat || "N/A";
+            document.getElementById('modalLon').innerText = lon || "N/A";
+            document.getElementById('exifModal').classList.remove('hidden');
+            document.getElementById('exifModal').classList.add('flex');
+        }
+
+        function closeExifModal() {
+            document.getElementById('exifModal').classList.remove('flex');
+            document.getElementById('exifModal').classList.add('hidden');
+        }
+    </script>
+
+    
+
 
     <script>
         const dropZone = document.getElementById('drop-zone');
