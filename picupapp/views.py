@@ -111,8 +111,11 @@ def landing(request):
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
-                lat, lon, taken_date = extract_gps_and_datetime(f)
-                f.seek(0)  # ✅ Ensure file can be saved
+                # Read into a BytesIO copy
+                import io
+                copy = io.BytesIO(f.read())
+                lat, lon, taken_date = extract_gps_and_datetime(copy)
+                f.seek(0)
                 comment = request.POST.get(f'comment_{idx}', '')
                 PhotoUpload.objects.create(
                     image=f,
