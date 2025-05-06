@@ -136,10 +136,11 @@ def landing(request):
                     image=f,
                     uploaded_by=request.user,
                     comment=comment,
-                    latitude=lat if lat else None,
-                    longitude=lon if lon else None,
+                    latitude=float(lat) if lat not in [None, '', 'undefined', 'NaN'] else None,
+                    longitude=float(lon) if lon not in [None, '', 'undefined', 'NaN'] else None,
                     photo_taken_date=taken_date
                 )
+
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
