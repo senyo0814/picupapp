@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import PhotoUpload
 from django.conf import settings
 import logging
@@ -37,15 +37,9 @@ def register_view(request):
         return redirect('picupapp:landing')
     return render(request, 'picupapp/register.html')
 
-from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
-from datetime import datetime
-import logging
-
-logger = logging.getLogger(__name__)
-
 def extract_gps_and_datetime(file):
     try:
+        file.seek(0)  # Ensure file pointer is at start
         img = Image.open(file)
         exif_data = img._getexif()
         gps_info = {}
@@ -64,8 +58,11 @@ def extract_gps_and_datetime(file):
                     sub_decoded = GPSTAGS.get(t)
                     gps_info[sub_decoded] = value[t]
 
-        print(">>> Raw GPS Info:", gps_info)
-        print(">>> Raw DateTimeOriginal:", datetime_taken)
+        print(">>> Image filename:", getattr(file, 'name', 'Unknown'))
+        print(">>> GPSLatitude Raw:", gps_info.get('GPSLatitude'))
+        print(">>> GPSLatitudeRef:", gps_info.get('GPSLatitudeRef'))
+        print(">>> GPSLongitude Raw:", gps_info.get('GPSLongitude'))
+        print(">>> GPSLongitudeRef:", gps_info.get('GPSLongitudeRef'))
 
         def get_gps_decimal(coord, ref):
             try:
@@ -111,14 +108,7 @@ def extract_gps_and_datetime(file):
 def landing(request):
     try:
         all_photos = PhotoUpload.objects.order_by('-uploaded_at')
-        valid_photos = []
-
-        for photo in all_photos:
-            if photo.image and os.path.exists(photo.image.path):
-                valid_photos.append(photo)
-            else:
-                logger.warning(f"Deleting missing image entry: {photo.image}")
-                photo.delete()
+        valid_photos = [photo for photo in all_photos if photo.image and os.path.exists(photo.image.path)]
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
@@ -126,7 +116,6 @@ def landing(request):
                 copy = io.BytesIO(f.read())
                 f.seek(0)
 
-                # Try to get lat/lon/taken from hidden fields (sent by JS)
                 lat = request.POST.get(f'latitude_{idx}')
                 lon = request.POST.get(f'longitude_{idx}')
                 taken_str = request.POST.get(f'photo_taken_{idx}')
@@ -136,7 +125,6 @@ def landing(request):
                 except ValueError:
                     taken_date = None
 
-                # If lat/lon missing, fallback to EXIF
                 if not lat or not lon:
                     lat_exif, lon_exif, taken_exif = extract_gps_and_datetime(copy)
                     lat = lat or lat_exif
@@ -182,13 +170,8 @@ def logout_view(request):
 
 @login_required
 def map_pics_view(request):
-    user_photos = PhotoUpload.objects.filter(
-        uploaded_by=request.user
-    ).exclude(latitude=None).exclude(longitude=None)
-
-    other_photos = PhotoUpload.objects.exclude(
-        uploaded_by=request.user
-    ).exclude(latitude=None).exclude(longitude=None)
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
 
     def serialize(photos):
         return [
@@ -230,7 +213,7 @@ def check_media_access(request):
 
     return JsonResponse(result)
 
-    # --- Metadata List View ---
+# --- Metadata List View ---
 
 @login_required
 def metadata_table_view(request):
@@ -238,4 +221,3 @@ def metadata_table_view(request):
     return render(request, 'picupapp/metadata_table.html', {
         'photos': photos
     })
-
