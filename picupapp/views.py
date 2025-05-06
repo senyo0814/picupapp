@@ -181,3 +181,24 @@ def map_pics_view(request):
         'other_photos': serialize(other_photos),
         'username': request.user.username
     })
+
+    def check_media_access(request):
+    path = os.path.join(settings.MEDIA_ROOT, 'uploads')
+    test_file = os.path.join(path, 'test.txt')
+    result = {
+        "media_root": settings.MEDIA_ROOT,
+        "uploads_dir": path,
+        "exists": os.path.exists(path),
+        "writable": os.access(path, os.W_OK),
+        "write_success": False,
+        "error": None,
+    }
+    try:
+        with open(test_file, 'w') as f:
+            f.write("test")
+        result["write_success"] = True
+        os.remove(test_file)
+    except Exception as e:
+        result["error"] = str(e)
+
+    return JsonResponse(result)
