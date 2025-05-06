@@ -202,3 +202,13 @@ def check_media_access(request):
         result["error"] = str(e)
 
     return JsonResponse(result)
+
+    # --- Metadata List View ---
+
+@login_required
+def metadata_table_view(request):
+    photos = PhotoUpload.objects.order_by('-uploaded_at')
+    return render(request, 'picupapp/metadata_table.html', {
+        'photos': photos
+    })
+

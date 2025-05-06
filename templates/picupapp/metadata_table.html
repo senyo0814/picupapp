@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold mb-6">Photo Metadata Table</h1>
+
+  <table class="table-auto w-full border text-sm">
+    <thead class="bg-gray-100">
+      <tr>
+        <th class="border px-4 py-2">Photo</th>
+        <th class="border px-4 py-2">Latitude</th>
+        <th class="border px-4 py-2">Longitude</th>
+        <th class="border px-4 py-2">Taken</th>
+        <th class="border px-4 py-2">User</th>
+        <th class="border px-4 py-2">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for photo in photos %}
+      <tr>
+        <td class="border px-4 py-2">
+          <img src="{{ photo.image.url }}" alt="" class="w-24 rounded">
+        </td>
+        <td class="border px-4 py-2">{{ photo.latitude|default:'N/A' }}</td>
+        <td class="border px-4 py-2">{{ photo.longitude|default:'N/A' }}</td>
+        <td class="border px-4 py-2">{{ photo.photo_taken_date|date:"Y-m-d H:i" }}</td>
+        <td class="border px-4 py-2">{{ photo.uploaded_by.username }}</td>
+        <td class="border px-4 py-2">{{ photo.comment|default:'-' }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center text-gray-500 py-4">No photos found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
