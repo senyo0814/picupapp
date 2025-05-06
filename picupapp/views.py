@@ -47,6 +47,7 @@ def extract_gps_and_datetime(file):
         datetime_taken = None
 
         if not exif_data:
+            print(">>> No EXIF data found.")
             return None, None, None
 
         for tag, value in exif_data.items():
@@ -57,6 +58,9 @@ def extract_gps_and_datetime(file):
                 for t in value:
                     sub_decoded = GPSTAGS.get(t)
                     gps_info[sub_decoded] = value[t]
+
+        print(">>> Raw GPS Info:", gps_info)
+        print(">>> Raw DateTimeOriginal:", datetime_taken)
 
         def convert_to_degrees(value):
             d = float(value[0][0]) / float(value[0][1])
@@ -75,13 +79,20 @@ def extract_gps_and_datetime(file):
             if gps_info['GPSLongitudeRef'] != 'E':
                 lon = -lon
 
+        print(">>> Parsed Latitude:", lat)
+        print(">>> Parsed Longitude:", lon)
+
         if datetime_taken:
             datetime_taken = datetime.strptime(datetime_taken, "%Y:%m:%d %H:%M:%S")
+            print(">>> Parsed Date Taken:", datetime_taken)
 
         return lat, lon, datetime_taken
+
     except Exception as e:
+        print(">>> EXIF parse failed:", e)
         logger.warning(f"EXIF parse failed: {e}")
         return None, None, None
+
 
 # --- Landing View ---
 
