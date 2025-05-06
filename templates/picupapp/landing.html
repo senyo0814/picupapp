@@ -218,29 +218,32 @@
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
 
-            const getValue = (entry) => {
-                if (entry?.numerator && entry?.denominator) {
-                    return entry.numerator / entry.denominator;
-                } else if (entry?.value !== undefined) {
-                    return entry.value;
+            const frac = (val) => {
+                if (val?.numerator !== undefined && val?.denominator !== undefined) {
+                    return val.numerator / val.denominator;
+                } else if (typeof val === 'number') {
+                    return val;
                 }
-                return parseFloat(entry);
+                return parseFloat(val);
             };
 
-            const d = getValue(coord[0]);
-            const m = getValue(coord[1]);
-            const s = getValue(coord[2]);
+            const d = frac(coord[0]);
+            const m = frac(coord[1]);
+            const s = frac(coord[2]);
 
-            if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+            if (isNaN(d) || isNaN(m) || isNaN(s)) {
+                console.warn("Invalid GPS components:", coord);
+                return null;
+            }
 
-            let result = d + m / 60 + s / 3600;
+            let decimal = d + (m / 60) + (s / 3600);
 
-            // ✅ Fix: refTag may already be a string like 'N', 'S', etc.
-            const ref = typeof refTag === 'string' ? refTag.trim().toUpperCase() : '';
-            if (ref === 'S' || ref === 'W') result *= -1;
+            const ref = (typeof refTag === 'string') ? refTag.trim().toUpperCase() : '';
+            if (ref === 'S' || ref === 'W') decimal *= -1;
 
-            return result.toFixed(6);
+            return decimal.toFixed(6);
         }
+
     </script>
 </body>
 </html>
