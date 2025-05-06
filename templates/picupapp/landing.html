@@ -41,6 +41,7 @@
                             <th class="border px-4 py-2">Camera</th>
                             <th class="border px-4 py-2">Latitude</th>
                             <th class="border px-4 py-2">Longitude</th>
+                            <th class="border px-4 py-2">Map</th>
                         </tr>
                     </thead>
                     <tbody id="metadata-body"></tbody>
@@ -109,19 +110,35 @@
             document.getElementById('modalTaken').innerText = taken;
             document.getElementById('modalLat').innerText = lat || "N/A";
             document.getElementById('modalLon').innerText = lon || "N/A";
+    
+            // Remove previous map link if it exists
+            const previousMapLink = document.getElementById('modalMapLink');
+            if (previousMapLink) {
+                previousMapLink.remove();
+            }
+    
+            // Add Google Maps link if coordinates exist
+            if (lat && lon) {
+                const mapLink = document.createElement('a');
+                mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
+                mapLink.target = '_blank';
+                mapLink.innerText = 'View on Map';
+                mapLink.id = 'modalMapLink';
+                mapLink.className = 'text-blue-600 underline block mt-2';
+    
+                // Append below the longitude field
+                document.getElementById('modalLon').parentNode.appendChild(mapLink);
+            }
+    
             document.getElementById('exifModal').classList.remove('hidden');
             document.getElementById('exifModal').classList.add('flex');
         }
-
+    
         function closeExifModal() {
             document.getElementById('exifModal').classList.remove('flex');
             document.getElementById('exifModal').classList.add('hidden');
         }
     </script>
-
-    
-
-
     <script>
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
@@ -198,6 +215,11 @@
                                 <td class="border px-4 py-2">${model}</td>
                                 <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
                                 <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                <td class="border px-4 py-2">
+                                    ${lat && lon
+                                        ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
+                                        : 'N/A'}
+                                </td>
                             </tr>
                         `;
                         metadataWrapper.style.display = 'block';
