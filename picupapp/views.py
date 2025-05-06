@@ -42,7 +42,6 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import logging
 
-# Define a fallback logger
 logger = logging.getLogger(__name__)
 
 def extract_gps_and_datetime(file):
@@ -68,26 +67,25 @@ def extract_gps_and_datetime(file):
         print(">>> Raw GPS Info:", gps_info)
         print(">>> Raw DateTimeOriginal:", datetime_taken)
 
-        def convert_to_degrees(value):
+        def get_gps_decimal(coord, ref):
             try:
-                d = float(value[0][0]) / float(value[0][1])
-                m = float(value[1][0]) / float(value[1][1])
-                s = float(value[2][0]) / float(value[2][1])
-                return d + (m / 60.0) + (s / 3600.0)
+                d = coord[0][0] / coord[0][1]
+                m = coord[1][0] / coord[1][1]
+                s = coord[2][0] / coord[2][1]
+                decimal = d + (m / 60.0) + (s / 3600.0)
+                if ref and ref.upper() in ['S', 'W']:
+                    decimal *= -1
+                return round(decimal, 6)
             except Exception as e:
-                logger.warning(f"Error converting to degrees: {e}")
+                logger.warning(f"Error converting GPS: {e}")
                 return None
 
         lat = lon = None
         if 'GPSLatitude' in gps_info and 'GPSLatitudeRef' in gps_info:
-            lat = convert_to_degrees(gps_info['GPSLatitude'])
-            if lat is not None and gps_info['GPSLatitudeRef'] in ['S', 's']:
-                lat = -lat
+            lat = get_gps_decimal(gps_info['GPSLatitude'], gps_info['GPSLatitudeRef'])
 
         if 'GPSLongitude' in gps_info and 'GPSLongitudeRef' in gps_info:
-            lon = convert_to_degrees(gps_info['GPSLongitude'])
-            if lon is not None and gps_info['GPSLongitudeRef'] in ['W', 'w']:
-                lon = -lon
+            lon = get_gps_decimal(gps_info['GPSLongitude'], gps_info['GPSLongitudeRef'])
 
         print(">>> Parsed Latitude:", lat)
         print(">>> Parsed Longitude:", lon)
@@ -106,8 +104,6 @@ def extract_gps_and_datetime(file):
         print(">>> EXIF parse failed:", e)
         logger.warning(f"EXIF parse failed: {e}")
         return None, None, None
-
-
 
 # --- Landing View ---
 
