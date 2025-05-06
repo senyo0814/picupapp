@@ -85,7 +85,17 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic only
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # restored to BASE_DIR/media
+
+# Ensure media/uploads exists at startup
+UPLOADS_DIR = os.path.join(MEDIA_ROOT, 'uploads')
+os.makedirs(UPLOADS_DIR, exist_ok=True)
+
+# Optional: Warn if it's not writable
+if not os.access(UPLOADS_DIR, os.W_OK):
+    import logging
+    logging.warning(f"Upload directory {UPLOADS_DIR} is not writable.")
+
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

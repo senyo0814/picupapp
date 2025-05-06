@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from .models import PhotoUpload
 from django.conf import settings
 import logging
@@ -106,7 +106,6 @@ def landing(request):
             if photo.image and os.path.exists(photo.image.path):
                 valid_photos.append(photo)
             else:
-                # Delete stale DB entry if image file no longer exists
                 logger.warning(f"Deleting missing image entry: {photo.image}")
                 photo.delete()
 
@@ -132,7 +131,7 @@ def landing(request):
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
-        
+
 # --- Delete Photo ---
 
 @login_required
@@ -178,3 +177,26 @@ def map_pics_view(request):
         'other_photos': serialize(other_photos),
         'username': request.user.username
     })
+
+# --- Media Directory Check ---
+
+def check_media_access(request):
+    test_file_path = os.path.join(settings.MEDIA_ROOT, 'uploads', 'test_write.txt')
+    response = {
+        "media_root": settings.MEDIA_ROOT,
+        "uploads_dir": os.path.join(settings.MEDIA_ROOT, 'uploads'),
+        "exists": os.path.exists(os.path.join(settings.MEDIA_ROOT, 'uploads')),
+        "writable": os.access(os.path.join(settings.MEDIA_ROOT, 'uploads'), os.W_OK),
+        "write_success": False,
+        "error": None
+    }
+
+    try:
+        with open(test_file_path, 'w') as f:
+            f.write("media write test successful")
+        response["write_success"] = True
+        os.remove(test_file_path)
+    except Exception as e:
+        response["error"] = str(e)
+
+    return JsonResponse(response)
