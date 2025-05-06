@@ -207,8 +207,7 @@ def check_media_access(request):
 
 @login_required
 def metadata_table_view(request):
-    photos = PhotoUpload.objects.order_by('-uploaded_at')
-    return render(request, 'picupapp/metadata_table.html', {
-        'photos': photos
-    })
+    photos = TmsFieldEntry.objects.all().order_by('-upload_date')  # or filter by user/project if needed
+    return render(request, 'picupapp/metadata_table.html', {'photos': photos})
+
 
