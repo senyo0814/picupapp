@@ -3,9 +3,15 @@ from django.contrib.auth.models import User
 from PIL import Image
 from .exif_utils import extract_gps_and_datetime
 import logging
+from datetime import datetime
+
+def user_directory_path(instance, filename):
+    # Organize uploads like: user_5/2025-05-07/photo.jpg
+    date_str = datetime.now().date().isoformat()
+    return f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
 
 class PhotoUpload(models.Model):
-    image = models.ImageField(upload_to='uploads/')
+    image = models.ImageField(upload_to=user_directory_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
