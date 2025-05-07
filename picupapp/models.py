@@ -22,9 +22,10 @@ class PhotoUpload(models.Model):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 
     def save(self, *args, **kwargs):
-        is_new = self._state.adding  # Check if new object
+        is_new = self._state.adding
 
         if is_new and self.image:
+            logging.info(f"[DEBUG] Uploading image to: {self.image.name}")
             try:
                 lat, lon, photo_date = extract_gps_and_datetime(self.image)
 
