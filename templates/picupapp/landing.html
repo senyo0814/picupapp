@@ -263,6 +263,9 @@
 
             let result = d + m / 60.0 + s / 3600.0;
 
+            // ✅ Add this line to debug refTag
+            console.log('Longitude refTag:', refTag);
+
             // Fix: normalize refTag properly
             const ref = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim().toUpperCase();
             if (ref === 'S' || ref === 'W') result *= -1;
