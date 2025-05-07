@@ -14,7 +14,7 @@ def user_directory_path(instance, filename):
 class PhotoUpload(models.Model):
     image = models.ImageField(upload_to=user_directory_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -26,13 +26,10 @@ class PhotoUpload(models.Model):
     def save(self, *args, **kwargs):
         is_new = self._state.adding
 
-        # Save once first so file is available to EXIF parser
-        if is_new and self.image and not self.pk:
-            logging.info("[DEBUG] Saving image temporarily to enable EXIF extraction")
-            super().save(*args, **kwargs)
+        if is_new and self.image:
+            logging.info(f"[DEBUG] Uploading image to: {self.image.url}")
 
             try:
-                self.image.open()  # Ensure file is accessible
                 lat, lon, photo_date = extract_gps_and_datetime(self.image)
 
                 if lat is not None:
@@ -42,9 +39,9 @@ class PhotoUpload(models.Model):
                 if photo_date:
                     self.photo_taken_date = photo_date
 
-                logging.info(f"[DEBUG] EXIF data extracted: lat={lat}, lon={lon}, date={photo_date}")
             except Exception as e:
                 logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
 
         logging.info(f"[DEBUG] Final image name about to save: {self.image.name}")
         super().save(*args, **kwargs)
+
