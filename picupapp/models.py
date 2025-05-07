@@ -14,7 +14,7 @@ def user_directory_path(instance, filename):
 class PhotoUpload(models.Model):
     image = models.ImageField(upload_to=user_directory_path)
     uploaded_at = models.DateTimeField(auto_now_add=True)
-    uploaded_by = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.TextField(blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
