@@ -205,19 +205,22 @@
     <script>
     let selectedFiles = [];
 
-    function showPreview(files) {
+    function showPreview(newFiles) {
+        const newArray = Array.from(newFiles);
+
+        // Combine with existing ones
+        selectedFiles = selectedFiles.concat(newArray);
+
         preview.innerHTML = '';
         commentContainer.innerHTML = '';
         metadataBody.innerHTML = '';
         metadataWrapper.style.display = 'none';
 
-        selectedFiles = Array.from(files);
-
         selectedFiles.forEach((file, index) => {
             if (!file.type.startsWith('image/')) return;
 
-            const previewReader = new FileReader();
-            previewReader.onload = e => {
+            const reader = new FileReader();
+            reader.onload = e => {
                 const container = document.createElement('div');
                 container.className = 'relative';
 
@@ -232,7 +235,7 @@
                 removeBtn.onclick = () => {
                     selectedFiles.splice(index, 1);
                     fileInput.files = createFileList(selectedFiles);
-                    showPreview(fileInput.files);
+                    showPreview([]);  // refresh view without replacing again
                 };
                 container.appendChild(removeBtn);
 
@@ -246,10 +249,12 @@
                 commentContainer.appendChild(commentInput);
             };
 
-            previewReader.readAsDataURL(file);
+            reader.readAsDataURL(file);
         });
-    }
 
+        fileInput.files = createFileList(selectedFiles);
+    }
+    
     // Utility: create a new FileList object from an array of Files
     function createFileList(files) {
         const dataTransfer = new DataTransfer();
