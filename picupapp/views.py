@@ -10,6 +10,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import os
+from django.views.decorators.csrf import csrf_exempt
 
 logger = logging.getLogger(__name__)
 
@@ -251,8 +252,6 @@ def metadata_table_view(request):
     return render(request, 'picupapp/metadata_table.html', {
         'photos': photos
     })
-
-    from django.views.decorators.csrf import csrf_exempt
 
 @csrf_exempt
 @login_required
