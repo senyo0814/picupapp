@@ -40,13 +40,22 @@
         </label>
     </div>
 
+    <div class="mb-4">
+        <label for="userFilter">Filter by User:</label>
+        <select id="userFilter" class="ml-2 border rounded px-2 py-1">
+            <option value="ALL">All Users</option>
+            {% for user in all_usernames %}
+                <option value="{{ user }}">{{ user }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
     <div id="map"></div>
 
     <script>
         const userPhotos = {{ user_photos|safe }};
         const otherPhotos = {{ other_photos|safe }};
-        console.log("USER PHOTOS:", userPhotos);
-        console.log("OTHER PHOTOS:", otherPhotos);
+        const allPhotos = [...userPhotos, ...otherPhotos];
 
         let markers = [];
         let map;
@@ -61,15 +70,26 @@
 
             document.getElementById('toggleMine').addEventListener('change', function () {
                 if (this.checked) {
+                    document.getElementById('userFilter').value = "{{ username }}";
                     renderMarkers(userPhotos);
                 } else {
-                    renderMarkers([...userPhotos, ...otherPhotos]);
+                    document.getElementById('userFilter').value = "ALL";
+                    renderMarkers(allPhotos);
+                }
+            });
+
+            document.getElementById('userFilter').addEventListener('change', function () {
+                const selectedUser = this.value;
+                if (selectedUser === 'ALL') {
+                    renderMarkers(allPhotos);
+                } else {
+                    const filtered = allPhotos.filter(p => p.user === selectedUser);
+                    renderMarkers(filtered);
                 }
             });
         }
 
         function renderMarkers(photos) {
-            // Clear old markers
             markers.forEach(m => m.setMap(null));
             markers = [];
 
