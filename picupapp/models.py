@@ -27,9 +27,7 @@ class PhotoUpload(models.Model):
         is_new = self._state.adding
 
         if is_new and self.image:
-            image_name = self.image.name
-            image_location = getattr(self.image, 'path', 'cloud')
-            logging.info(f"[DEBUG] Uploading image to: {image_name} ({image_location})")
+            logging.info(f"[DEBUG] Uploading image to: {self.image.url}")
 
             try:
                 lat, lon, photo_date = extract_gps_and_datetime(self.image)
