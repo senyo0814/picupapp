@@ -118,7 +118,7 @@
     <script>
         
         let selectedFiles = [];
-        const MAX_FILES = 5;
+    const MAX_FILES = 5;
 
 
         // Show spinner on page load
@@ -214,12 +214,7 @@
     function showPreview(newFiles) {
         const newArray = Array.from(newFiles);
 
-        // Enforce limit
-        if (selectedFiles.length + newArray.length > MAX_FILES) {
-            alert(`You can only upload up to ${MAX_FILES} images.`);
-            return;
-        }
-
+        // Combine with existing ones
         selectedFiles = selectedFiles.concat(newArray);
 
         preview.innerHTML = '';
@@ -246,7 +241,7 @@
                 removeBtn.onclick = () => {
                     selectedFiles.splice(index, 1);
                     fileInput.files = createFileList(selectedFiles);
-                    showPreview([]); // refresh
+                    showPreview([]);  // refresh view without replacing again
                 };
                 container.appendChild(removeBtn);
 
@@ -263,13 +258,8 @@
             reader.readAsDataURL(file);
         });
 
-        // Update file count display
-        document.getElementById('file-count').innerText = `${selectedFiles.length} of ${MAX_FILES} selected`;
-
-        // Reset native file input to reflect selectedFiles
         fileInput.files = createFileList(selectedFiles);
     }
-
 
     // Utility: create a new FileList object from an array of Files
     function createFileList(files) {
