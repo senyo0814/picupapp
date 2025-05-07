@@ -110,6 +110,13 @@ def extract_gps_and_datetime(file):
 
 @login_required
 def landing(request):
+    from django.conf import settings
+    from django.core.files.storage import default_storage
+    from storages.backends.gcloud import GoogleCloudStorage  # required for isinstance()
+
+    print("[DEBUG] Storage backend in use:", settings.DEFAULT_FILE_STORAGE)
+    print("[DEBUG] Storage is instance of GCS:", isinstance(default_storage, GoogleCloudStorage))
+
     try:
         all_photos = PhotoUpload.objects.order_by('-uploaded_at')
         valid_photos = [photo for photo in all_photos if photo.image and os.path.exists(photo.image.path)]

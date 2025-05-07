@@ -6,8 +6,10 @@ import logging
 from datetime import datetime
 
 def user_directory_path(instance, filename):
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    return f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
+    date_str = datetime.now().date().isoformat()
+    path = f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
+    logging.info(f"[DEBUG] Computed upload path: {path}")
+    return path
 
 class PhotoUpload(models.Model):
     image = models.ImageField(upload_to=user_directory_path)
@@ -39,5 +41,6 @@ class PhotoUpload(models.Model):
             except Exception as e:
                 logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
 
+        logging.info(f"[DEBUG] Final image name about to save: {self.image.name}")
         super().save(*args, **kwargs)
 
