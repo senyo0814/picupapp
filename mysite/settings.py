@@ -79,13 +79,11 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Google Cloud Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+GS_BUCKET_NAME = 'mypicupapp-photos'
 
-GS_CREDENTIALS = None
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-    )
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+    os.path.join(BASE_DIR, 'picupapp-f9caf3715baf.json')  # ← Use relative path, not /etc/secrets/
+)
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
