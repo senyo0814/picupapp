@@ -6,8 +6,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         #map { height: 60vh; width: 100%; }
-        .image-preview { max-width: 200px; display: block; margin: 5px 0; }
-        body { font-family: sans-serif; padding: 1rem; background: #f9f9f9; }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            display: block;
+            margin: 5px auto;
+        }
+        body {
+            font-family: sans-serif;
+            padding: 1rem;
+            background: #f9f9f9;
+        }
+        .gm-style-iw {
+            max-width: 300px !important;
+            overflow: auto;
+        }
     </style>
 </head>
 <body>
