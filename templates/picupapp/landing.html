@@ -21,7 +21,7 @@
 
         <h1 class="text-xl font-bold mb-4 text-center">Welcome, {{ username }}!</h1>
 
-        <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center">
+        <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
             <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
@@ -349,5 +349,54 @@
             return result.toFixed(6);
         }
     </script>
+    <script>
+        async function handleUpload(event) {
+            event.preventDefault();
+        
+            const maxPhotos = 5;
+            if (selectedFiles.length === 0) {
+                alert("Please select at least one photo.");
+                return false;
+            }
+        
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                formData.append('images', file); // use same name 'images' to match backend
+                const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
+                formData.append(`comment_${index}`, comment);
+            });
+        
+            // Also include any hidden metadata fields
+            document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
+                formData.append(input.name, input.value);
+            });
+        
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            formData.append('csrfmiddlewaretoken', csrfToken);
+        
+            try {
+                document.getElementById('loadingSpinner').classList.remove('hidden');
+        
+                const response = await fetch("", {
+                    method: "POST",
+                    body: formData,
+                });
+        
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert("Upload failed. Try again.");
+                    document.getElementById('loadingSpinner').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Upload failed.");
+                document.getElementById('loadingSpinner').classList.add('hidden');
+            }
+        
+            return false;
+        }
+        </script>
+        
 </body>
 </html>
