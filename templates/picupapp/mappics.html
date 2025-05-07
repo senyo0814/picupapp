@@ -58,6 +58,14 @@
             });
 
             renderMarkers(userPhotos);
+
+            document.getElementById('toggleMine').addEventListener('change', function () {
+                if (this.checked) {
+                    renderMarkers(userPhotos);
+                } else {
+                    renderMarkers([...userPhotos, ...otherPhotos]);
+                }
+            });
         }
 
         function renderMarkers(photos) {
@@ -94,16 +102,6 @@
                 map.fitBounds(bounds);
             }
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('toggleMine').addEventListener('change', function () {
-                if (this.checked) {
-                    renderMarkers(userPhotos);
-                } else {
-                    renderMarkers([...userPhotos, ...otherPhotos]);
-                }
-            });
-        });
     </script>
 
     <script async defer
