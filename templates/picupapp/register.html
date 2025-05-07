@@ -36,8 +36,35 @@
 
         <p class="mt-4 text-sm text-center">
             Already have an account?
-            <a href="{% url 'picupapp:login' %}" class="text-blue-600 hover:underline">Log in</a>
+            <a href="{% url 'picupapp:login' %}" class="spinner-link text-blue-600 hover:underline">Log in</a>
         </p>
     </div>
+    <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+    </div>
+    <script>
+        // Show spinner on page load
+        window.addEventListener('load', () => {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+        });
+    
+        // Show spinner on form submit
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', () => {
+                    document.getElementById('loadingSpinner').classList.remove('hidden');
+                });
+            });
+    
+            // Optionally show spinner on links like map page
+            document.querySelectorAll('a').forEach(link => {
+                if (link.classList.contains('spinner-link')) {
+                    link.addEventListener('click', () => {
+                        document.getElementById('loadingSpinner').classList.remove('hidden');
+                    });
+                }
+            });
+        });
+    </script>
 </body>
 </html>
