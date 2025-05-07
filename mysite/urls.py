@@ -15,8 +15,8 @@ if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # Ensure media files are served in production (e.g., Render)
-urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve, {
-        'document_root': settings.MEDIA_ROOT,
-    }),
-]
+# urlpatterns += [
+#     re_path(r'^media/(?P<path>.*)$', serve, {
+#         'document_root': settings.MEDIA_ROOT,
+#     }),
+# ]

@@ -1,5 +1,8 @@
 from pathlib import Path
 import os  # ✅ Moved to the top
+from dotenv import load_dotenv
+
+load_dotenv()  # Load .env file
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -21,6 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'picupapp',
+    'storages',
 ]
 
 # settings.py
@@ -84,17 +88,24 @@ STATICFILES_DIRS = [
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic only
 
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # restored to BASE_DIR/media
+# Google Cloud Storage settings
+DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+GS_BUCKET_NAME = os.getenv('my-picupapp-media')  # 🔁 replace with your actual bucket name
+
+# Optional: set credential path if not using ADC
+GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
 # Ensure media/uploads exists at startup
-UPLOADS_DIR = os.path.join(MEDIA_ROOT, 'uploads')
-os.makedirs(UPLOADS_DIR, exist_ok=True)
+# UPLOADS_DIR = os.path.join(MEDIA_ROOT, 'uploads')
+# os.makedirs(UPLOADS_DIR, exist_ok=True)
 
 # Optional: Warn if it's not writable
-if not os.access(UPLOADS_DIR, os.W_OK):
-    import logging
-    logging.warning(f"Upload directory {UPLOADS_DIR} is not writable.")
+# if not os.access(UPLOADS_DIR, os.W_OK):
+#     import logging
+#     logging.warning(f"Upload directory {UPLOADS_DIR} is not writable.")
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

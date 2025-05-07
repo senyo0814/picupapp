@@ -3,3 +3,9 @@ gunicorn
 dj-database-url
 psycopg2-binary
 Pillow
+dj-database-url
+django-storages
+google-cloud-storage
+python-dotenv
+
+
