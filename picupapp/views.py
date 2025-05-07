@@ -143,14 +143,18 @@ def landing(request):
                     lat = lon = None
 
                 comment = request.POST.get(f'comment_{idx}', '')
-                PhotoUpload.objects.create(
-                    image=f,
+
+                # ✅ Correct way to trigger `upload_to`
+                photo = PhotoUpload(
                     uploaded_by=request.user,
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date
                 )
+                photo.image = f  # This ensures upload_to=user_directory_path is called
+                photo.save()
+
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
