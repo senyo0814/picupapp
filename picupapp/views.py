@@ -151,6 +151,9 @@ def landing(request):
 
                 comment = request.POST.get(f'comment_{idx}', '')
 
+                # Force override of the default storage
+                default_storage._wrapped = GoogleCloudStorage()
+
                 # ✅ Correct way to trigger `upload_to`
                 photo = PhotoUpload(
                     image = f,  # This ensures upload_to=user_directory_path is called
