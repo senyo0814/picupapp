@@ -201,30 +201,30 @@
         });
         </script>
 
-    <script>
+<script>
     let selectedFiles = [];
-
+    
     function showPreview(files) {
+        selectedFiles = Array.from(files);
+    
         preview.innerHTML = '';
         commentContainer.innerHTML = '';
         metadataBody.innerHTML = '';
         metadataWrapper.style.display = 'none';
-
-        selectedFiles = Array.from(files);
-
+    
         selectedFiles.forEach((file, index) => {
             if (!file.type.startsWith('image/')) return;
-
+    
             const previewReader = new FileReader();
             previewReader.onload = e => {
                 const container = document.createElement('div');
                 container.className = 'relative';
-
+    
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'rounded shadow w-full mb-2';
                 container.appendChild(img);
-
+    
                 const removeBtn = document.createElement('button');
                 removeBtn.innerHTML = '&times;';
                 removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
@@ -234,28 +234,74 @@
                     showPreview(fileInput.files);
                 };
                 container.appendChild(removeBtn);
-
+    
                 preview.appendChild(container);
-
+    
                 const commentInput = document.createElement('div');
                 commentInput.innerHTML = `
-                    <label class="block text-sm font-medium text-gray-700 mt-2">Comment for ${file.name}</label>
+                    <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
                     <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 `;
-                commentContainer.appendChild(commentInput);
+                container.appendChild(commentInput);
             };
-
             previewReader.readAsDataURL(file);
+    
+            const exifReader = new FileReader();
+            exifReader.onload = async e => {
+                try {
+                    const tags = await ExifReader.load(e.target.result);
+                    const date = tags.DateTimeOriginal?.description || 'N/A';
+                    const model = tags.Model?.description || 'N/A';
+                    const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
+                    const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
+                    const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
+                    const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
+    
+                    const lat = getGPSDecimal(latCoord, latRef);
+                    const lon = getGPSDecimal(lonCoord, lonRef);
+    
+                    metadataBody.innerHTML += `
+                        <tr>
+                            <td class="border px-4 py-2">${file.name}</td>
+                            <td class="border px-4 py-2">${date}</td>
+                            <td class="border px-4 py-2">${model}</td>
+                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                            <td class="border px-4 py-2">
+                                ${lat && lon
+                                    ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
+                                    : 'N/A'}
+                            </td>
+                        </tr>
+                    `;
+                    metadataWrapper.style.display = 'block';
+    
+                    // Add hidden input for backend
+                    if (lat !== null && lon !== null) {
+                        const hiddenInputs = document.createElement('div');
+                        hiddenInputs.innerHTML = `
+                            <input type="hidden" name="latitude_${index}" value="${lat}">
+                            <input type="hidden" name="longitude_${index}" value="${lon}">
+                            <input type="hidden" name="photo_taken_${index}" value="${date}">
+                        `;
+                        document.getElementById('upload-form').appendChild(hiddenInputs);
+                    }
+    
+                } catch (err) {
+                    console.warn("EXIF read error:", err);
+                }
+            };
+            exifReader.readAsArrayBuffer(file);
         });
     }
-
-    // Utility: create a new FileList object from an array of Files
+    
     function createFileList(files) {
-        const dataTransfer = new DataTransfer();
-        files.forEach(file => dataTransfer.items.add(file));
-        return dataTransfer.files;
+        const dt = new DataTransfer();
+        files.forEach(file => dt.items.add(file));
+        return dt.files;
     }
     </script>
+    
     <script>
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
