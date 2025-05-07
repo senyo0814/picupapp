@@ -113,6 +113,9 @@
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
     <script>
+        
+    let selectedFiles = [];
+
         // Show spinner on page load
         window.addEventListener('load', () => {
             document.getElementById('loadingSpinner').classList.add('hidden');
@@ -203,8 +206,6 @@
         </script>
 
     <script>
-    let selectedFiles = [];
-
     function showPreview(newFiles) {
         const newArray = Array.from(newFiles);
 
@@ -254,7 +255,7 @@
 
         fileInput.files = createFileList(selectedFiles);
     }
-    
+
     // Utility: create a new FileList object from an array of Files
     function createFileList(files) {
         const dataTransfer = new DataTransfer();
