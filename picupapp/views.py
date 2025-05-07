@@ -108,22 +108,25 @@ def extract_gps_and_datetime(file):
 
 # --- Landing View ---
 
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .models import PhotoUpload
+from .exif_utils import extract_gps_and_datetime
+from datetime import datetime
+import io
+import logging
+
+logger = logging.getLogger(__name__)
+
 @login_required
 def landing(request):
-    from django.conf import settings
-    from django.core.files.storage import default_storage
-    from storages.backends.gcloud import GoogleCloudStorage  # required for isinstance()
-
-    print("[DEBUG] Storage backend in use:", settings.DEFAULT_FILE_STORAGE)
-    print("[DEBUG] Storage is instance of GCS:", isinstance(default_storage, GoogleCloudStorage))
-
     try:
         all_photos = PhotoUpload.objects.order_by('-uploaded_at')
-        valid_photos = [photo for photo in all_photos if photo.image and os.path.exists(photo.image.path)]
+        valid_photos = [photo for photo in all_photos if photo.image]
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
-                import io
                 copy = io.BytesIO(f.read())
                 f.seek(0)
 
@@ -151,19 +154,14 @@ def landing(request):
 
                 comment = request.POST.get(f'comment_{idx}', '')
 
-                # Force override of the default storage
-                default_storage._wrapped = GoogleCloudStorage()
-
-                # ✅ Correct way to trigger `upload_to`
                 photo = PhotoUpload(
-                    image = f,  # This ensures upload_to=user_directory_path is called
+                    image=f,
                     uploaded_by=request.user,
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date
                 )
-                
                 photo.save()
 
             return redirect('picupapp:landing')
