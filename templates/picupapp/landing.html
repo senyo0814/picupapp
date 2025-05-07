@@ -263,12 +263,10 @@
 
             let result = d + m / 60.0 + s / 3600.0;
 
-            // ✅ Normalize and debug refTag
             const ref = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim().toUpperCase();
             console.log('Longitude refTag:', refTag, '| Normalized ref:', ref);
 
-            // ✅ Use includes instead of equality to handle "West longitude", etc.
-            if (ref.includes('S') || ref.includes('W')) result *= -1;
+            if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
         }
