@@ -6,8 +6,7 @@ import logging
 from datetime import datetime
 
 def user_directory_path(instance, filename):
-    # Organize uploads like: user_5/2025-05-07/photo.jpg
-    date_str = datetime.now().date().isoformat()
+    date_str = datetime.now().strftime("%Y-%m-%d")
     return f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
 
 class PhotoUpload(models.Model):
