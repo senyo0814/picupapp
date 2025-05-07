@@ -7,8 +7,7 @@ from datetime import datetime
 
 def user_directory_path(instance, filename):
     # Organize uploads like: user_5/2025-05-07/photo.jpg
-    date_str = datetime.now().date().isoformat()
-    return f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
+    return f'user_{instance.uploaded_by.id}/{instance.uploaded_at.date()}/{filename}'
 
 class PhotoUpload(models.Model):
     image = models.ImageField(upload_to=user_directory_path)
