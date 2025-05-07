@@ -121,18 +121,6 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def landing(request):
-
-    from django.conf import settings
-    from django.core.files.storage import default_storage
-    from storages.backends.gcloud import GoogleCloudStorage  # required for isinstance()
-
-    # Patch default storage to GCS if not set properly
-    if not isinstance(default_storage, GoogleCloudStorage):
-        default_storage._wrapped = GoogleCloudStorage()
-
-    print("[DEBUG] Storage backend in use:", settings.DEFAULT_FILE_STORAGE)
-    print("[DEBUG] Storage is instance of GCS:", isinstance(default_storage, GoogleCloudStorage))
-    
     try:
         all_photos = PhotoUpload.objects.order_by('-uploaded_at')
         valid_photos = [photo for photo in all_photos if photo.image]
