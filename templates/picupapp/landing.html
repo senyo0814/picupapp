@@ -25,6 +25,9 @@
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
             <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+
+            <p id="file-count" class="text-sm text-gray-600 mt-2">0 of 5 selected</p>
+
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
@@ -114,7 +117,9 @@
     </div>
     <script>
         
-    let selectedFiles = [];
+        let selectedFiles = [];
+        const MAX_FILES = 5;
+
 
         // Show spinner on page load
         window.addEventListener('load', () => {
@@ -209,7 +214,12 @@
     function showPreview(newFiles) {
         const newArray = Array.from(newFiles);
 
-        // Combine with existing ones
+        // Enforce limit
+        if (selectedFiles.length + newArray.length > MAX_FILES) {
+            alert(`You can only upload up to ${MAX_FILES} images.`);
+            return;
+        }
+
         selectedFiles = selectedFiles.concat(newArray);
 
         preview.innerHTML = '';
@@ -236,7 +246,7 @@
                 removeBtn.onclick = () => {
                     selectedFiles.splice(index, 1);
                     fileInput.files = createFileList(selectedFiles);
-                    showPreview([]);  // refresh view without replacing again
+                    showPreview([]); // refresh
                 };
                 container.appendChild(removeBtn);
 
@@ -253,6 +263,10 @@
             reader.readAsDataURL(file);
         });
 
+        // Update file count display
+        document.getElementById('file-count').innerText = `${selectedFiles.length} of ${MAX_FILES} selected`;
+
+        // Reset native file input to reflect selectedFiles
         fileInput.files = createFileList(selectedFiles);
     }
 
