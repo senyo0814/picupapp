@@ -25,6 +25,10 @@
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
             <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+
+            <p id="photoCount" class="text-sm text-gray-600 mt-2 text-center">0 of 5 photos selected</p>
+
+        
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
@@ -201,51 +205,61 @@
         });
         </script>
 
-<script>
-    let selectedFiles = [];
-    
+    <script>
+        let selectedFiles = [];
+
     function showPreview(files) {
-        selectedFiles = Array.from(files);
-    
+        const maxPhotos = 5;
+
+        const newFiles = Array.from(files);
+        const combined = [...selectedFiles, ...newFiles];
+
+        if (combined.length > maxPhotos) {
+            alert(`You can upload a maximum of ${maxPhotos} photos.`);
+            return;
+        }
+
+        selectedFiles = combined;
+
         preview.innerHTML = '';
         commentContainer.innerHTML = '';
         metadataBody.innerHTML = '';
         metadataWrapper.style.display = 'none';
-    
+
         selectedFiles.forEach((file, index) => {
             if (!file.type.startsWith('image/')) return;
-    
+
             const previewReader = new FileReader();
             previewReader.onload = e => {
                 const container = document.createElement('div');
                 container.className = 'relative';
-    
+
                 const img = document.createElement('img');
                 img.src = e.target.result;
                 img.className = 'rounded shadow w-full mb-2';
                 container.appendChild(img);
-    
+
                 const removeBtn = document.createElement('button');
                 removeBtn.innerHTML = '&times;';
                 removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
                 removeBtn.onclick = () => {
                     selectedFiles.splice(index, 1);
                     fileInput.files = createFileList(selectedFiles);
-                    showPreview(fileInput.files);
+                    showPreview([]);
                 };
                 container.appendChild(removeBtn);
-    
-                preview.appendChild(container);
-    
+
                 const commentInput = document.createElement('div');
                 commentInput.innerHTML = `
                     <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
                     <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                 `;
                 container.appendChild(commentInput);
+
+                preview.appendChild(container);
             };
             previewReader.readAsDataURL(file);
-    
+
             const exifReader = new FileReader();
             exifReader.onload = async e => {
                 try {
@@ -256,10 +270,10 @@
                     const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
                     const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
                     const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
-    
+
                     const lat = getGPSDecimal(latCoord, latRef);
                     const lon = getGPSDecimal(lonCoord, lonRef);
-    
+
                     metadataBody.innerHTML += `
                         <tr>
                             <td class="border px-4 py-2">${file.name}</td>
@@ -275,8 +289,7 @@
                         </tr>
                     `;
                     metadataWrapper.style.display = 'block';
-    
-                    // Add hidden input for backend
+
                     if (lat !== null && lon !== null) {
                         const hiddenInputs = document.createElement('div');
                         hiddenInputs.innerHTML = `
@@ -286,14 +299,18 @@
                         `;
                         document.getElementById('upload-form').appendChild(hiddenInputs);
                     }
-    
+
                 } catch (err) {
                     console.warn("EXIF read error:", err);
                 }
             };
             exifReader.readAsArrayBuffer(file);
         });
+
+        // Update count display
+        document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
     }
+
     
     function createFileList(files) {
         const dt = new DataTransfer();
