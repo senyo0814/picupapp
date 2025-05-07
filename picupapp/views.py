@@ -154,14 +154,20 @@ def landing(request):
 
                 comment = request.POST.get(f'comment_{idx}', '')
 
+                from django.core.files.base import ContentFile
+
+                # Instead of assigning `image=f` directly
                 photo = PhotoUpload(
-                    image=f,
                     uploaded_by=request.user,
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date
                 )
+
+                # Explicitly save the file to trigger `upload_to=user_directory_path`
+                photo.image.save(f.name, ContentFile(f.read()), save=False)
+
                 photo.save()
 
             return redirect('picupapp:landing')
