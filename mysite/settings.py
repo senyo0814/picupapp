@@ -94,7 +94,7 @@ GS_BUCKET_NAME = os.getenv('my-picupapp-media')  # 🔁 replace with your actual
 
 # Optional: set credential path if not using ADC
 GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
