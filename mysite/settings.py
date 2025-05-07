@@ -1,21 +1,17 @@
 from pathlib import Path
-import os  # ✅ Moved to the top
+import os
+import json
 from dotenv import load_dotenv
+from google.oauth2 import service_account
 
-load_dotenv()  # Load .env file
+load_dotenv()
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-v_3dyhn@1+08$&x7u#h#%k#&+jodm$(*gqupq2l0hks_ty9qwm')
-
-# SECURITY WARNING: don't run with debug turned on in production!
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-key')
 DEBUG = os.getenv('DJANGO_DEBUG', 'True') == 'True'
-
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 
-# Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -27,7 +23,6 @@ INSTALLED_APPS = [
     'storages',
 ]
 
-# settings.py
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/landing/'
 
@@ -62,11 +57,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
 import dj_database_url
-
 DATABASES = {
     'default': dj_database_url.config(conn_max_age=600, default='sqlite:///db.sqlite3')
 }
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -81,45 +74,27 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')  # <-- points to your /static folder with img/logo.png
-]
-
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic only
-
-# Google Cloud Storage settings
+# Google Cloud Storage
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
+GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME', 'mypicupapp-photos')
 
-# Use the secret file Render mounts at runtime
 GS_CREDENTIALS = None
-if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
-    from google.oauth2 import service_account
-    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
-        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'):
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_info(
+        json.loads(os.getenv('GOOGLE_APPLICATION_CREDENTIALS_JSON'))
     )
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
-# Ensure media/uploads exists at startup
-# UPLOADS_DIR = os.path.join(MEDIA_ROOT, 'uploads')
-# os.makedirs(UPLOADS_DIR, exist_ok=True)
-
-# Optional: Warn if it's not writable
-# if not os.access(UPLOADS_DIR, os.W_OK):
-#     import logging
-#     logging.warning(f"Upload directory {UPLOADS_DIR} is not writable.")
-
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# CSRF settings for both dev & prod
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://localhost").split(",")
-
 CSRF_ALLOWED_ORIGIN_REGEXES = [
-    r"^https://8080-.*\.cloudshell\.dev$",
-    r"^https://8080-.*\.webshell\.dev$",
+    r"^https://8080-.*\\.cloudshell\\.dev$",
+    r"^https://8080-.*\\.webshell\\.dev$",
 ]
 
 if not DEBUG:
@@ -131,33 +106,15 @@ else:
     SESSION_COOKIE_SECURE = False
     CSRF_COOKIE_SECURE = False
 
-
-# ✅ Logging configuration
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
+        'verbose': {'format': '{levelname} {asctime} {module} {message}', 'style': '{'},
+        'simple': {'format': '{levelname} {message}', 'style': '{'},
     },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        # Optional file handler
-        # 'file': {
-        #     'level': 'INFO',
-        #     'class': 'logging.FileHandler',
-        #     'filename': BASE_DIR / 'django.log',
-        #     'formatter': 'verbose',
-        # },
+        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
     },
     'root': {
         'handlers': ['console'],
@@ -171,4 +128,3 @@ LOGGING = {
         },
     },
 }
-
