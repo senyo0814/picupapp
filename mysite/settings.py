@@ -90,7 +90,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic onl
 
 # Google Cloud Storage settings
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
-GS_BUCKET_NAME = os.getenv('my-picupapp-media')  # 🔁 replace with your actual bucket name
+GS_BUCKET_NAME = 'my-picupapp-media'  # 🔁 replace with your actual bucket name
 
 # Use the secret file Render mounts at runtime
 GS_CREDENTIALS = None
