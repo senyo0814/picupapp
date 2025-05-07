@@ -25,9 +25,6 @@
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
             <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
-
-            <p id="file-count" class="text-sm text-gray-600 mt-2">0 of 5 selected</p>
-
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
@@ -116,11 +113,6 @@
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
     <script>
-        
-        let selectedFiles = [];
-    const MAX_FILES = 5;
-
-
         // Show spinner on page load
         window.addEventListener('load', () => {
             document.getElementById('loadingSpinner').classList.add('hidden');
@@ -211,22 +203,21 @@
         </script>
 
     <script>
-    function showPreview(newFiles) {
-        const newArray = Array.from(newFiles);
+    let selectedFiles = [];
 
-        // Combine with existing ones
-        selectedFiles = selectedFiles.concat(newArray);
-
+    function showPreview(files) {
         preview.innerHTML = '';
         commentContainer.innerHTML = '';
         metadataBody.innerHTML = '';
         metadataWrapper.style.display = 'none';
 
+        selectedFiles = Array.from(files);
+
         selectedFiles.forEach((file, index) => {
             if (!file.type.startsWith('image/')) return;
 
-            const reader = new FileReader();
-            reader.onload = e => {
+            const previewReader = new FileReader();
+            previewReader.onload = e => {
                 const container = document.createElement('div');
                 container.className = 'relative';
 
@@ -241,7 +232,7 @@
                 removeBtn.onclick = () => {
                     selectedFiles.splice(index, 1);
                     fileInput.files = createFileList(selectedFiles);
-                    showPreview([]);  // refresh view without replacing again
+                    showPreview(fileInput.files);
                 };
                 container.appendChild(removeBtn);
 
@@ -255,10 +246,8 @@
                 commentContainer.appendChild(commentInput);
             };
 
-            reader.readAsDataURL(file);
+            previewReader.readAsDataURL(file);
         });
-
-        fileInput.files = createFileList(selectedFiles);
     }
 
     // Utility: create a new FileList object from an array of Files
