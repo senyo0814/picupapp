@@ -13,5 +13,5 @@ urlpatterns = [
     path('mappics/', views.map_pics_view, name='mappics'),
     path('check-media/', views.check_media_access, name='check_media'),
     path('metadata/', views.metadata_table_view, name='metadata_table'),
-
+    path('update-comment/', views.update_comment, name='update_comment'),
 ]

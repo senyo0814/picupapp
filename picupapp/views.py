@@ -251,3 +251,20 @@ def metadata_table_view(request):
     return render(request, 'picupapp/metadata_table.html', {
         'photos': photos
     })
+
+    from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@login_required
+def update_comment(request):
+    if request.method == 'POST':
+        photo_id = request.POST.get('photo_id')
+        new_comment = request.POST.get('comment')
+        try:
+            photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
+            photo.comment = new_comment
+            photo.save()
+            return redirect('picupapp:landing')  # or return JsonResponse if using AJAX
+        except PhotoUpload.DoesNotExist:
+            return HttpResponse("Unauthorized", status=403)
+

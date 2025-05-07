@@ -66,7 +66,8 @@
             {% for photo in photos %}
                 {% if photo.image %}
                     <div class="bg-white rounded shadow p-2">
-                        <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}')" class="w-full">
+                        <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}', '{{ photo.id }}')" class="w-full">
+
                             <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                         </button>
                         <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
@@ -93,7 +94,14 @@
             <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
             <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
             <div class="text-sm space-y-1">
-                <p><strong>Comment:</strong> <span id="modalComment"></span></p>
+                <form method="POST" action="/update-comment/" id="commentForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="photo_id" id="modalPhotoId">
+                    <label for="modalComment" class="block font-semibold">Comment:</label>
+                    <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
+                </form>
+                
                 <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
                 <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
                 <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
@@ -103,13 +111,14 @@
     </div>
 
     <script>
-        function showExifModal(url, comment, uploaded, taken, lat, lon) {
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId) {
             document.getElementById('modalImage').src = url;
             document.getElementById('modalComment').innerText = comment;
             document.getElementById('modalUploaded').innerText = uploaded;
             document.getElementById('modalTaken').innerText = taken;
             document.getElementById('modalLat').innerText = lat || "N/A";
             document.getElementById('modalLon').innerText = lon || "N/A";
+            document.getElementById('modalPhotoId').value = photoId;
     
             // Remove previous map link if it exists
             const previousMapLink = document.getElementById('modalMapLink');
