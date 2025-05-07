@@ -67,7 +67,7 @@
                 {% if photo.image %}
                     <div class="bg-white rounded shadow p-2">
                         <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}')" class="w-full">
-                            <img src="{{ photo.image.url }}?v={{ photo.uploaded_at.timestamp }}" alt="Photo" class="rounded w-full" />
+                            <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                         </button>
                         <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
                         {% if photo.comment %}
