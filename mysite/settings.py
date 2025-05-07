@@ -78,7 +78,6 @@ STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Google Cloud Storage
-DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 GS_BUCKET_NAME = os.getenv('GS_BUCKET_NAME')
 
 GS_CREDENTIALS = None
@@ -86,6 +85,8 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
     GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
         os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     )
+
+DEFAULT_FILE_STORAGE = 'picupapp.storage_backends.CustomGoogleCloudStorage'
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
