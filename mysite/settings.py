@@ -92,9 +92,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # <-- for collectstatic onl
 DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
 GS_BUCKET_NAME = os.getenv('my-picupapp-media')  # 🔁 replace with your actual bucket name
 
-# Optional: set credential path if not using ADC
-GOOGLE_APPLICATION_CREDENTIALS = os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
-# os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = GOOGLE_APPLICATION_CREDENTIALS
+# Use the secret file Render mounts at runtime
+GS_CREDENTIALS = None
+if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
+    from google.oauth2 import service_account
+    GS_CREDENTIALS = service_account.Credentials.from_service_account_file(
+        os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
+    )
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
