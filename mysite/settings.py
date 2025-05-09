@@ -88,7 +88,7 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
 
 DEFAULT_FILE_STORAGE = 'picupapp.storage_backends.PublicGoogleCloudStorage'
 
-MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/user_{instance.uploaded_by.id}/{date_str}/{filename}'
+MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
