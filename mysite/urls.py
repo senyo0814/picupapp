@@ -10,7 +10,7 @@ urlpatterns = [
     path('', include(('picupapp.urls', 'picupapp'), namespace='picupapp')),
     path('change-password/', auth_views.PasswordChangeView.as_view(
         template_name='registration/change_password.html',
-        success_url='/change-password-done/'
+        success_url=reverse_lazy('password_change_done')
     ), name='change_password'),
 
     path('change-password-done/', auth_views.PasswordChangeDoneView.as_view(
