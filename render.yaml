@@ -17,13 +17,13 @@ services:
           name: picupapp-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: "picupapp.onrender.com,.mypicupapp.com,127.0.0.1,127.0.0.1:8080,localhost:8080,localhost,mypicupapp-270799429435.us-west1.run.app,mypicupapp.com,www.mypicupapp.com"
+        value: "picupapp.onrender.com,.mypicupapp.com,127.0.0.1,localhost,mypicupapp.com,www.mypicupapp.com"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com,https://mypicupapp-270799429435.us-west1.run.app"
-    disk:
-      name: media-disk
-      mountPath: /media
-      sizeGB: 1
+        value: "https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com"
+      - key: GS_BUCKET_NAME
+        value: mypicupapp-photos
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: picupapp-f9caf3715baf.json
 
   - type: static
     name: picupapp-static
