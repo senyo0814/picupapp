@@ -14,7 +14,5 @@ class PublicGoogleCloudStorage(GoogleCloudStorage):
         super().__init__(*args, bucket_name=bucket_name, credentials=credentials)
 
     def _save(self, name, content):
-        name = super()._save(name, content)
-        blob = self.bucket.blob(name)
-        blob.acl.save_predefined("publicRead")  # <-- 👈 This makes it publicly accessible
-        return name
+        # Save file using default GCS backend behavior
+        return super()._save(name, content)
