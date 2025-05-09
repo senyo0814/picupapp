@@ -6,8 +6,20 @@ import logging
 from datetime import datetime
 from picupapp.storage_backends import PublicGoogleCloudStorage
 
+from .exif_utils import extract_gps_and_datetime  # already in your imports
+
 def user_directory_path(instance, filename):
-    date_str = datetime.now().date().isoformat()
+    # Try to extract date from image EXIF
+    try:
+        _, _, photo_date = extract_gps_and_datetime(instance.image)
+        if photo_date:
+            date_str = photo_date.date().isoformat()
+        else:
+            date_str = datetime.now().date().isoformat()
+    except Exception as e:
+        logging.warning(f"[WARN] EXIF extraction failed: {e}")
+        date_str = datetime.now().date().isoformat()
+
     path = f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
     logging.info(f"[DEBUG] Computed upload path: {path}")
     return path
