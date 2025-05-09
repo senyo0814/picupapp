@@ -13,6 +13,7 @@ google-crc32c==1.7.1
 google-resumable-media==2.7.2
 googleapis-common-protos==1.70.0
 idna==3.10
+pillow==11.2.1
 proto-plus==1.26.1
 protobuf==6.30.2
 psycopg2-binary==2.9.10
