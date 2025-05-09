@@ -267,3 +267,21 @@ def update_comment(request):
         except PhotoUpload.DoesNotExist:
             return HttpResponse("Unauthorized", status=403)
 
+@login_required
+def photo_map_view(request):
+    user = request.user
+
+    # Get all users who have shared photos with this user or made them public
+    visible_photos = PhotoUpload.objects.filter(
+        models.Q(is_public=True) |
+        models.Q(shared_with=user)
+    )
+
+    shared_users = User.objects.filter(id__in=visible_photos.values_list('uploaded_by', flat=True).distinct())
+
+    context = {
+        'shared_users': shared_users,
+        'current_user': user,
+    }
+    return render(request, 'picupapp/mappics.html', context)
+

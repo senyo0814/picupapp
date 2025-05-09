@@ -36,6 +36,9 @@ class PhotoUpload(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     photo_taken_date = models.DateTimeField(null=True, blank=True)
 
+    shared_with = models.ManyToManyField(User, blank=True, related_name='shared_photos')
+    is_public = models.BooleanField(default=False)
+
     def __str__(self):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
 

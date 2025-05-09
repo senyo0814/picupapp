@@ -41,11 +41,11 @@
     </div>
 
     <div class="mb-4">
-        <label for="userFilter">Filter by User:</label>
-        <select id="userFilter" class="ml-2 border rounded px-2 py-1">
-            <option value="ALL">All Users</option>
-            {% for user in all_usernames %}
-                <option value="{{ user }}">{{ user }}</option>
+        <label for="userFilter" class="font-medium mr-2">Filter by User:</label>
+        <select id="userFilter" class="border rounded px-2 py-1">
+            <option value="all">All Users</option>
+            {% for shared_user in shared_users %}
+            <option value="{{ shared_user.id }}">{{ shared_user.username }}</option>
             {% endfor %}
         </select>
     </div>
