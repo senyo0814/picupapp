@@ -3,6 +3,7 @@ import os
 import json
 from dotenv import load_dotenv
 from google.oauth2 import service_account
+import dj_database_url
 
 load_dotenv()
 
@@ -58,7 +59,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 
 import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(conn_max_age=600, default='sqlite:///db.sqlite3')
+    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
 }
 
 AUTH_PASSWORD_VALIDATORS = [
