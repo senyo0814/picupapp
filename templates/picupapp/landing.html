@@ -20,6 +20,15 @@
         </div>
 
         <h1 class="text-xl font-bold mb-4 text-center">Welcome, {{ username }}!</h1>
+        
+        {% if user.is_authenticated %}
+        <div class="text-center mt-4">
+            <a href="{% url 'change_password' %}" class="text-sm text-blue-600 hover:underline">
+                Change your password
+            </a>
+        </div>
+        {% endif %}
+
 
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
@@ -28,7 +37,7 @@
 
             <p id="photoCount" class="text-sm text-gray-600 mt-2 text-center">0 of 5 photos selected</p>
 
-        
+
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
@@ -68,26 +77,26 @@
         <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {% for photo in photos %}
-                {% if photo.image %}
-                    <div class="bg-white rounded shadow p-2">
-                        <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}', '{{ photo.id }}')" class="spinner-link w-full">
+            {% if photo.image %}
+            <div class="bg-white rounded shadow p-2">
+                <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}', '{{ photo.id }}')" class="spinner-link w-full">
 
-                            <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
-                        </button>
-                        <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
-                        {% if photo.comment %}
-                            <p class="text-sm mt-1 text-gray-700 italic">"{{ photo.comment }}"</p>
-                        {% endif %}
-                        {% if photo.uploaded_by == request.user %}
-                        <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
-                            {% csrf_token %}
-                            <button type="submit" class="spinner-link text-red-600 text-sm hover:underline">Delete</button>
-                        </form>
-                        {% endif %}
-                    </div>
+                    <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
+                </button>
+                <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
+                {% if photo.comment %}
+                <p class="text-sm mt-1 text-gray-700 italic">"{{ photo.comment }}"</p>
                 {% endif %}
+                {% if photo.uploaded_by == request.user %}
+                <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
+                    {% csrf_token %}
+                    <button type="submit" class="spinner-link text-red-600 text-sm hover:underline">Delete</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endif %}
             {% empty %}
-                <p>No photos yet.</p>
+            <p>No photos yet.</p>
             {% endfor %}
         </div>
     </div>
