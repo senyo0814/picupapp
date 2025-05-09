@@ -86,7 +86,7 @@ if os.getenv('GOOGLE_APPLICATION_CREDENTIALS'):
         os.getenv('GOOGLE_APPLICATION_CREDENTIALS')
     )
 
-DEFAULT_FILE_STORAGE = 'picupapp.storage_backends.CustomGoogleCloudStorage'
+DEFAULT_FILE_STORAGE = 'mysite.storage_backends.PublicGoogleCloudStorage'
 
 MEDIA_URL = f'https://storage.googleapis.com/{GS_BUCKET_NAME}/'
 
