@@ -4,7 +4,7 @@ from PIL import Image
 from .exif_utils import extract_gps_and_datetime
 import logging
 from datetime import datetime
-from picupapp.storage_backends import CustomGoogleCloudStorage
+from picupapp.storage_backends import PublicGoogleCloudStorage
 
 def user_directory_path(instance, filename):
     date_str = datetime.now().date().isoformat()
@@ -15,7 +15,7 @@ def user_directory_path(instance, filename):
 class PhotoUpload(models.Model):
     image = models.ImageField(
         upload_to=user_directory_path,
-        storage=CustomGoogleCloudStorage()  # 👈 explicitly set storage backend
+        storage=PublicGoogleCloudStorage()  # 👈 explicitly set storage backend
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
