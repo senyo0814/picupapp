@@ -2,3 +2,6 @@ picupapp-f9caf3715baf.json
 *.json
 .env
 .env
+db.sqlite3
+data/db.sqlite3
+
