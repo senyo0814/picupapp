@@ -57,9 +57,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
-import dj_database_url
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': dj_database_url.config(
+        default='sqlite:///db.sqlite3'  # fallback if DATABASE_URL is not set
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
