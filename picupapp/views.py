@@ -202,8 +202,8 @@ def photo_map_view(request):
         'other_photos': serialize_photos(other_photos),
     })
 
-@user_passes_test(lambda u: u.is_staff)
 @login_required
+@user_passes_test(lambda u: u.is_staff)
 def map_pics_view(request):
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
@@ -226,4 +226,5 @@ def serialize_photos(qs):
             "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
         } for p in qs
     ]
+
 
