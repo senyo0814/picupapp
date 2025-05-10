@@ -4,6 +4,8 @@
 <head>
     <title>Landing</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-2nKwI1gHx7N3a8MJPHF8oM0JbnA1qvhkZMKxZbgIOrGS0IdK3qNrdvIuMgNkkP28K5CBvWmWzMK/1U2lJ3XfZw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/img/logo192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -125,18 +127,12 @@
                     {% csrf_token %}
                     <button type="submit" class="spinner-link text-red-600 text-sm hover:underline">Delete</button>
                 </form>
+                {% endif %}             
+                {% if photo.is_public %}
+                <i class="fas fa-users"></i> Public
+                {% else %}
+                <i class="fas fa-lock"></i> Private
                 {% endif %}
-                <!-- Include icon display logic for each photo in the template -->
-                <!-- Below each photo rendering block -->
-                {% for photo in photos %}
-                <div class="text-xs text-gray-500 mt-1">
-                    {% if photo.is_public %}
-                    <i class="fas fa-users"></i> Public
-                    {% else %}
-                    <i class="fas fa-lock"></i> Private
-                    {% endif %}
-                </div>
-                {% endfor %}
             </div>
             {% endif %}
             {% empty %}
