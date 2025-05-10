@@ -1,27 +1,29 @@
 {% extends 'picupapp/base.html' %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <div class="mb-4 flex flex-wrap items-center gap-4 justify-between">
     <div class="flex items-center gap-3 flex-wrap">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span class="text-2xl sm:text-base">📍</span> <span class="hidden sm:inline">Photo Map</span>
+            <i class="fas fa-map-marker-alt text-2xl sm:text-base"></i> <span class="hidden sm:inline">Photo Map</span>
         </h2>
         <a href="{% url 'picupapp:landing' %}"
            class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-2 rounded shadow transition">
-            <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1">🏠</span>
+            <i class="fas fa-home sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1"></i>
             <span class="hidden sm:inline">← Back to Landing</span>
         </a>
         <div class="flex items-center gap-2">
             <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
             <label for="toggleMine" class="text-sm text-gray-700 dark:text-gray-200">
                 <span class="hidden sm:inline">Show Only My Photos (<strong class="text-black dark:text-white">{{ username }}</strong>)</span>
-                <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Show Only My Photos">👤</span>
+                <i class="fas fa-user sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Show Only My Photos"></i>
             </label>
         </div>
         <div class="flex items-center gap-2">
             <label for="darkModeToggle" class="text-sm text-gray-700 dark:text-gray-200">
                 <span class="hidden sm:inline">Dark Mode</span>
-                <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Dark Mode">🌙</span>
+                <i class="fas fa-moon sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Dark Mode"></i>
             </label>
             <input type="checkbox" id="darkModeToggle" class="accent-blue-600 h-4 w-4" />
         </div>
@@ -187,11 +189,16 @@
 <script>
     // Enable toggle for dark mode manually with storage
     const darkToggle = document.getElementById('darkModeToggle');
-    const prefersDark = localStorage.getItem('theme') === 'dark';
+    const prefersDark = localStorage.getItem('theme') === 'dark' ||
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
     if (prefersDark) {
         document.documentElement.classList.add('dark');
         darkToggle.checked = true;
+    } else {
+        document.documentElement.classList.remove('dark');
     }
+
     darkToggle.addEventListener('change', () => {
         const isDark = darkToggle.checked;
         document.documentElement.classList.toggle('dark', isDark);
