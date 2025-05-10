@@ -56,18 +56,17 @@
                 document.getElementById('userFilter').value = "{{ username }}";
                 renderMarkers(userPhotos);
             } else {
-                document.getElementById('userFilter').value = "ALL";
+                document.getElementById('userFilter').value = "all";
                 renderMarkers(allPhotos);
             }
         });
 
         document.getElementById('userFilter').addEventListener('change', function () {
             const selectedUser = this.value;
-            if (selectedUser === 'all') {
-                renderMarkers(allPhotos);
+            if (selectedUser === "{{ username }}") {
+                document.getElementById('toggleMine').checked = true;
             } else {
-                const filtered = allPhotos.filter(p => p.user === selectedUser);
-                renderMarkers(filtered);
+                document.getElementById('toggleMine').checked = false;
             }
         });
     }
