@@ -162,7 +162,6 @@
             </div>
         </div>
     </div>
-    </div>
 
     <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
@@ -202,13 +201,11 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalVisibility').value = visibility;
 
-            // Reset selected options
             const sharedSelect = document.getElementById('modalSharedSelect');
             Array.from(sharedSelect.options).forEach(opt => {
                 opt.selected = sharedWith.includes(opt.textContent);
             });
 
-            // Remove and add map link
             const previousMapLink = document.getElementById('modalMapLink');
             if (previousMapLink) previousMapLink.remove();
 
@@ -222,9 +219,13 @@
                 document.getElementById('modalLon').parentNode.appendChild(mapLink);
             }
 
-            // Show modal
             document.getElementById('exifModal').classList.remove('hidden');
             document.getElementById('exifModal').classList.add('flex');
+        }
+
+        function closeExifModal() {
+            document.getElementById('exifModal').classList.remove('flex');
+            document.getElementById('exifModal').classList.add('hidden');
         }
     </script>
     <script>
@@ -300,9 +301,9 @@
 
                     const commentInput = document.createElement('div');
                     commentInput.innerHTML = `
-                                                                    <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
-                                                                    <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                                                                `;
+                                                                            <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
+                                                                            <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                                                                        `;
                     container.appendChild(commentInput);
 
                     preview.appendChild(container);
@@ -324,28 +325,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                        <tr>
-                                                                            <td class="border px-4 py-2">${file.name}</td>
-                                                                            <td class="border px-4 py-2">${date}</td>
-                                                                            <td class="border px-4 py-2">${model}</td>
-                                                                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                            <td class="border px-4 py-2">
-                                                                                ${lat && lon
+                                                                                <tr>
+                                                                                    <td class="border px-4 py-2">${file.name}</td>
+                                                                                    <td class="border px-4 py-2">${date}</td>
+                                                                                    <td class="border px-4 py-2">${model}</td>
+                                                                                    <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                    <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                    <td class="border px-4 py-2">
+                                                                                        ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                                                            </td>
-                                                                        </tr>
-                                                                    `;
+                                                                                    </td>
+                                                                                </tr>
+                                                                            `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                            <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                            <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                            <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                        `;
+                                                                                    <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                    <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                    <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
