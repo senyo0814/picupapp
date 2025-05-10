@@ -31,11 +31,12 @@
         <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">Legend</h3>
         <ul id="legendList" class="space-y-1 max-h-60 overflow-y-auto pr-1">
             <li>
-                <label class="flex items-center gap-2 text-gray-700 dark:text-gray-200">
-                    <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
+                <label for="legend-select-all" class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                    <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="accent-blue-600" />
                     <span>Select All</span>
                 </label>
             </li>
+
         </ul>
     </div>
 </div>
@@ -70,10 +71,9 @@
         renderMarkers();
 
         document.querySelector('input[name="legendFilter"][value="all"]').addEventListener('change', () => {
-            if (document.querySelector('input[name="legendFilter"][value="all"]').checked) {
-                activeUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-                renderMarkers();
-            }
+            const users = allPhotos.map(p => p.user || 'Unknown');
+            activeUsers = new Set(users);
+            renderMarkers();
         });
     }
 
@@ -172,9 +172,21 @@
                 } else {
                     activeUsers.add(user);
                 }
+
+                // ✅ auto-uncheck Select All when manually toggling
+                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
+                // After assigning activeUsers
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                document.querySelector('input[name="legendFilter"][value="all"]').checked =
+                    allUsers.size === activeUsers.size &&
+                    [...allUsers].every(u => activeUsers.has(u));
+
+
                 renderMarkers();
             });
         });
+
     }
 </script>
 
