@@ -238,11 +238,15 @@
             const metadataBody = document.getElementById('metadataBody') || document.getElementById('metadata-body');
             const photoCount = document.getElementById('photoCount');
 
-            // Create and insert counter badge
-            let counterBadge = document.createElement('span');
-            counterBadge.id = 'photoCounterBadge';
-            counterBadge.className = 'inline-block bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2';
-            photoCount.parentNode.insertBefore(counterBadge, photoCount.nextSibling);
+            // Counter badge creation (once)
+            let counterBadge = document.getElementById('photoCounterBadge');
+            if (!counterBadge) {
+                counterBadge = document.createElement('span');
+                counterBadge.id = 'photoCounterBadge';
+                counterBadge.className = 'inline-block bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2';
+                counterBadge.textContent = '0/5';
+                photoCount?.parentNode?.insertBefore(counterBadge, photoCount.nextSibling);
+            }
 
             let selectedFiles = [];
 
@@ -278,7 +282,7 @@
                 preview.innerHTML = '';
                 commentContainer.innerHTML = '';
                 metadataBody.innerHTML = '';
-                metadataWrapper.style.display = 'none';
+                if (metadataWrapper) metadataWrapper.style.display = 'none';
 
                 const dt = new DataTransfer();
 
@@ -291,14 +295,12 @@
                     previewReader.onload = e => {
                         const container = document.createElement('div');
                         container.className = 'relative';
-
                         container.innerHTML = `
                             <img src="${e.target.result}" class="rounded shadow w-full mb-2" />
                             <button type="button" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs" onclick="removeFile(${index})">&times;</button>
                             <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
                             <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                         `;
-
                         preview.appendChild(container);
                     };
                     previewReader.readAsDataURL(file);
@@ -335,7 +337,7 @@
                                 document.getElementById('upload-form').appendChild(hiddenInputs);
                             }
 
-                            metadataWrapper.style.display = 'block';
+                            if (metadataWrapper) metadataWrapper.style.display = 'block';
 
                         } catch (err) {
                             console.warn("EXIF read error:", err);
@@ -345,10 +347,8 @@
                 });
 
                 fileInput.files = dt.files;
-                if (photoCount) {
-                    photoCount.textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
-                    document.getElementById('photoCounterBadge').textContent = `${selectedFiles.length}/5`;
-                }
+                photoCount.textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
+                document.getElementById('photoCounterBadge').textContent = `${selectedFiles.length}/5`;
             }
 
             window.removeFile = function (index) {
@@ -384,6 +384,7 @@
             }
         });
     </script>
+
 
     <script>
         async function handleUpload(event) {
