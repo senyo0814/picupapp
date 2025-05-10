@@ -17,7 +17,6 @@
     <label for="toggleMine" class="text-sm text-gray-700">
         Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
     </label>
-    <button id="selectAllUsers" class="ml-4 text-sm bg-gray-100 border px-2 py-1 rounded hover:bg-gray-200 text-gray-800">Select All</button>
 </div>
 
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300">
@@ -26,7 +25,14 @@
     <div id="legend"
          class="absolute top-14 right-2 p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs z-10">
         <h3 class="font-semibold mb-2">Legend</h3>
-        <ul id="legendList" class="space-y-1"></ul>
+        <ul id="legendList" class="space-y-1">
+            <li>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
+                    <span>Select All</span>
+                </label>
+            </li>
+        </ul>
     </div>
 </div>
 
@@ -63,11 +69,12 @@
             renderMarkers();
         });
 
-        document.getElementById('selectAllUsers').addEventListener('click', () => {
-            const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-            activeUsers = allUsers;
-            document.getElementById('toggleMine').checked = false;
-            renderMarkers();
+        document.querySelector('input[name="legendFilter"][value="all"]').addEventListener('change', () => {
+            if (document.querySelector('input[name="legendFilter"][value="all"]').checked) {
+                activeUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                document.getElementById('toggleMine').checked = false;
+                renderMarkers();
+            }
         });
     }
 
@@ -77,9 +84,10 @@
 
         const bounds = new google.maps.LatLngBounds();
         const legendList = document.getElementById('legendList');
-        legendList.innerHTML = '';
 
-        const seenUsers = new Set();
+        // remove old user items but keep the select all radio
+        legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
+
         const userMarkersMap = {};
 
         allPhotos.forEach(photo => {
@@ -158,6 +166,8 @@
                 }
 
                 document.getElementById('toggleMine').checked = activeUsers.size === 1 && activeUsers.has("{{ username }}");
+
+                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
                 renderMarkers();
             });
