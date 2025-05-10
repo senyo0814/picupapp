@@ -27,7 +27,7 @@
             class="block w-full md:w-64 border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
         <option value="all">All Users</option>
         {% for shared_user in shared_users %}
-        <option value="{{ shared_user.id }}">{{ shared_user.username }}</option>
+        <option value="{{ shared_user.username }}">{{ shared_user.username }}</option>
         {% endfor %}
     </select>
 </div>
@@ -63,7 +63,7 @@
 
         document.getElementById('userFilter').addEventListener('change', function () {
             const selectedUser = this.value;
-            if (selectedUser === 'ALL') {
+            if (selectedUser === 'all') {
                 renderMarkers(allPhotos);
             } else {
                 const filtered = allPhotos.filter(p => p.user === selectedUser);
