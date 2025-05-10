@@ -4,6 +4,7 @@
 <head>
     <title>Landing</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="apple-touch-icon" href="/static/img/logo192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -29,6 +30,11 @@
         </div>
         {% endif %}
 
+        <div class="flex justify-end my-4">
+            <a href="{% url 'picupapp:mappics' %}" class="spinner-link bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
+                View Photo Map
+            </a>
+        </div>
 
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
@@ -37,7 +43,6 @@
 
             <p id="photoCount" class="text-sm text-gray-600 mt-2 text-center">0 of 5 photos selected</p>
 
-
             <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white">
                 <p class="text-gray-600">Drop files here or click to select</p>
             </div>
@@ -45,21 +50,6 @@
             <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
             <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left"></div>
 
-            <div id="metadata-wrapper" class="w-full overflow-x-auto mt-6" style="display: none;">
-                <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="border px-4 py-2">Image</th>
-                            <th class="border px-4 py-2">Date Taken</th>
-                            <th class="border px-4 py-2">Camera</th>
-                            <th class="border px-4 py-2">Latitude</th>
-                            <th class="border px-4 py-2">Longitude</th>
-                            <th class="border px-4 py-2">Map</th>
-                        </tr>
-                    </thead>
-                    <tbody id="metadata-body"></tbody>
-                </table>
-            </div>
             <div class="mb-4">
                 <label class="block text-sm font-medium text-gray-700">Visibility</label>
                 <div class="mt-1 space-x-4">
@@ -91,12 +81,6 @@
 
         <hr class="my-6">
 
-        <div class="flex justify-end mb-4">
-            <a href="{% url 'picupapp:mappics' %}" class="spinner-link bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
-                View Photo Map
-            </a>
-        </div>
-
         <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
         <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
             {% for photo in photos %}
@@ -110,10 +94,10 @@
                         '{{ photo.latitude }}',
                         '{{ photo.longitude }}',
                         '{{ photo.id }}',
-                        '{{ photo.shared_with.all|join:", " }}'
+                        '{{ photo.shared_with.all|join:", " }}',
+                        '{{ photo.is_public|yesno:"public,private" }}'
                     )"
                         class="spinner-link w-full">
-
                     <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                 </button>
                 <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
@@ -125,12 +109,14 @@
                     {% csrf_token %}
                     <button type="submit" class="spinner-link text-red-600 text-sm hover:underline">Delete</button>
                 </form>
-                {% endif %}             
-                {% if photo.is_public %}
-                <i class="fas fa-users"></i> Public
-                {% else %}
-                <i class="fas fa-lock"></i> Private
                 {% endif %}
+                <div class="text-sm mt-1 text-gray-600">
+                    {% if photo.is_public %}
+                    <i class="fa-solid fa-users mr-1"></i> Public
+                    {% else %}
+                    <i class="fa-solid fa-lock mr-1"></i> Private
+                    {% endif %}
+                </div>
             </div>
             {% endif %}
             {% empty %}
@@ -139,7 +125,8 @@
         </div>
     </div>
 
-    <!-- Modal -->
+
+    <!-- Add Modal for EXIF and metadata editing -->
     <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
         <div class="bg-white rounded p-4 max-w-xl w-full relative">
             <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
@@ -150,17 +137,33 @@
                     <input type="hidden" name="photo_id" id="modalPhotoId">
                     <label for="modalComment" class="block font-semibold">Comment:</label>
                     <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
+                    <div class="mt-2">
+                        <label for="modalVisibility" class="font-semibold">Visibility:</label>
+                        <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1">
+                            <option value="private">Private</option>
+                            <option value="public">Public</option>
+                        </select>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalSharedSelect" class="font-semibold">Shared With:</label>
+                        <select name="shared_with" id="modalSharedSelect" multiple class="w-full border mt-1 rounded px-2 py-1">
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple users.</p>
+                    </div>
                     <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
                 </form>
-
                 <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
                 <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
-                <p><strong>Shared With:</strong> <span id="modalSharedWith"></span></p>
                 <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
                 <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
             </div>
         </div>
     </div>
+    </div>
+
     <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
@@ -189,15 +192,15 @@
         });
     </script>
     <script>
-        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith) {
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, visibility) {
             document.getElementById('modalImage').src = url;
-            document.getElementById('modalComment').innerText = comment;
+            document.getElementById('modalComment').value = comment;
             document.getElementById('modalUploaded').innerText = uploaded;
             document.getElementById('modalTaken').innerText = taken;
             document.getElementById('modalLat').innerText = lat || "N/A";
             document.getElementById('modalLon').innerText = lon || "N/A";
             document.getElementById('modalPhotoId').value = photoId;
-            document.getElementById('modalSharedWith').innerText = sharedWith || "Private";
+            document.getElementById('modalVisibility').value = visibility;
 
             // Remove previous map link if it exists
             const previousMapLink = document.getElementById('modalMapLink');
@@ -218,6 +221,7 @@
                 document.getElementById('modalLon').parentNode.appendChild(mapLink);
             }
 
+            // Show modal
             document.getElementById('exifModal').classList.remove('hidden');
             document.getElementById('exifModal').classList.add('flex');
         }
@@ -300,9 +304,9 @@
 
                     const commentInput = document.createElement('div');
                     commentInput.innerHTML = `
-                                <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
-                                <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                            `;
+                                                                    <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
+                                                                    <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                                                                `;
                     container.appendChild(commentInput);
 
                     preview.appendChild(container);
@@ -324,28 +328,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                    <tr>
-                                        <td class="border px-4 py-2">${file.name}</td>
-                                        <td class="border px-4 py-2">${date}</td>
-                                        <td class="border px-4 py-2">${model}</td>
-                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                        <td class="border px-4 py-2">
-                                            ${lat && lon
+                                                                        <tr>
+                                                                            <td class="border px-4 py-2">${file.name}</td>
+                                                                            <td class="border px-4 py-2">${date}</td>
+                                                                            <td class="border px-4 py-2">${model}</td>
+                                                                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                            <td class="border px-4 py-2">
+                                                                                ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                        </td>
-                                    </tr>
-                                `;
+                                                                            </td>
+                                                                        </tr>
+                                                                    `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                        <input type="hidden" name="latitude_${index}" value="${lat}">
-                                        <input type="hidden" name="longitude_${index}" value="${lon}">
-                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                    `;
+                                                                            <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                            <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                            <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                        `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
