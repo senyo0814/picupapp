@@ -39,7 +39,7 @@
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
-            <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+            <input id="file-input" type="file" name="images[]" accept="image/*" multiple class="hidden" />
 
             <p id="photoCount" class="text-sm text-gray-600 mt-2 text-center">0 of 5 photos selected</p>
 
@@ -260,7 +260,6 @@
 
         function showPreview(files) {
             const maxPhotos = 5;
-
             const newFiles = Array.from(files);
             const combined = [...selectedFiles, ...newFiles];
 
@@ -270,7 +269,6 @@
             }
 
             selectedFiles = combined;
-
             preview.innerHTML = '';
             commentContainer.innerHTML = '';
             metadataBody.innerHTML = '';
@@ -284,27 +282,12 @@
                     const container = document.createElement('div');
                     container.className = 'relative';
 
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'rounded shadow w-full mb-2';
-                    container.appendChild(img);
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.innerHTML = '&times;';
-                    removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
-                    removeBtn.onclick = () => {
-                        selectedFiles.splice(index, 1);
-                        fileInput.files = createFileList(selectedFiles);
-                        showPreview([]);
-                    };
-                    container.appendChild(removeBtn);
-
-                    const commentInput = document.createElement('div');
-                    commentInput.innerHTML = `
-                                                                            <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
-                                                                            <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                                                                        `;
-                    container.appendChild(commentInput);
+                    container.innerHTML = `
+                        <img src="${e.target.result}" class="rounded shadow w-full mb-2" />
+                        <button class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs" onclick="removeFile(${index})">&times;</button>
+                        <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
+                        <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                    `;
 
                     preview.appendChild(container);
                 };
@@ -316,39 +299,33 @@
                         const tags = await ExifReader.load(e.target.result);
                         const date = tags.DateTimeOriginal?.description || 'N/A';
                         const model = tags.Model?.description || 'N/A';
-                        const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
-                        const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
-                        const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
-                        const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
-
-                        const lat = getGPSDecimal(latCoord, latRef);
-                        const lon = getGPSDecimal(lonCoord, lonRef);
+                        const lat = getGPSDecimal(tags.GPSLatitude?.value ?? tags.GPSLatitude, tags.GPSLatitudeRef);
+                        const lon = getGPSDecimal(tags.GPSLongitude?.value ?? tags.GPSLongitude, tags.GPSLongitudeRef);
 
                         metadataBody.innerHTML += `
-                                                                                <tr>
-                                                                                    <td class="border px-4 py-2">${file.name}</td>
-                                                                                    <td class="border px-4 py-2">${date}</td>
-                                                                                    <td class="border px-4 py-2">${model}</td>
-                                                                                    <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                    <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                    <td class="border px-4 py-2">
-                                                                                        ${lat && lon
-                                ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
-                                : 'N/A'}
-                                                                                    </td>
-                                                                                </tr>
-                                                                            `;
-                        metadataWrapper.style.display = 'block';
+                            <tr>
+                                <td class="border px-4 py-2">${file.name}</td>
+                                <td class="border px-4 py-2">${date}</td>
+                                <td class="border px-4 py-2">${model}</td>
+                                <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                <td class="border px-4 py-2">
+                                    ${lat && lon ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>` : 'N/A'}
+                                </td>
+                            </tr>
+                        `;
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                    <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                    <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                    <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                `;
+                                <input type="hidden" name="latitude_${index}" value="${lat}">
+                                <input type="hidden" name="longitude_${index}" value="${lon}">
+                                <input type="hidden" name="photo_taken_${index}" value="${date}">
+                            `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
+
+                        metadataWrapper.style.display = 'block';
 
                     } catch (err) {
                         console.warn("EXIF read error:", err);
@@ -357,10 +334,14 @@
                 exifReader.readAsArrayBuffer(file);
             });
 
-            // Update count display
             document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
         }
 
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            fileInput.files = createFileList(selectedFiles);
+            showPreview([]);
+        }
 
         function createFileList(files) {
             const dt = new DataTransfer();
@@ -368,6 +349,7 @@
             return dt.files;
         }
     </script>
+
 
     <script>
         function getGPSDecimal(coord, refTag) {
@@ -411,7 +393,7 @@
 
             const formData = new FormData();
             selectedFiles.forEach((file, index) => {
-                formData.append('images', file);
+                formData.append('images[]', file);
                 const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
                 formData.append(`comment_${index}`, comment);
             });
