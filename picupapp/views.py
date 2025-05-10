@@ -178,7 +178,7 @@ def logout_view(request):
     logout(request)
     return redirect('picupapp:login')
 
-# --- Map View ---
+# --- Map Views ---
 
 @login_required
 def photo_map_view(request):
@@ -191,13 +191,27 @@ def photo_map_view(request):
     username = request.user.username
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(is_public=True).exclude(latitude=None).exclude(longitude=None)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+        Q(is_public=True) | Q(shared_with=request.user)
+    ).exclude(latitude=None).exclude(longitude=None)
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
         'shared_users': shared_users,
         'user_photos': serialize_photos(user_photos),
         'other_photos': serialize_photos(other_photos),
+    })
+
+@user_passes_test(lambda u: u.is_staff)
+@login_required
+def map_pics_view(request):
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
+
+    return render(request, 'picupapp/mappics.html', {
+        'user_photos': serialize_photos(user_photos),
+        'other_photos': serialize_photos(other_photos),
+        'username': request.user.username
     })
 
 def serialize_photos(qs):
@@ -212,3 +226,4 @@ def serialize_photos(qs):
             "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
         } for p in qs
     ]
+
