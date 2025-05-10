@@ -274,13 +274,13 @@
             metadataBody.innerHTML = '';
             metadataWrapper.style.display = 'none';
 
-            // Create a new DataTransfer to update file input
+            // Clear and rebuild file input
             const dt = new DataTransfer();
 
             selectedFiles.forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
 
-                dt.items.add(file);  // add to form input
+                dt.items.add(file);
 
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
@@ -289,7 +289,7 @@
 
                     container.innerHTML = `
                         <img src="${e.target.result}" class="rounded shadow w-full mb-2" />
-                        <button class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs" onclick="removeFile(${index})">&times;</button>
+                        <button type="button" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs" onclick="removeFile(${index})">&times;</button>
                         <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
                         <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                     `;
@@ -339,14 +339,14 @@
                 exifReader.readAsArrayBuffer(file);
             });
 
-            // Update the file input with the current file list
+            // Update the file input element
             fileInput.files = dt.files;
             document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
         }
 
         function removeFile(index) {
             selectedFiles.splice(index, 1);
-            showPreview([]);  // triggers re-build and fileInput update
+            showPreview([]); // refresh preview with current files
         }
 
         function createFileList(files) {
@@ -355,6 +355,7 @@
             return dt.files;
         }
     </script>
+
     <script>
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
