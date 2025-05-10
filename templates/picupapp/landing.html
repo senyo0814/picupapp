@@ -147,7 +147,7 @@
     <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
         <div class="bg-white rounded p-4 max-w-xl w-full relative">
             <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
-            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain" style="margin: -10px 0;"/>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[60vh] object-contain" style="margin: -10px 0;"/>
             <div class="text-sm mt-3">
                 <form method="POST" action="/update-comment/" id="commentForm">
                     {% csrf_token %}
@@ -247,10 +247,9 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalSharedWith').value = "";
             document.getElementById('modalSharedWithContainer').style.display = 'none';
-
-            // Handle Google Map Link
-            const previousMapLink = document.getElementById('modalMapLink');
-            if (previousMapLink) previousMapLink.remove();
+            
+            const previousMapRow = document.getElementById('modalMapLink')?.closest('tr');
+            if (previousMapRow) previousMapRow.remove();
 
             if (lat && lon) {
                 const mapLink = document.createElement('a');
@@ -263,7 +262,7 @@
                 const mapRow = document.createElement('tr');
 
                 const mapLabelCell = document.createElement('th');
-                mapLabelCell.className = 'bg-gray-200 border border-gray-300 font-normal"';
+                mapLabelCell.className = 'bg-gray-200 border border-gray-300 font-normal';
                 mapLabelCell.textContent = 'Map:';
 
                 const mapValueCell = document.createElement('td');
@@ -276,7 +275,6 @@
                 // Insert after the longitude row
                 const lonRow = document.getElementById('modalLon').closest('tr');
                 lonRow.parentNode.insertBefore(mapRow, lonRow.nextSibling);
-
             }
 
             // Preselect users if sharedWith is provided
