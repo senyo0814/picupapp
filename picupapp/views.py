@@ -197,32 +197,6 @@ def logout_view(request):
     logout(request)
     return redirect('picupapp:login')
 
-# --- Map View ---
-
-@login_required
-def map_pics_view(request):
-    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
-
-    def serialize(photos):
-        return [
-            {
-                "latitude": p.latitude,
-                "longitude": p.longitude,
-                "image_url": settings.MEDIA_URL + str(p.image),
-                "comment": p.comment or "",
-                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "Unknown",
-                "user": p.uploaded_by.username
-            }
-            for p in photos
-        ]
-
-    return render(request, 'picupapp/mappics.html', {
-        'user_photos': serialize(user_photos),
-        'other_photos': serialize(other_photos),
-        'username': request.user.username
-    })
-
 def check_media_access(request):
     path = os.path.join(settings.MEDIA_ROOT, 'uploads')
     test_file = os.path.join(path, 'test.txt')
