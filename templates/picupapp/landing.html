@@ -144,10 +144,10 @@
     </div>
 
     <!-- Modal update to allow visibility toggle -->
-    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
-        <div class="bg-white rounded p-4 max-w-xl relative">
+    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-2">
+        <div class="bg-white rounded p-4 max-w-xl sm:mx-auto mx-2 relative overflow-y-auto max-h-[90vh]">
             <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
-            <img id="modalImage" src="" alt="Full Photo" class="py-4 rounded w-full max-h-[60vh] object-contain" style="margin: -10px 0;"/>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain my-4" />
             <div class="text-sm mt-3">
                 <form method="POST" action="/update-comment/" id="commentForm">
                     {% csrf_token %}
