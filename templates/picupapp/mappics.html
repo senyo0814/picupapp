@@ -61,7 +61,7 @@
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 6,
+            zoom: 4,
             center: { lat: 37.7749, lng: -122.4194 }
         });
 
@@ -140,13 +140,12 @@
                 position: pos,
                 map,
                 icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    scale: 7,
-                    fillColor: color,
-                    fillOpacity: 1,
-                    strokeColor: '#000',
-                    strokeWeight: 1
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="36" viewBox="0 0 24 36" fill="${color}">
+                          <path d="M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z"/>
+                        </svg>`)}`
                 }
+
             });
 
             // Info popup
