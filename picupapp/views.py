@@ -123,8 +123,11 @@ logger = logging.getLogger(__name__)
 @login_required
 def landing(request):
     try:
-        all_photos = PhotoUpload.objects.order_by('-uploaded_at')
-        valid_photos = [photo for photo in all_photos if photo.image]
+       valid_photos = PhotoUpload.objects.filter(
+            models.Q(uploaded_by=request.user) |
+            models.Q(shared_with=request.user) |
+            models.Q(is_public=True)
+        ).distinct().order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
@@ -171,11 +174,17 @@ def landing(request):
 
                 photo.save()
 
+                # Assign shared users
+                shared_ids = request.POST.getlist('shared_with')
+                if shared_ids:
+                    photo.shared_with.set(User.objects.filter(id__in=shared_ids))
+
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
             'photos': valid_photos,
-            'username': request.user.username
+            'username': request.user.username,
+            'all_users': User.objects.exclude(id=request.user.id)
         })
 
     except Exception as e:
@@ -278,7 +287,9 @@ def photo_map_view(request):
     username = request.user.username if request.user.is_authenticated else 'Anonymous'
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(is_public=True)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+        models.Q(is_public=True) | models.Q(shared_with=request.user)
+    )
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
