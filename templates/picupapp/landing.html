@@ -102,7 +102,18 @@
             {% for photo in photos %}
             {% if photo.image %}
             <div class="bg-white rounded shadow p-2">
-                <button onclick="showExifModal('{{ photo.image.url }}', '{{ photo.comment|escapejs }}', '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}', '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}', '{{ photo.latitude }}', '{{ photo.longitude }}', '{{ photo.id }}')" class="spinner-link w-full">
+                <button 
+                    onclick="showExifModal(
+                        '{{ photo.image.url }}',
+                        '{{ photo.comment|escapejs }}',
+                        '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}',
+                        '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}',
+                        '{{ photo.latitude }}',
+                        '{{ photo.longitude }}',
+                        '{{ photo.id }}',
+                        '{{ photo.shared_with.all|join:", " }}'
+                    )"
+                    class="spinner-link w-full">
 
                     <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                 </button>
@@ -140,6 +151,7 @@
 
                 <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
                 <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
+                <p><strong>Shared With:</strong> <span id="modalSharedWith"></span></p>
                 <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
                 <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
             </div>
@@ -173,7 +185,7 @@
         });
     </script>
     <script>
-        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId) {
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith) {
             document.getElementById('modalImage').src = url;
             document.getElementById('modalComment').innerText = comment;
             document.getElementById('modalUploaded').innerText = uploaded;
@@ -181,6 +193,7 @@
             document.getElementById('modalLat').innerText = lat || "N/A";
             document.getElementById('modalLon').innerText = lon || "N/A";
             document.getElementById('modalPhotoId').value = photoId;
+            document.getElementById('modalSharedWith').innerText = sharedWith || "Private";
 
             // Remove previous map link if it exists
             const previousMapLink = document.getElementById('modalMapLink');

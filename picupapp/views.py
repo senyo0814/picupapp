@@ -129,7 +129,7 @@ def landing(request):
             models.Q(uploaded_by=request.user) |
             models.Q(shared_with=request.user) |
             models.Q(is_public=True)
-        ).distinct().order_by('-uploaded_at').exclude(image='')
+        ).distinct().select_related('uploaded_by').prefetch_related('shared_with').order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
             for idx, f in enumerate(request.FILES.getlist('images')):
