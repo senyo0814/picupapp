@@ -30,7 +30,7 @@
         </div>
         {% endif %}
 
-        <div class="flex justify-end my-4">
+        <div class="flex justify-center my-4">
             <a href="{% url 'picupapp:mappics' %}" class="spinner-link bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
                 View Photo Map
             </a>
@@ -39,7 +39,7 @@
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
             <p class="text-gray-500 mb-4">Drag and drop photos here or click to browse</p>
-            <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+            <input id="file-input" type="file" name="images[]" accept="image/*" multiple class="hidden" />
 
             <p id="photoCount" class="text-sm text-gray-600 mt-2 text-center">0 of 5 photos selected</p>
 
@@ -127,39 +127,38 @@
 
 
     <!-- Add Modal for EXIF and metadata editing -->
-        <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
-            <div class="bg-white rounded p-4 max-w-xl w-full relative">
-                <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
-                <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
-                <div class="text-sm space-y-1">
-                    <form method="POST" action="/update-comment/" id="commentForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="photo_id" id="modalPhotoId">
-                        <label for="modalComment" class="block font-semibold">Comment:</label>
-                        <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
-                        <div class="mt-2">
-                            <label for="modalVisibility" class="font-semibold">Visibility:</label>
-                            <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1">
-                                <option value="private">Private</option>
-                                <option value="public">Public</option>
-                            </select>
-                        </div>
-                        <div class="mt-2">
-                            <label for="modalSharedSelect" class="font-semibold">Shared With:</label>
-                            <select name="shared_with" id="modalSharedSelect" multiple class="w-full border mt-1 rounded px-2 py-1">
-                                {% for user in all_users %}
-                                <option value="{{ user.id }}">{{ user.username }}</option>
-                                {% endfor %}
-                            </select>
-                            <p class="text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple users.</p>
-                        </div>
-                        <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
-                    </form>
-                    <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
-                    <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
-                    <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
-                    <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
-                </div>
+    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
+        <div class="bg-white rounded p-4 max-w-xl w-full relative">
+            <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
+            <div class="text-sm space-y-1">
+                <form method="POST" action="/update-comment/" id="commentForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="photo_id" id="modalPhotoId">
+                    <label for="modalComment" class="block font-semibold">Comment:</label>
+                    <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
+                    <div class="mt-2">
+                        <label for="modalVisibility" class="font-semibold">Visibility:</label>
+                        <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1">
+                            <option value="private">Private</option>
+                            <option value="public">Public</option>
+                        </select>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalSharedSelect" class="font-semibold">Shared With:</label>
+                        <select name="shared_with" id="modalSharedSelect" multiple class="w-full border mt-1 rounded px-2 py-1">
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple users.</p>
+                    </div>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
+                </form>
+                <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
+                <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
+                <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
+                <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
             </div>
         </div>
     </div>
@@ -192,23 +191,24 @@
         });
     </script>
     <script>
-        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith) {
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, visibility) {
             document.getElementById('modalImage').src = url;
-            document.getElementById('modalComment').innerText = comment;
+            document.getElementById('modalComment').value = comment;
             document.getElementById('modalUploaded').innerText = uploaded;
             document.getElementById('modalTaken').innerText = taken;
             document.getElementById('modalLat').innerText = lat || "N/A";
             document.getElementById('modalLon').innerText = lon || "N/A";
             document.getElementById('modalPhotoId').value = photoId;
-            document.getElementById('modalSharedWith').innerText = sharedWith || "Private";
+            document.getElementById('modalVisibility').value = visibility;
 
-            // Remove previous map link if it exists
+            const sharedSelect = document.getElementById('modalSharedSelect');
+            Array.from(sharedSelect.options).forEach(opt => {
+                opt.selected = sharedWith.includes(opt.textContent);
+            });
+
             const previousMapLink = document.getElementById('modalMapLink');
-            if (previousMapLink) {
-                previousMapLink.remove();
-            }
+            if (previousMapLink) previousMapLink.remove();
 
-            // Add Google Maps link if coordinates exist
             if (lat && lon) {
                 const mapLink = document.createElement('a');
                 mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
@@ -216,8 +216,6 @@
                 mapLink.innerText = 'View on Map';
                 mapLink.id = 'modalMapLink';
                 mapLink.className = 'text-blue-600 underline block mt-2';
-
-                // Append below the longitude field
                 document.getElementById('modalLon').parentNode.appendChild(mapLink);
             }
 
@@ -231,176 +229,162 @@
         }
     </script>
     <script>
-        const dropZone = document.getElementById('drop-zone');
-        const fileInput = document.getElementById('file-input');
-        const preview = document.getElementById('preview');
-        const commentContainer = document.getElementById('comment-container');
-        const metadataWrapper = document.getElementById('metadata-wrapper');
-        const metadataBody = document.getElementById('metadata-body');
+        document.addEventListener('DOMContentLoaded', () => {
+            const dropZone = document.getElementById('drop-zone');
+            const fileInput = document.getElementById('file-input');
+            const preview = document.getElementById('preview');
+            const commentContainer = document.getElementById('comment-container');
+            const metadataWrapper = document.getElementById('metadataWrapper') || document.getElementById('metadata-wrapper');
+            const metadataBody = document.getElementById('metadataBody') || document.getElementById('metadata-body');
+            const photoCount = document.getElementById('photoCount');
 
-        dropZone.addEventListener('click', () => fileInput.click());
-        dropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            dropZone.classList.add('bg-blue-100');
-        });
-        dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('bg-blue-100');
-        });
-        dropZone.addEventListener('drop', e => {
-            e.preventDefault();
-            dropZone.classList.remove('bg-blue-100');
-            fileInput.files = e.dataTransfer.files;
-            showPreview(e.dataTransfer.files);
-        });
-        fileInput.addEventListener('change', () => {
-            showPreview(fileInput.files);
-        });
-    </script>
+            // Create and insert counter badge
+            let counterBadge = document.createElement('span');
+            counterBadge.id = 'photoCounterBadge';
+            counterBadge.className = 'inline-block bg-blue-500 text-white text-xs font-semibold px-2 py-1 rounded-full ml-2';
+            photoCount.parentNode.insertBefore(counterBadge, photoCount.nextSibling);
 
-    <script>
-        let selectedFiles = [];
+            let selectedFiles = [];
 
-        function showPreview(files) {
-            const maxPhotos = 5;
-
-            const newFiles = Array.from(files);
-            const combined = [...selectedFiles, ...newFiles];
-
-            if (combined.length > maxPhotos) {
-                alert(`You can upload a maximum of ${maxPhotos} photos.`);
-                return;
-            }
-
-            selectedFiles = combined;
-
-            preview.innerHTML = '';
-            commentContainer.innerHTML = '';
-            metadataBody.innerHTML = '';
-            metadataWrapper.style.display = 'none';
-
-            selectedFiles.forEach((file, index) => {
-                if (!file.type.startsWith('image/')) return;
-
-                const previewReader = new FileReader();
-                previewReader.onload = e => {
-                    const container = document.createElement('div');
-                    container.className = 'relative';
-
-                    const img = document.createElement('img');
-                    img.src = e.target.result;
-                    img.className = 'rounded shadow w-full mb-2';
-                    container.appendChild(img);
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.innerHTML = '&times;';
-                    removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
-                    removeBtn.onclick = () => {
-                        selectedFiles.splice(index, 1);
-                        fileInput.files = createFileList(selectedFiles);
-                        showPreview([]);
-                    };
-                    container.appendChild(removeBtn);
-
-                    const commentInput = document.createElement('div');
-                    commentInput.innerHTML = `
-                                                                <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
-                                                                <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                                                            `;
-                    container.appendChild(commentInput);
-
-                    preview.appendChild(container);
-                };
-                previewReader.readAsDataURL(file);
-
-                const exifReader = new FileReader();
-                exifReader.onload = async e => {
-                    try {
-                        const tags = await ExifReader.load(e.target.result);
-                        const date = tags.DateTimeOriginal?.description || 'N/A';
-                        const model = tags.Model?.description || 'N/A';
-                        const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
-                        const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
-                        const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
-                        const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
-
-                        const lat = getGPSDecimal(latCoord, latRef);
-                        const lon = getGPSDecimal(lonCoord, lonRef);
-
-                        metadataBody.innerHTML += `
-                                                                    <tr>
-                                                                        <td class="border px-4 py-2">${file.name}</td>
-                                                                        <td class="border px-4 py-2">${date}</td>
-                                                                        <td class="border px-4 py-2">${model}</td>
-                                                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                        <td class="border px-4 py-2">
-                                                                            ${lat && lon
-                                ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
-                                : 'N/A'}
-                                                                        </td>
-                                                                    </tr>
-                                                                `;
-                        metadataWrapper.style.display = 'block';
-
-                        if (lat !== null && lon !== null) {
-                            const hiddenInputs = document.createElement('div');
-                            hiddenInputs.innerHTML = `
-                                                                        <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                        <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                    `;
-                            document.getElementById('upload-form').appendChild(hiddenInputs);
-                        }
-
-                    } catch (err) {
-                        console.warn("EXIF read error:", err);
-                    }
-                };
-                exifReader.readAsArrayBuffer(file);
+            dropZone.addEventListener('click', () => fileInput.click());
+            dropZone.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropZone.classList.add('bg-blue-100');
+            });
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('bg-blue-100');
+            });
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('bg-blue-100');
+                showPreview(e.dataTransfer.files);
             });
 
-            // Update count display
-            document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
-        }
+            fileInput.addEventListener('change', () => {
+                showPreview(fileInput.files);
+            });
 
+            function showPreview(files) {
+                const maxPhotos = 5;
+                const newFiles = Array.from(files);
+                const combined = [...selectedFiles, ...newFiles];
 
-        function createFileList(files) {
-            const dt = new DataTransfer();
-            files.forEach(file => dt.items.add(file));
-            return dt.files;
-        }
-    </script>
-
-    <script>
-        function getGPSDecimal(coord, refTag) {
-            if (!coord || coord.length !== 3) return null;
-
-            const getValue = (entry) => {
-                if (entry?.numerator !== undefined && entry?.denominator !== undefined) {
-                    return entry.numerator / entry.denominator;
-                } else if (Array.isArray(entry) && entry.length === 2) {
-                    return parseFloat(entry[0]) / parseFloat(entry[1]);
+                if (combined.length > maxPhotos) {
+                    alert(`You can upload a maximum of ${maxPhotos} photos.`);
+                    return;
                 }
-                return parseFloat(entry);
-            };
 
-            const d = getValue(coord[0]);
-            const m = getValue(coord[1]);
-            const s = getValue(coord[2]);
+                selectedFiles = combined;
+                preview.innerHTML = '';
+                commentContainer.innerHTML = '';
+                metadataBody.innerHTML = '';
+                metadataWrapper.style.display = 'none';
 
-            if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+                const dt = new DataTransfer();
 
-            let result = d + m / 60.0 + s / 3600.0;
+                selectedFiles.forEach((file, index) => {
+                    if (!file.type.startsWith('image/')) return;
 
-            const refRaw = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim();
-            const ref = refRaw.charAt(0).toUpperCase();
-            console.log('Longitude refTag:', refTag, '| Normalized ref:', ref);
+                    dt.items.add(file);
 
-            if (ref === 'S' || ref === 'W') result *= -1;
+                    const previewReader = new FileReader();
+                    previewReader.onload = e => {
+                        const container = document.createElement('div');
+                        container.className = 'relative';
 
-            return result.toFixed(6);
-        }
+                        container.innerHTML = `
+                            <img src="${e.target.result}" class="rounded shadow w-full mb-2" />
+                            <button type="button" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs" onclick="removeFile(${index})">&times;</button>
+                            <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
+                            <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                        `;
+
+                        preview.appendChild(container);
+                    };
+                    previewReader.readAsDataURL(file);
+
+                    const exifReader = new FileReader();
+                    exifReader.onload = async e => {
+                        try {
+                            const tags = await ExifReader.load(e.target.result);
+                            const date = tags.DateTimeOriginal?.description || 'N/A';
+                            const model = tags.Model?.description || 'N/A';
+                            const lat = getGPSDecimal(tags.GPSLatitude?.value ?? tags.GPSLatitude, tags.GPSLatitudeRef);
+                            const lon = getGPSDecimal(tags.GPSLongitude?.value ?? tags.GPSLongitude, tags.GPSLongitudeRef);
+
+                            metadataBody.innerHTML += `
+                                <tr>
+                                    <td class="border px-4 py-2">${file.name}</td>
+                                    <td class="border px-4 py-2">${date}</td>
+                                    <td class="border px-4 py-2">${model}</td>
+                                    <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                    <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                    <td class="border px-4 py-2">
+                                        ${lat && lon ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>` : 'N/A'}
+                                    </td>
+                                </tr>
+                            `;
+
+                            if (lat !== null && lon !== null) {
+                                const hiddenInputs = document.createElement('div');
+                                hiddenInputs.innerHTML = `
+                                    <input type="hidden" name="latitude_${index}" value="${lat}">
+                                    <input type="hidden" name="longitude_${index}" value="${lon}">
+                                    <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                `;
+                                document.getElementById('upload-form').appendChild(hiddenInputs);
+                            }
+
+                            metadataWrapper.style.display = 'block';
+
+                        } catch (err) {
+                            console.warn("EXIF read error:", err);
+                        }
+                    };
+                    exifReader.readAsArrayBuffer(file);
+                });
+
+                fileInput.files = dt.files;
+                if (photoCount) {
+                    photoCount.textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
+                    document.getElementById('photoCounterBadge').textContent = `${selectedFiles.length}/5`;
+                }
+            }
+
+            window.removeFile = function (index) {
+                selectedFiles.splice(index, 1);
+                showPreview([]);
+            }
+
+            function getGPSDecimal(coord, refTag) {
+                if (!coord || coord.length !== 3) return null;
+
+                const getValue = (entry) => {
+                    if (entry?.numerator !== undefined && entry?.denominator !== undefined) {
+                        return entry.numerator / entry.denominator;
+                    } else if (Array.isArray(entry) && entry.length === 2) {
+                        return parseFloat(entry[0]) / parseFloat(entry[1]);
+                    }
+                    return parseFloat(entry);
+                };
+
+                const d = getValue(coord[0]);
+                const m = getValue(coord[1]);
+                const s = getValue(coord[2]);
+
+                if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+
+                let result = d + m / 60.0 + s / 3600.0;
+
+                const refRaw = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim();
+                const ref = refRaw.charAt(0).toUpperCase();
+                if (ref === 'S' || ref === 'W') result *= -1;
+
+                return result.toFixed(6);
+            }
+        });
     </script>
+
     <script>
         async function handleUpload(event) {
             event.preventDefault();
@@ -413,7 +397,7 @@
 
             const formData = new FormData();
             selectedFiles.forEach((file, index) => {
-                formData.append('images', file);
+                formData.append('images[]', file);
                 const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
                 formData.append(`comment_${index}`, comment);
             });
