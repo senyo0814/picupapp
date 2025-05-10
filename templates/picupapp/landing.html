@@ -229,6 +229,57 @@
         }
     </script>
     <script>
+        let selectedFiles = [];
+
+        async function handleUpload(event) {
+            event.preventDefault();
+
+            const maxPhotos = 5;
+            if (selectedFiles.length === 0) {
+                alert("Please select at least one photo.");
+                return false;
+            }
+
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                formData.append('images[]', file);
+                const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
+                formData.append(`comment_${index}`, comment);
+            });
+
+            document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
+                formData.append(input.name, input.value);
+            });
+
+            formData.append('visibility', document.querySelector('input[name="visibility"]:checked')?.value || 'private');
+
+            document.querySelectorAll('select[name="shared_with"] option:checked').forEach(opt => {
+                formData.append('shared_with', opt.value);
+            });
+
+            const csrf = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrf) formData.append('csrfmiddlewaretoken', csrf.value);
+
+            try {
+                document.getElementById('loadingSpinner')?.classList.remove('hidden');
+                const response = await fetch("", { method: "POST", body: formData });
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert("Upload failed.");
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                alert("Upload failed.");
+            } finally {
+                document.getElementById('loadingSpinner')?.classList.add('hidden');
+            }
+
+            return false;
+        }
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
             const dropZone = document.getElementById('drop-zone');
             const fileInput = document.getElementById('file-input');
@@ -248,8 +299,6 @@
                 photoCount?.parentNode?.insertBefore(counterBadge, photoCount.nextSibling);
             }
 
-            let selectedFiles = [];
-
             dropZone.addEventListener('click', () => fileInput.click());
             dropZone.addEventListener('dragover', e => {
                 e.preventDefault();
@@ -267,6 +316,11 @@
             fileInput.addEventListener('change', () => {
                 showPreview(fileInput.files);
             });
+
+            window.removeFile = function (index) {
+                selectedFiles.splice(index, 1);
+                showPreview([]);
+            }
 
             function showPreview(files) {
                 const maxPhotos = 5;
@@ -351,11 +405,6 @@
                 document.getElementById('photoCounterBadge').textContent = `${selectedFiles.length}/5`;
             }
 
-            window.removeFile = function (index) {
-                selectedFiles.splice(index, 1);
-                showPreview([]);
-            }
-
             function getGPSDecimal(coord, refTag) {
                 if (!coord || coord.length !== 3) return null;
 
@@ -385,61 +434,6 @@
         });
     </script>
 
-
-    <script>
-        async function handleUpload(event) {
-            event.preventDefault();
-
-            const maxPhotos = 5;
-            if (selectedFiles.length === 0) {
-                alert("Please select at least one photo.");
-                return false;
-            }
-
-            const formData = new FormData();
-            selectedFiles.forEach((file, index) => {
-                formData.append('images[]', file);
-                const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
-                formData.append(`comment_${index}`, comment);
-            });
-
-            document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
-                formData.append(input.name, input.value);
-            });
-
-            const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
-            formData.append('visibility', visibility);
-
-            document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
-                formData.append('shared_with', option.value);
-            });
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            try {
-                document.getElementById('loadingSpinner').classList.remove('hidden');
-
-                const response = await fetch("", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert("Upload failed. Try again.");
-                    document.getElementById('loadingSpinner').classList.add('hidden');
-                }
-            } catch (error) {
-                console.error("Upload error:", error);
-                alert("Upload failed.");
-                document.getElementById('loadingSpinner').classList.add('hidden');
-            }
-
-            return false;
-        }
-    </script>
 
     <script>
         document.querySelectorAll('input[name="visibility"]').forEach(radio => {
