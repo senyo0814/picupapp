@@ -1,138 +1,110 @@
-{% load static %}
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Photo Map</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        #map { height: 60vh; width: 100%; }
-        .image-preview {
-            max-width: 100%;
-            max-height: 300px;
-            object-fit: contain;
-            display: block;
-            margin: 5px auto;
-        }
-        body {
-            font-family: sans-serif;
-            padding: 1rem;
-            background: #f9f9f9;
-        }
-        .gm-style-iw {
-            max-width: 300px !important;
-            overflow: auto;
-        }
-    </style>
-</head>
-<body>
-    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-        <span>📍</span> Photo Map
-    </h2>
+{% extends 'picupapp/base.html' %}
 
-    <div class="mb-6">
-        <a href="{% url 'picupapp:landing' %}"
-           class="spinner-link btn bg-pink-500 inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">
-            ← Back to Landing
-        </a>
-    </div>
+{% block content %}
+<h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
+    <span>📍</span> Photo Map
+</h2>
 
-    <div class="mb-6 flex items-center space-x-3">
-        <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
-        <label for="toggleMine" class="text-gray-700 text-sm">
-            Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
-        </label>
-    </div>
+<div class="mb-6">
+    <a href="{% url 'picupapp:landing' %}"
+       class="spinner-link inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">
+        ← Back to Landing
+    </a>
+</div>
 
-    <div class="mb-6">
-        <label for="userFilter" class="block text-sm font-semibold text-gray-700 mb-2">
-            Filter by User:
-        </label>
-        <select id="userFilter"
-                class="block w-full md:w-64 border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
-            <option value="all">All Users</option>
-            {% for shared_user in shared_users %}
-            <option value="{{ shared_user.id }}">{{ shared_user.username }}</option>
-            {% endfor %}
-        </select>
-    </div>
+<div class="mb-6 flex items-center gap-2">
+    <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
+    <label for="toggleMine" class="text-sm text-gray-700">
+        Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
+    </label>
+</div>
 
+<div class="mb-6">
+    <label for="userFilter" class="block text-sm font-semibold text-gray-700 mb-2">
+        Filter by User:
+    </label>
+    <select id="userFilter"
+            class="block w-full md:w-64 border border-gray-300 rounded-md px-3 py-2 text-sm shadow-sm focus:ring-blue-500 focus:border-blue-500">
+        <option value="all">All Users</option>
+        {% for shared_user in shared_users %}
+        <option value="{{ shared_user.id }}">{{ shared_user.username }}</option>
+        {% endfor %}
+    </select>
+</div>
 
-    <div id="map"></div>
+<div id="map" class="rounded shadow border border-gray-300 h-[60vh] w-full"></div>
 
-    <script>
-        const userPhotos = {{ user_photos|safe }};
-        const otherPhotos = {{ other_photos|safe }};
-        const allPhotos = [...userPhotos, ...otherPhotos];
+<!-- Scripts -->
+<script>
+    const userPhotos = {{ user_photos|safe }};
+    const otherPhotos = {{ other_photos|safe }};
+    const allPhotos = [...userPhotos, ...otherPhotos];
 
-        let markers = [];
-        let map;
+    let markers = [];
+    let map;
 
-        function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                zoom: 6,
-                center: { lat: 37.7749, lng: -122.4194 }
-            });
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 6,
+            center: { lat: 37.7749, lng: -122.4194 }
+        });
 
-            renderMarkers(userPhotos);
+        renderMarkers(userPhotos);
 
-            document.getElementById('toggleMine').addEventListener('change', function () {
-                if (this.checked) {
-                    document.getElementById('userFilter').value = "{{ username }}";
-                    renderMarkers(userPhotos);
-                } else {
-                    document.getElementById('userFilter').value = "ALL";
-                    renderMarkers(allPhotos);
-                }
-            });
-
-            document.getElementById('userFilter').addEventListener('change', function () {
-                const selectedUser = this.value;
-                if (selectedUser === 'ALL') {
-                    renderMarkers(allPhotos);
-                } else {
-                    const filtered = allPhotos.filter(p => p.user === selectedUser);
-                    renderMarkers(filtered);
-                }
-            });
-        }
-
-        function renderMarkers(photos) {
-            markers.forEach(m => m.setMap(null));
-            markers = [];
-
-            const bounds = new google.maps.LatLngBounds();
-
-            photos.forEach(photo => {
-                const pos = { lat: photo.latitude, lng: photo.longitude };
-                const marker = new google.maps.Marker({
-                    position: pos,
-                    map: map
-                });
-
-                const popup = `
-                    <div class="text-sm">
-                        <img src="${photo.image_url}" class="image-preview" />
-                        <p><strong>${photo.user}</strong></p>
-                        <p>${photo.comment || 'No comment'}</p>
-                        <p class="text-gray-500 text-xs">${photo.taken}</p>
-                    </div>
-                `;
-
-                const infowindow = new google.maps.InfoWindow({ content: popup });
-                marker.addListener("click", () => infowindow.open(map, marker));
-                markers.push(marker);
-
-                bounds.extend(pos);
-            });
-
-            if (photos.length > 0) {
-                map.fitBounds(bounds);
+        document.getElementById('toggleMine').addEventListener('change', function () {
+            if (this.checked) {
+                document.getElementById('userFilter').value = "{{ username }}";
+                renderMarkers(userPhotos);
+            } else {
+                document.getElementById('userFilter').value = "ALL";
+                renderMarkers(allPhotos);
             }
-        }
-    </script>
+        });
 
-    <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
-    </script>
-</body>
-</html>
+        document.getElementById('userFilter').addEventListener('change', function () {
+            const selectedUser = this.value;
+            if (selectedUser === 'ALL') {
+                renderMarkers(allPhotos);
+            } else {
+                const filtered = allPhotos.filter(p => p.user === selectedUser);
+                renderMarkers(filtered);
+            }
+        });
+    }
+
+    function renderMarkers(photos) {
+        markers.forEach(m => m.setMap(null));
+        markers = [];
+
+        const bounds = new google.maps.LatLngBounds();
+
+        photos.forEach(photo => {
+            const pos = { lat: photo.latitude, lng: photo.longitude };
+            const marker = new google.maps.Marker({ position: pos, map });
+
+            const popup = `
+                <div class="text-sm">
+                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
+                    <p><strong>${photo.user}</strong></p>
+                    <p>${photo.comment || 'No comment'}</p>
+                    <p class="text-gray-500 text-xs">${photo.taken}</p>
+                </div>
+            `;
+
+            const infowindow = new google.maps.InfoWindow({ content: popup });
+            marker.addListener("click", () => infowindow.open(map, marker));
+            markers.push(marker);
+
+            bounds.extend(pos);
+        });
+
+        if (photos.length > 0) {
+            map.fitBounds(bounds);
+        }
+    }
+</script>
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
+</script>
+{% endblock %}
