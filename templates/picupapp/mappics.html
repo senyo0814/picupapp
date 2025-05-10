@@ -33,6 +33,11 @@
 </div>
 
 <div id="map" class="rounded shadow border border-gray-300 h-[60vh] w-full"></div>
+<div id="legend" class="mt-4 p-4 border border-gray-300 rounded bg-white shadow text-sm max-w-md">
+    <h3 class="font-semibold mb-2">Legend</h3>
+    <ul id="legendList" class="space-y-1"></ul>
+</div>
+
 
 <!-- Scripts -->
 <script>
@@ -49,8 +54,9 @@
             center: { lat: 37.7749, lng: -122.4194 }
         });
 
-        //renderMarkers(userPhotos);
         renderMarkers(allPhotos);
+        document.getElementById('userFilter').value = 'all';
+
 
         document.getElementById('toggleMine').addEventListener('change', function () {
             if (this.checked) {
@@ -64,12 +70,20 @@
 
         document.getElementById('userFilter').addEventListener('change', function () {
             const selectedUser = this.value;
+
             if (selectedUser === "{{ username }}") {
                 document.getElementById('toggleMine').checked = true;
+                renderMarkers(userPhotos);
+            } else if (selectedUser === 'all') {
+                document.getElementById('toggleMine').checked = false;
+                renderMarkers(allPhotos);
             } else {
                 document.getElementById('toggleMine').checked = false;
+                const filtered = otherPhotos.filter(p => p.user === selectedUser);
+                renderMarkers(filtered);
             }
         });
+
     }
 
     function renderMarkers(photos) {
@@ -78,18 +92,56 @@
 
         const bounds = new google.maps.LatLngBounds();
 
+        const colors = [
+            '#e74c3c', '#3498db', '#2ecc71', '#9b59b6',
+            '#f1c40f', '#e67e22', '#1abc9c', '#34495e'
+        ];
+
+        const userColorMap = {};
+        let colorIndex = 0;
+
+        const legendList = document.getElementById('legendList');
+        legendList.innerHTML = ''; // clear existing legend
+
         photos.forEach(photo => {
             const pos = { lat: photo.latitude, lng: photo.longitude };
-            const marker = new google.maps.Marker({ position: pos, map });
+
+            if (!userColorMap[photo.user]) {
+                userColorMap[photo.user] = colors[colorIndex % colors.length];
+                colorIndex++;
+            }
+
+            if (!legendList.querySelector(`[data-user="${photo.user}"]`)) {
+                const li = document.createElement('li');
+                li.setAttribute('data-user', photo.user);
+                li.innerHTML = `
+                    <span class="inline-block w-3 h-3 mr-2 rounded-full" style="background-color: ${userColorMap[photo.user]}"></span>
+                    ${photo.user}
+                `;
+                legendList.appendChild(li);
+            }
+
+            const marker = new google.maps.Marker({
+                position: pos,
+                map,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 7,
+                    fillColor: userColorMap[photo.user],
+                    fillOpacity: 1,
+                    strokeColor: '#000',
+                    strokeWeight: 1
+                }
+            });
 
             const popup = `
-                <div class="text-sm">
-                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
-                    <p><strong>${photo.user}</strong></p>
-                    <p>${photo.comment || 'No comment'}</p>
-                    <p class="text-gray-500 text-xs">${photo.taken}</p>
-                </div>
-            `;
+            <div class="text-sm">
+                <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
+                <p><strong>${photo.user}</strong></p>
+                <p>${photo.comment || 'No comment'}</p>
+                <p class="text-gray-500 text-xs">${photo.taken}</p>
+            </div>
+        `;
 
             const infowindow = new google.maps.InfoWindow({ content: popup });
             marker.addListener("click", () => infowindow.open(map, marker));
@@ -102,6 +154,7 @@
             map.fitBounds(bounds);
         }
     }
+
 </script>
 
 <script async defer
