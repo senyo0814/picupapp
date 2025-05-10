@@ -1,15 +1,14 @@
-{% extends 'picupapp/base.html' %}
-
-{% block content %}
-<h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-    <span>📍</span> Photo Map
-</h2>
-
-<div class="mb-6">
+<div class="mb-4 flex items-center gap-4">
     <a href="{% url 'picupapp:landing' %}"
-       class="spinner-link inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">
+       class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-2 rounded shadow transition">
         ← Back to Landing
     </a>
+    <div class="flex items-center gap-2">
+        <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
+        <label for="toggleMine" class="text-sm text-gray-700">
+            Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
+        </label>
+    </div>
 </div>
 
 <div class="mb-6 flex items-center gap-2">
