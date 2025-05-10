@@ -269,11 +269,16 @@ def update_comment(request):
     if request.method == 'POST':
         photo_id = request.POST.get('photo_id')
         new_comment = request.POST.get('comment')
+        new_visibility = request.POST.get('visibility', 'private') == 'public'
+        shared_with_ids = request.POST.getlist('shared_with')
+
         try:
             photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
             photo.comment = new_comment
+            photo.is_public = new_visibility
             photo.save()
-            return redirect('picupapp:landing')  # or return JsonResponse if using AJAX
+            photo.shared_with.set(shared_with_ids)
+            return redirect('picupapp:landing')
         except PhotoUpload.DoesNotExist:
             return HttpResponse("Unauthorized", status=403)
 
