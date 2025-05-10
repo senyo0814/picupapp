@@ -1,35 +1,35 @@
 {% extends 'picupapp/base.html' %}
 
 {% block content %}
-<h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center gap-2">
-    <span>📍</span> Photo Map
-</h2>
-
-<div class="mb-6">
-    <a href="{% url 'picupapp:landing' %}"
-       class="spinner-link inline-block bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition">
-        ← Back to Landing
-    </a>
-</div>
-
-<div class="mb-6 flex items-center gap-2">
-    <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
-    <label for="toggleMine" class="text-sm text-gray-700">
-        Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
-    </label>
-</div>
-
-<div id="legend"
-     class="mb-4 p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs">
-    <h3 class="font-semibold mb-2">Legend</h3>
-    <ul id="legendList" class="space-y-1">
-        <li>
-            <label class="flex items-center gap-2">
-                <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
-                <span>Select All</span>
+<div class="mb-4 flex flex-wrap items-center gap-4 justify-between">
+    <div class="flex items-center gap-3">
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <span>📍</span> Photo Map
+        </h2>
+        <a href="{% url 'picupapp:landing' %}"
+           class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-2 rounded shadow transition">
+            ← Back to Landing
+        </a>
+        <div class="flex items-center gap-2">
+            <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
+            <label for="toggleMine" class="text-sm text-gray-700">
+                Show Only My Photos (<strong class="text-black">{{ username }}</strong>)
             </label>
-        </li>
-    </ul>
+        </div>
+    </div>
+
+    <div id="legend"
+         class="p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs">
+        <h3 class="font-semibold mb-2">Legend</h3>
+        <ul id="legendList" class="space-y-1">
+            <li>
+                <label class="flex items-center gap-2">
+                    <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
+                    <span>Select All</span>
+                </label>
+            </li>
+        </ul>
+    </div>
 </div>
 
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300">
