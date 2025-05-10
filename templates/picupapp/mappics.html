@@ -4,23 +4,24 @@
 <div class="mb-4 flex flex-wrap items-center gap-4 justify-between">
     <div class="flex items-center gap-3 flex-wrap">
         <h2 class="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <span>📍</span> <span class="hidden sm:inline">Photo Map</span>
+            <span class="text-2xl sm:text-base">📍</span> <span class="hidden sm:inline">Photo Map</span>
         </h2>
         <a href="{% url 'picupapp:landing' %}"
            class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-1 px-2 rounded shadow transition">
-            <span class="sm:hidden">🏠</span><span class="hidden sm:inline">← Back to Landing</span>
+            <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1">🏠</span>
+            <span class="hidden sm:inline">← Back to Landing</span>
         </a>
         <div class="flex items-center gap-2">
             <input type="checkbox" id="toggleMine" class="accent-blue-600 h-4 w-4" checked />
             <label for="toggleMine" class="text-sm text-gray-700 dark:text-gray-200">
                 <span class="hidden sm:inline">Show Only My Photos (<strong class="text-black dark:text-white">{{ username }}</strong>)</span>
-                <span class="sm:hidden" title="Show Only My Photos">👤</span>
+                <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Show Only My Photos">👤</span>
             </label>
         </div>
         <div class="flex items-center gap-2">
             <label for="darkModeToggle" class="text-sm text-gray-700 dark:text-gray-200">
                 <span class="hidden sm:inline">Dark Mode</span>
-                <span class="sm:hidden" title="Dark Mode">🌙</span>
+                <span class="sm:hidden text-xl rounded-full bg-blue-100 px-2 py-1" title="Dark Mode">🌙</span>
             </label>
             <input type="checkbox" id="darkModeToggle" class="accent-blue-600 h-4 w-4" />
         </div>
@@ -41,10 +42,6 @@
 </div>
 
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
-    <div id="map" class="h-full w-full rounded"></div>
-</div>
-
-<div class="relative h-[60vh] w-full rounded shadow border border-gray-300">
     <div id="map" class="h-full w-full rounded"></div>
 </div>
 
@@ -188,10 +185,17 @@
     }
 </script>
 <script>
-    // Enable toggle for dark mode manually
+    // Enable toggle for dark mode manually with storage
     const darkToggle = document.getElementById('darkModeToggle');
+    const prefersDark = localStorage.getItem('theme') === 'dark';
+    if (prefersDark) {
+        document.documentElement.classList.add('dark');
+        darkToggle.checked = true;
+    }
     darkToggle.addEventListener('change', () => {
-        document.documentElement.classList.toggle('dark', darkToggle.checked);
+        const isDark = darkToggle.checked;
+        document.documentElement.classList.toggle('dark', isDark);
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
     });
 </script>
 
