@@ -176,31 +176,31 @@
                     <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
                     <button onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 ml-2">Close</button>
                 </form>
-                <table class="border-collapse border border-gray-400 text-sm w-full mt-4">
+                <table class="table-auto w-full border border-gray-300 mt-4">
                     <tbody>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Uploaded By:</th>
-                            <td id="modalUploader" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Uploaded By:</th>
+                            <td id="modalUploader" class="border-collapse border border-gray-300"></td>
                         </tr>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Uploaded At:</th>
-                            <td id="modalUploaded" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Uploaded At:</th>
+                            <td id="modalUploaded" class="border-collapse border border-gray-300"></td>
                         </tr>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Date Taken:</th>
-                            <td id="modalTaken" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Date Taken:</th>
+                            <td id="modalTaken" class="border-collapse border border-gray-300"></td>
                         </tr>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Shared With:</th>
-                            <td id="modalSharedWith" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Shared With:</th>
+                            <td id="modalSharedWith" class="border-collapse border border-gray-300"></td>
                         </tr>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Latitude:</th>
-                            <td id="modalLat" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Latitude:</th>
+                            <td id="modalLat" class="border-collapse border border-gray-300"></td>
                         </tr>
                         <tr>
-                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Longitude:</th>
-                            <td id="modalLon" class="border-collapse border border-gray-400 text-gray-900"></td>
+                            <th class="bg-gray-200 p-2 border border-gray-300">Longitude:</th>
+                            <td id="modalLon" class="border-collapse border border-gray-300"></td>
                         </tr>
                     </tbody>
                 </table>
@@ -259,7 +259,24 @@
                 mapLink.innerText = 'View on Map';
                 mapLink.id = 'modalMapLink';
                 mapLink.className = 'text-blue-600 underline block mt-2';
-                document.getElementById('modalLon').parentNode.appendChild(mapLink);
+
+                const mapRow = document.createElement('tr');
+
+                const mapLabelCell = document.createElement('th');
+                mapLabelCell.className = 'bg-gray-200 p-2 border border-gray-300"';
+                mapLabelCell.textContent = 'Map:';
+
+                const mapValueCell = document.createElement('td');
+                mapValueCell.className = 'border-collapse border border-gray-300';
+                mapValueCell.appendChild(mapLink);
+
+                mapRow.appendChild(mapLabelCell);
+                mapRow.appendChild(mapValueCell);
+
+                // Insert after the longitude row
+                const lonRow = document.getElementById('modalLon').closest('tr');
+                lonRow.parentNode.insertBefore(mapRow, lonRow.nextSibling);
+
             }
 
             // Preselect users if sharedWith is provided
