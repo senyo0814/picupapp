@@ -167,6 +167,7 @@ def landing(request):
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date
+                    is_public=request.POST.get('visibility') == 'public'
                 )
 
                 # Explicitly save the file to trigger `upload_to=user_directory_path`
@@ -179,17 +180,17 @@ def landing(request):
                 if shared_ids:
                     photo.shared_with.set(User.objects.filter(id__in=shared_ids))
 
-                return redirect('picupapp:landing')
+            return redirect('picupapp:landing')
 
-                return render(request, 'picupapp/landing.html', {
-                    'photos': valid_photos,
-                    'username': request.user.username,
-                    'all_users': User.objects.exclude(id=request.user.id)
-                })
+        return render(request, 'picupapp/landing.html', {
+            'photos': valid_photos,
+            'username': request.user.username,
+            'all_users': User.objects.exclude(id=request.user.id)
+        })
 
-                except Exception as e:
-                    logger.exception("Landing view error:")
-                    return HttpResponse("Something went wrong.", status=500)
+    except Exception as e:
+        logger.exception("Landing view error:")
+        return HttpResponse("Something went wrong.", status=500)
 
 # --- Delete Photo ---
 
