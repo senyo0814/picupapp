@@ -28,6 +28,7 @@ LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = '/landing/'
 
 MIDDLEWARE = [
+    'picupapp.middleware.BlockBotProbeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
