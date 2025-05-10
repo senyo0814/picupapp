@@ -146,7 +146,7 @@
     <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
         <div class="bg-white rounded p-4 max-w-xl w-full relative">
             <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
-            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain mb-4" />
             <div class="text-sm space-y-1">
                 <form method="POST" action="/update-comment/" id="commentForm">
                     {% csrf_token %}
