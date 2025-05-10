@@ -19,22 +19,23 @@
     </label>
 </div>
 
+<div id="legend"
+     class="mb-4 p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs">
+    <h3 class="font-semibold mb-2">Legend</h3>
+    <ul id="legendList" class="space-y-1">
+        <li>
+            <label class="flex items-center gap-2">
+                <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
+                <span>Select All</span>
+            </label>
+        </li>
+    </ul>
+</div>
+
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300">
     <div id="map" class="h-full w-full rounded"></div>
-
-    <div id="legend"
-         class="absolute top-14 right-2 p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs z-10">
-        <h3 class="font-semibold mb-2">Legend</h3>
-        <ul id="legendList" class="space-y-1">
-            <li>
-                <label class="flex items-center gap-2">
-                    <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked>
-                    <span>Select All</span>
-                </label>
-            </li>
-        </ul>
-    </div>
 </div>
+
 
 <script>
     const userPhotos = {{ user_photos|safe }};
