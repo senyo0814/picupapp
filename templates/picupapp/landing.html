@@ -147,7 +147,7 @@
         <div class="bg-white rounded p-4 max-w-xl w-full relative">
             <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
             <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain" style="margin: -10px 0;"/>
-            <div class="text-sm space-y-1">
+            <div class="text-sm mt-3">
                 <form method="POST" action="/update-comment/" id="commentForm">
                     {% csrf_token %}
                     <input type="hidden" name="photo_id" id="modalPhotoId">
@@ -175,7 +175,7 @@
                     <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
                     <button onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 ml-2">Close</button>
                 </form>
-                <table class="text-sm w-full mt-4">
+                <table class="table-auto text-sm w-full mt-4">
                     <tbody>
                         <tr>
                             <td class="font-semibold pr-2 text-gray-700">Uploaded By:</td>
