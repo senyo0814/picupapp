@@ -30,12 +30,13 @@
     <div id="legend"
          class="p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded shadow text-sm max-w-xs">
         <h3 class="font-semibold mb-2 text-gray-900 dark:text-gray-100">Legend</h3>
-        <select id="legendSelect"
-                class="w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700">
-            <option value="all">Select All</option>
-            <!-- More options will be added dynamically in JS -->
+        <select id="legendSelect" multiple
+                class="w-full px-2 py-1 border border-gray-300 dark:border-gray-500 rounded text-gray-800 dark:text-gray-100 bg-white dark:bg-gray-700"
+                size="6">
+            <option value="__all__">⬤ Select All</option>
         </select>
     </div>
+
 </div>
 
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
@@ -91,7 +92,7 @@
 
         const bounds = new google.maps.LatLngBounds();
         const legendSelect = document.getElementById('legendSelect');
-        legendSelect.innerHTML = '<option value="all">Select All</option>';
+        legendSelect.innerHTML = '<option value="__all__">⬤ Select All</option>';
 
         const userMarkersMap = {};
 
@@ -118,7 +119,10 @@
             const option = document.createElement('option');
             option.value = user;
             option.textContent = user;
+            option.style.color = color;
+            option.dataset.color = color;
             legendSelect.appendChild(option);
+
 
             photos.forEach(photo => {
                 if (activeUsers.size > 0 && !activeUsers.has(user)) return;
@@ -182,6 +186,25 @@
                 document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
                 renderMarkers();
+
+                document.getElementById('legendSelect').addEventListener('change', function () {
+                    const selectedOptions = Array.from(this.selectedOptions).map(o => o.value);
+
+                    if (selectedOptions.includes('__all__')) {
+                        activeUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                        this.querySelectorAll('option').forEach(opt => {
+                            if (opt.value !== '__all__') opt.selected = true;
+                        });
+                    } else {
+                        activeUsers = new Set(selectedOptions);
+                    }
+
+                    document.getElementById('toggleMine').checked =
+                        activeUsers.size === 1 && activeUsers.has('{{ username }}');
+
+                    renderMarkers();
+                });
+
 
                 legendSelect.addEventListener('change', (e) => {
                     const selected = e.target.value;
