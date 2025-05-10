@@ -269,19 +269,33 @@ def update_comment(request):
 
 @login_required
 def photo_map_view(request):
-    user = request.user
+    # Filter users who have uploaded or shared public photos
+    shared_users = User.objects.filter(
+        photoupload__isnull=False
+    ).distinct()
 
-    # Get all users who have shared photos with this user or made them public
-    visible_photos = PhotoUpload.objects.filter(
-        models.Q(is_public=True) |
-        models.Q(shared_with=user)
-    )
+    # Include request.user in case of personal view
+    username = request.user.username if request.user.is_authenticated else 'Anonymous'
 
-    shared_users = User.objects.filter(id__in=visible_photos.values_list('uploaded_by', flat=True).distinct())
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(is_public=True)
 
-    context = {
+    return render(request, 'picupapp/mappics.html', {
+        'username': username,
         'shared_users': shared_users,
-        'current_user': user,
-    }
-    return render(request, 'picupapp/mappics.html', context)
+        'user_photos': serialize_photos(user_photos),
+        'other_photos': serialize_photos(other_photos),
+    })
 
+def serialize_photos(qs):
+    return [
+        {
+            "id": p.id,
+            "image_url": p.image.url,
+            "latitude": p.latitude,
+            "longitude": p.longitude,
+            "comment": p.comment,
+            "user": p.uploaded_by.username,
+            "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
+        } for p in qs
+    ]
