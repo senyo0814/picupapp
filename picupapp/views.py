@@ -132,6 +132,9 @@ def landing(request):
         ).distinct().select_related('uploaded_by').prefetch_related('shared_with').order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
+            visibility_public = request.POST.get('visibility') == 'public'
+            shared_ids = request.POST.getlist('shared_with')
+
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
                 f.seek(0)
@@ -159,7 +162,6 @@ def landing(request):
                     lat = lon = None
 
                 comment = request.POST.get(f'comment_{idx}', '')
-                is_public = request.POST.get('visibility') == 'public'
 
                 from django.core.files.base import ContentFile
 
@@ -169,13 +171,12 @@ def landing(request):
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date,
-                    is_public=is_public
+                    is_public=visibility_public
                 )
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
                 photo.save()
 
-                shared_ids = request.POST.getlist('shared_with')
                 if shared_ids:
                     photo.shared_with.set(User.objects.filter(id__in=shared_ids))
 
@@ -190,7 +191,6 @@ def landing(request):
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
-
 
 # --- Delete Photo ---
 
