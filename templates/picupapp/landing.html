@@ -128,38 +128,37 @@
 
     <!-- Add Modal for EXIF and metadata editing -->
     <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden items-center justify-center">
-            <div class="bg-white rounded p-4 max-w-xl w-full relative">
-                <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
-                <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
-                <div class="text-sm space-y-1">
-                    <form method="POST" action="/update-comment/" id="commentForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="photo_id" id="modalPhotoId">
-                        <label for="modalComment" class="block font-semibold">Comment:</label>
-                        <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
-                        <div class="mt-2">
-                            <label for="modalVisibility" class="font-semibold">Visibility:</label>
-                            <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1">
-                                <option value="private">Private</option>
-                                <option value="public">Public</option>
-                            </select>
-                        </div>
-                        <div class="mt-2">
-                            <label for="modalSharedSelect" class="font-semibold">Shared With:</label>
-                            <select name="shared_with" id="modalSharedSelect" multiple class="w-full border mt-1 rounded px-2 py-1">
-                                {% for user in all_users %}
-                                <option value="{{ user.id }}">{{ user.username }}</option>
-                                {% endfor %}
-                            </select>
-                            <p class="text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple users.</p>
-                        </div>
-                        <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
-                    </form>
-                    <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
-                    <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
-                    <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
-                    <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
-                </div>
+        <div class="bg-white rounded p-4 max-w-xl w-full relative">
+            <button onclick="closeExifModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-96 object-contain mb-4" />
+            <div class="text-sm space-y-1">
+                <form method="POST" action="/update-comment/" id="commentForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="photo_id" id="modalPhotoId">
+                    <label for="modalComment" class="block font-semibold">Comment:</label>
+                    <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1"></textarea>
+                    <div class="mt-2">
+                        <label for="modalVisibility" class="font-semibold">Visibility:</label>
+                        <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1">
+                            <option value="private">Private</option>
+                            <option value="public">Public</option>
+                        </select>
+                    </div>
+                    <div class="mt-2">
+                        <label for="modalSharedSelect" class="font-semibold">Shared With:</label>
+                        <select name="shared_with" id="modalSharedSelect" multiple class="w-full border mt-1 rounded px-2 py-1">
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500">Hold Ctrl (or Cmd) to select multiple users.</p>
+                    </div>
+                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
+                </form>
+                <p><strong>Uploaded At:</strong> <span id="modalUploaded"></span></p>
+                <p><strong>Date Taken:</strong> <span id="modalTaken"></span></p>
+                <p><strong>Latitude:</strong> <span id="modalLat"></span></p>
+                <p><strong>Longitude:</strong> <span id="modalLon"></span></p>
             </div>
         </div>
     </div>
@@ -202,11 +201,13 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalVisibility').value = visibility;
 
+            // Reset selected options
             const sharedSelect = document.getElementById('modalSharedSelect');
             Array.from(sharedSelect.options).forEach(opt => {
                 opt.selected = sharedWith.includes(opt.textContent);
             });
 
+            // Remove and add map link
             const previousMapLink = document.getElementById('modalMapLink');
             if (previousMapLink) previousMapLink.remove();
 
@@ -220,13 +221,9 @@
                 document.getElementById('modalLon').parentNode.appendChild(mapLink);
             }
 
+            // Show modal
             document.getElementById('exifModal').classList.remove('hidden');
             document.getElementById('exifModal').classList.add('flex');
-        }
-
-        function closeExifModal() {
-            document.getElementById('exifModal').classList.remove('flex');
-            document.getElementById('exifModal').classList.add('hidden');
         }
     </script>
     <script>
