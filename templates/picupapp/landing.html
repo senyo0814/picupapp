@@ -406,14 +406,20 @@
 
             const formData = new FormData();
             selectedFiles.forEach((file, index) => {
-                formData.append('images', file); // use same name 'images' to match backend
+                formData.append('images', file);
                 const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
                 formData.append(`comment_${index}`, comment);
             });
 
-            // Also include any hidden metadata fields
             document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
                 formData.append(input.name, input.value);
+            });
+
+            const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
+            formData.append('visibility', visibility);
+
+            document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
+                formData.append('shared_with', option.value);
             });
 
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -441,14 +447,6 @@
 
             return false;
         }
-    </script>
-    <script>
-        document.querySelectorAll('input[name=\"visibility\"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                const sharedBox = document.getElementById('sharedWithContainer');
-                sharedBox.style.display = radio.value === 'public' ? 'block' : 'none';
-            });
-        });
     </script>
 
 </body>
