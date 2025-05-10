@@ -111,7 +111,8 @@
                         '{{ photo.latitude }}',
                         '{{ photo.longitude }}',
                         '{{ photo.id }}',
-                        '{{ photo.shared_with.all|join:", " }}'
+                        '{{ photo.shared_with.all|join:", " }}',
+                        '{{ photo.uploaded_by.username }}'
                     )"
                         class="spinner-link w-full">
 
@@ -178,7 +179,7 @@
                 <table class="border-collapse border border-gray-400 text-sm w-full mt-4">
                     <tbody>
                         <tr>
-                            <thd class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Uploaded By:</thd>
+                            <th class="border-collapse border border-gray-400 font-semibold pr-2 text-gray-700">Uploaded By:</th>
                             <td id="modalUploader" class="border-collapse border border-gray-400 text-gray-900"></td>
                         </tr>
                         <tr>
