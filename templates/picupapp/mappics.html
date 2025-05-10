@@ -32,11 +32,13 @@
     </select>
 </div>
 
-<div id="map" class="rounded shadow border border-gray-300 h-[60vh] w-full"></div>
-<div id="legend" class="mt-4 p-4 border border-gray-300 rounded bg-white shadow text-sm max-w-md">
-    <h3 class="font-semibold mb-2">Legend</h3>
-    <ul id="legendList" class="space-y-1"></ul>
+<div id="map" class="relative rounded shadow border border-gray-300 h-[60vh] w-full">
+    <div id="legend" class="absolute bottom-4 left-4 p-3 bg-white border border-gray-300 rounded shadow text-sm max-w-xs z-10">
+        <h3 class="font-semibold mb-2">Legend</h3>
+        <ul id="legendList" class="space-y-1"></ul>
+    </div>
 </div>
+
 
 
 <!-- Scripts -->
