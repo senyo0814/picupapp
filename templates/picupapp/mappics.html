@@ -43,6 +43,7 @@
         '#d35400', '#7f8c8d', '#8e44ad', '#16a085'
     ];
     let colorIndex = 0;
+    let currentUserFilter = 'all';
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -54,15 +55,16 @@
 
         document.getElementById('toggleMine').addEventListener('change', function () {
             if (this.checked) {
-                const filtered = allPhotos.filter(p => p.user === "{{ username }}");
-                renderMarkers(filtered, "{{ username }}");
+                currentUserFilter = '{{ username }}';
+                renderMarkers(allPhotos);
             } else {
-                renderMarkers(allPhotos, 'all');
+                currentUserFilter = 'all';
+                renderMarkers(allPhotos);
             }
         });
     }
 
-    function renderMarkers(photos, activeUser = 'all') {
+    function renderMarkers(photos) {
         markers.forEach(m => m.setMap(null));
         markers = [];
 
@@ -75,17 +77,18 @@
         const allButtonLi = document.createElement('li');
         allButtonLi.innerHTML = `
             <button data-user="all"
-                class="legend-btn flex items-center gap-2 text-sm text-blue-700 font-semibold hover:underline w-full text-left ${activeUser === 'all' ? 'bg-blue-100 text-blue-800 font-semibold' : ''}">
+                class="legend-btn flex items-center gap-2 text-sm text-blue-700 font-semibold hover:underline w-full text-left ${currentUserFilter === 'all' ? 'bg-blue-100 text-blue-800 font-semibold' : ''}">
                 <span class="inline-block w-3 h-3 rounded-full bg-gray-400"></span>
                 <span>Show All</span>
             </button>
         `;
         legendList.appendChild(allButtonLi);
 
-        photos.forEach(photo => {
+        const userMarkersMap = {};
+
+        allPhotos.forEach(photo => {
             if (!photo.latitude || !photo.longitude) return;
 
-            const pos = { lat: photo.latitude, lng: photo.longitude };
             const user = photo.user || 'Unknown';
 
             if (!globalUserColorMap[user]) {
@@ -93,70 +96,63 @@
                 colorIndex++;
             }
 
-            const color = globalUserColorMap[user];
-
-            if (!seenUsers.has(user)) {
-                const li = document.createElement('li');
-                li.innerHTML = `
-                    <button data-user="${user}"
-                        class="legend-btn flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition w-full text-left ${activeUser === user ? 'bg-blue-100 text-blue-800 font-semibold' : ''}">
-                        <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                        <span>${user}</span>
-                    </button>
-                `;
-                legendList.appendChild(li);
-                seenUsers.add(user);
+            if (!userMarkersMap[user]) {
+                userMarkersMap[user] = [];
             }
-
-            const marker = new google.maps.Marker({
-                position: pos,
-                map,
-                icon: {
-                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                          <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                        </svg>`)}`,
-                }
-            });
-
-            const popup = `
-                <div class="text-sm">
-                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
-                    <p><strong>${user}</strong></p>
-                    <p>${photo.comment || 'No comment'}</p>
-                    <p class="text-gray-500 text-xs">${photo.taken}</p>
-                </div>
-            `;
-            const infowindow = new google.maps.InfoWindow({ content: popup });
-            marker.addListener("click", () => infowindow.open(map, marker));
-            markers.push(marker);
-
-            bounds.extend(pos);
+            userMarkersMap[user].push(photo);
         });
 
-        if (photos.length > 0) {
+        Object.entries(userMarkersMap).forEach(([user, photos]) => {
+            const color = globalUserColorMap[user];
+
+            const li = document.createElement('li');
+            li.innerHTML = `
+                <button data-user="${user}"
+                    class="legend-btn flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 transition w-full text-left ${currentUserFilter === user ? 'bg-blue-100 text-blue-800 font-semibold' : ''}">
+                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                    <span>${user}</span>
+                </button>
+            `;
+            legendList.appendChild(li);
+
+            photos.forEach(photo => {
+                const pos = { lat: photo.latitude, lng: photo.longitude };
+                const marker = new google.maps.Marker({
+                    position: pos,
+                    map,
+                    icon: {
+                        url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                              <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                            </svg>`)}`,
+                    }
+                });
+
+                const popup = `
+                    <div class="text-sm">
+                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
+                        <p><strong>${user}</strong></p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-gray-500 text-xs">${photo.taken}</p>
+                    </div>
+                `;
+                const infowindow = new google.maps.InfoWindow({ content: popup });
+                marker.addListener("click", () => infowindow.open(map, marker));
+                markers.push(marker);
+
+                bounds.extend(pos);
+            });
+        });
+
+        if (allPhotos.length > 0) {
             map.fitBounds(bounds);
         }
 
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
-                const selectedUser = btn.getAttribute('data-user');
-                const toggleMine = document.getElementById('toggleMine');
-
-                legendList.querySelectorAll('button[data-user]').forEach(b => {
-                    b.classList.remove('bg-blue-100', 'text-blue-800', 'font-semibold');
-                });
-
-                btn.classList.add('bg-blue-100', 'text-blue-800', 'font-semibold');
-
-                if (selectedUser === 'all') {
-                    toggleMine.checked = false;
-                    renderMarkers(allPhotos, 'all');
-                } else {
-                    toggleMine.checked = selectedUser === "{{ username }}";
-                    const filtered = allPhotos.filter(p => p.user === selectedUser);
-                    renderMarkers(filtered, selectedUser);
-                }
+                currentUserFilter = btn.getAttribute('data-user');
+                document.getElementById('toggleMine').checked = currentUserFilter === "{{ username }}";
+                renderMarkers(allPhotos);
             });
         });
     }
