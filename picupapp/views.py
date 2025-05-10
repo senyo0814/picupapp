@@ -120,10 +120,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from django.db import models  # Make sure this is imported for models.Q
+
 @login_required
 def landing(request):
     try:
-       valid_photos = PhotoUpload.objects.filter(
+        valid_photos = PhotoUpload.objects.filter(
             models.Q(uploaded_by=request.user) |
             models.Q(shared_with=request.user) |
             models.Q(is_public=True)
@@ -157,25 +159,22 @@ def landing(request):
                     lat = lon = None
 
                 comment = request.POST.get(f'comment_{idx}', '')
+                is_public = request.POST.get('visibility') == 'public'
 
                 from django.core.files.base import ContentFile
 
-                # Instead of assigning `image=f` directly
                 photo = PhotoUpload(
                     uploaded_by=request.user,
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date,
-                    is_public=request.POST.get('visibility') == 'public'
+                    is_public=is_public
                 )
 
-                # Explicitly save the file to trigger `upload_to=user_directory_path`
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
-
                 photo.save()
 
-                # Assign shared users
                 shared_ids = request.POST.getlist('shared_with')
                 if shared_ids:
                     photo.shared_with.set(User.objects.filter(id__in=shared_ids))
@@ -191,6 +190,7 @@ def landing(request):
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
+
 
 # --- Delete Photo ---
 
