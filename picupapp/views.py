@@ -166,7 +166,7 @@ def landing(request):
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
-                    photo_taken_date=taken_date
+                    photo_taken_date=taken_date,
                     is_public=request.POST.get('visibility') == 'public'
                 )
 
