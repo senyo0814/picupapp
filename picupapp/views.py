@@ -269,12 +269,10 @@ def update_comment(request):
 
 @login_required
 def photo_map_view(request):
-    # Filter users who have uploaded or shared public photos
     shared_users = User.objects.filter(
-        photoupload__isnull=False
+        photoupload__is_public=True
     ).distinct()
 
-    # Include request.user in case of personal view
     username = request.user.username if request.user.is_authenticated else 'Anonymous'
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
