@@ -155,7 +155,19 @@
                     </div>
                 `;
                 const infowindow = new google.maps.InfoWindow({ content: popup });
-                marker.addListener("click", () => infowindow.open(map, marker));
+                marker.addListener("click", () => {
+                    infowindow.open(map, marker);
+
+                    // Recenter when the info window is closed
+                    google.maps.event.addListenerOnce(infowindow, 'closeclick', () => {
+                        if (markers.length > 0) {
+                            const newBounds = new google.maps.LatLngBounds();
+                            markers.forEach(m => newBounds.extend(m.getPosition()));
+                            map.fitBounds(newBounds);
+                        }
+                    });
+                });
+
                 markers.push(marker);
 
                 bounds.extend(pos);
