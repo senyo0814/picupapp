@@ -173,8 +173,17 @@
                         <p class="text-sm text-gray-500 mt-1">Hold Ctrl (or Cmd) to select multiple users.</p>
                     </div>
 
-                    <button type="submit" class="mt-2 bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
-                    <button onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600 ml-2">Close</button>
+                    <div class="mt-2 flex flex-wrap gap-2 items-center">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
+                        <button type="button" onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600">Close</button>
+                        <a id="modalMapLink"
+                           href="#"
+                           target="_blank"
+                           class="hidden bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
+                            View on Map
+                        </a>
+                    </div>
+
                 </form>
                 <table class="table-auto w-full border border-gray-300 mt-4">
                     <tbody>
@@ -252,29 +261,13 @@
             if (previousMapRow) previousMapRow.remove();
 
             if (lat && lon) {
-                const mapLink = document.createElement('a');
-                mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
-                mapLink.target = '_blank';
-                mapLink.innerText = 'View on Map';
-                mapLink.id = 'modalMapLink';
-                mapLink.className = 'text-blue-600 underline block mt-2';
-
-                const mapRow = document.createElement('tr');
-
-                const mapLabelCell = document.createElement('th');
-                mapLabelCell.className = 'bg-gray-200 border border-gray-300 font-normal';
-                mapLabelCell.textContent = 'Map:';
-
-                const mapValueCell = document.createElement('td');
-                mapValueCell.className = 'border-collapse border border-gray-300';
-                mapValueCell.appendChild(mapLink);
-
-                mapRow.appendChild(mapLabelCell);
-                mapRow.appendChild(mapValueCell);
-
-                // Insert after the longitude row
-                const lonRow = document.getElementById('modalLon').closest('tr');
-                lonRow.parentNode.insertBefore(mapRow, lonRow.nextSibling);
+                const mapLink = document.getElementById('modalMapLink');
+                if (lat && lon) {
+                    mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
+                    mapLink.classList.remove('hidden');
+                } else {
+                    mapLink.classList.add('hidden');
+                }
             }
 
             // Preselect users if sharedWith is provided
