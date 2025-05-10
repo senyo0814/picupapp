@@ -274,8 +274,13 @@
             metadataBody.innerHTML = '';
             metadataWrapper.style.display = 'none';
 
+            // Create a new DataTransfer to update file input
+            const dt = new DataTransfer();
+
             selectedFiles.forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
+
+                dt.items.add(file);  // add to form input
 
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
@@ -334,13 +339,14 @@
                 exifReader.readAsArrayBuffer(file);
             });
 
+            // Update the file input with the current file list
+            fileInput.files = dt.files;
             document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
         }
 
         function removeFile(index) {
             selectedFiles.splice(index, 1);
-            fileInput.files = createFileList(selectedFiles);
-            showPreview([]);
+            showPreview([]);  // triggers re-build and fileInput update
         }
 
         function createFileList(files) {
@@ -349,8 +355,6 @@
             return dt.files;
         }
     </script>
-
-
     <script>
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
