@@ -11,9 +11,6 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import os
 from django.views.decorators.csrf import csrf_exempt
-import io
-from django.core.files.base import ContentFile
-from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -43,14 +40,14 @@ def register_view(request):
 
 def extract_gps_and_datetime(file):
     try:
-        file.seek(0)
+        file.seek(0)  # Ensure file pointer is at start
         img = Image.open(file)
         exif_data = img._getexif()
         gps_info = {}
         datetime_taken = None
 
         if not exif_data:
-            logger.info("No EXIF data found.")
+            print(">>> No EXIF data found.")
             return None, None, None
 
         for tag, value in exif_data.items():
@@ -62,13 +59,21 @@ def extract_gps_and_datetime(file):
                     sub_decoded = GPSTAGS.get(t)
                     gps_info[sub_decoded] = value[t]
 
+        print(">>> Image filename:", getattr(file, 'name', 'Unknown'))
+        print(">>> GPSLatitude Raw:", gps_info.get('GPSLatitude'))
+        print(">>> GPSLatitudeRef:", gps_info.get('GPSLatitudeRef'))
+        print(">>> GPSLongitude Raw:", gps_info.get('GPSLongitude'))
+        print(">>> GPSLongitudeRef:", gps_info.get('GPSLongitudeRef'))
+
         def get_gps_decimal(coord, ref):
             try:
                 def frac(val):
                     return float(val[0]) / float(val[1]) if isinstance(val, tuple) else float(val)
+
                 d = frac(coord[0])
                 m = frac(coord[1])
                 s = frac(coord[2])
+
                 decimal = d + (m / 60.0) + (s / 3600.0)
                 if ref and str(ref).upper() in ['S', 'W']:
                     decimal *= -1
@@ -80,12 +85,17 @@ def extract_gps_and_datetime(file):
         lat = lon = None
         if 'GPSLatitude' in gps_info and 'GPSLatitudeRef' in gps_info:
             lat = get_gps_decimal(gps_info['GPSLatitude'], gps_info['GPSLatitudeRef'])
+
         if 'GPSLongitude' in gps_info and 'GPSLongitudeRef' in gps_info:
             lon = get_gps_decimal(gps_info['GPSLongitude'], gps_info['GPSLongitudeRef'])
+
+        print(">>> Parsed Latitude:", lat)
+        print(">>> Parsed Longitude:", lon)
 
         if datetime_taken:
             try:
                 datetime_taken = datetime.strptime(datetime_taken, "%Y:%m:%d %H:%M:%S")
+                print(">>> Parsed Date Taken:", datetime_taken)
             except ValueError as ve:
                 logger.warning(f"Invalid datetime format in EXIF: {ve}")
                 datetime_taken = None
@@ -93,10 +103,22 @@ def extract_gps_and_datetime(file):
         return lat, lon, datetime_taken
 
     except Exception as e:
+        print(">>> EXIF parse failed:", e)
         logger.warning(f"EXIF parse failed: {e}")
         return None, None, None
 
 # --- Landing View ---
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.http import HttpResponse
+from .models import PhotoUpload
+from .exif_utils import extract_gps_and_datetime
+from datetime import datetime
+import io
+import logging
+
+logger = logging.getLogger(__name__)
 
 @login_required
 def landing(request):
@@ -132,32 +154,28 @@ def landing(request):
                     lat = lon = None
 
                 comment = request.POST.get(f'comment_{idx}', '')
-                visibility = request.POST.get('visibility')
 
+                from django.core.files.base import ContentFile
+
+                # Instead of assigning `image=f` directly
                 photo = PhotoUpload(
                     uploaded_by=request.user,
                     comment=comment,
                     latitude=lat,
                     longitude=lon,
-                    photo_taken_date=taken_date,
-                    is_public=(visibility == 'public')
+                    photo_taken_date=taken_date
                 )
 
+                # Explicitly save the file to trigger `upload_to=user_directory_path`
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
-                photo.save()
 
-                if visibility == 'public':
-                    shared_ids = request.POST.getlist('shared_with')
-                    if shared_ids:
-                        users_to_share = User.objects.filter(id__in=shared_ids)
-                        photo.shared_with.set(users_to_share)
+                photo.save()
 
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
             'photos': valid_photos,
-            'username': request.user.username,
-            'all_users': User.objects.exclude(id=request.user.id)
+            'username': request.user.username
         })
 
     except Exception as e:
@@ -179,55 +197,31 @@ def logout_view(request):
     logout(request)
     return redirect('picupapp:login')
 
-# --- Map Views ---
-
-@login_required
-def photo_map_view(request):
-    shared_users = User.objects.filter(
-        photoupload__in=PhotoUpload.objects.filter(
-            Q(is_public=True) | Q(shared_with=request.user)
-        )
-    ).distinct().order_by('username')
-
-    username = request.user.username
-
-    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
-        Q(is_public=True) | Q(shared_with=request.user)
-    ).exclude(latitude=None).exclude(longitude=None)
-
-    return render(request, 'picupapp/mappics.html', {
-        'username': username,
-        'shared_users': shared_users,
-        'user_photos': serialize_photos(user_photos),
-        'other_photos': serialize_photos(other_photos),
-    })
+# --- Map View ---
 
 @login_required
 def map_pics_view(request):
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
 
+    def serialize(photos):
+        return [
+            {
+                "latitude": p.latitude,
+                "longitude": p.longitude,
+                "image_url": settings.MEDIA_URL + str(p.image),
+                "comment": p.comment or "",
+                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "Unknown",
+                "user": p.uploaded_by.username
+            }
+            for p in photos
+        ]
+
     return render(request, 'picupapp/mappics.html', {
-        'user_photos': serialize_photos(user_photos),
-        'other_photos': serialize_photos(other_photos),
+        'user_photos': serialize(user_photos),
+        'other_photos': serialize(other_photos),
         'username': request.user.username
     })
-
-def serialize_photos(qs):
-    return [
-        {
-            "id": p.id,
-            "image_url": p.image.url,
-            "latitude": p.latitude,
-            "longitude": p.longitude,
-            "comment": p.comment,
-            "user": p.uploaded_by.username,
-            "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
-        } for p in qs
-    ]
-
-# --- Media Check ---
 
 def check_media_access(request):
     path = os.path.join(settings.MEDIA_ROOT, 'uploads')
@@ -250,7 +244,7 @@ def check_media_access(request):
 
     return JsonResponse(result)
 
-# --- Metadata Table ---
+# --- Metadata List View ---
 
 @login_required
 def metadata_table_view(request):
@@ -269,6 +263,39 @@ def update_comment(request):
             photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
             photo.comment = new_comment
             photo.save()
-            return redirect('picupapp:landing')
+            return redirect('picupapp:landing')  # or return JsonResponse if using AJAX
         except PhotoUpload.DoesNotExist:
             return HttpResponse("Unauthorized", status=403)
+
+@login_required
+def photo_map_view(request):
+    # Filter users who have uploaded or shared public photos
+    shared_users = User.objects.filter(
+        photoupload__isnull=False
+    ).distinct()
+
+    # Include request.user in case of personal view
+    username = request.user.username if request.user.is_authenticated else 'Anonymous'
+
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(is_public=True)
+
+    return render(request, 'picupapp/mappics.html', {
+        'username': username,
+        'shared_users': shared_users,
+        'user_photos': serialize_photos(user_photos),
+        'other_photos': serialize_photos(other_photos),
+    })
+
+def serialize_photos(qs):
+    return [
+        {
+            "id": p.id,
+            "image_url": p.image.url,
+            "latitude": p.latitude,
+            "longitude": p.longitude,
+            "comment": p.comment,
+            "user": p.uploaded_by.username,
+            "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
+        } for p in qs
+    ]
