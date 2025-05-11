@@ -132,8 +132,6 @@ def landing(request):
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
             selected_group_id = request.POST.get('photo_group')
-            selected_group_id = int(selected_group_id) if selected_group_id else None
-
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
@@ -194,6 +192,7 @@ def landing(request):
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
+
 
 # --- Delete Photo ---
 
@@ -272,13 +271,13 @@ def update_comment(request):
     if request.method == 'POST':
         photo_id = request.POST.get('photo_id')
         new_comment = request.POST.get('comment')
-        new_visibility = request.POST.get('visibility', 'private') == 'public'
+        new_visibility = request.POST.get('visibility', 'private')
         shared_with_ids = request.POST.getlist('shared_with')
 
         try:
             photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
             photo.comment = new_comment
-            photo.is_public = new_visibility
+            photo.visibility = new_visibility
             photo.save()
             photo.shared_with.set(shared_with_ids)
             return redirect('picupapp:landing')
@@ -287,7 +286,7 @@ def update_comment(request):
 
 @login_required
 def photo_map_view(request):
-    # Filter users who have uploaded or shared public photos
+    # Filter users who have uploaded or shared visible photos
     shared_users = User.objects.filter(
         photoupload__isnull=False
     ).distinct()
@@ -297,12 +296,11 @@ def photo_map_view(request):
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
-        models.Q(is_public=True) | models.Q(shared_with=request.user)
+        models.Q(visibility='any') | models.Q(shared_with=request.user) | models.Q(group__members=request.user)
     )
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
-        'shared_users': shared_users,
         'user_photos': serialize_photos(user_photos),
         'other_photos': serialize_photos(other_photos),
     })
