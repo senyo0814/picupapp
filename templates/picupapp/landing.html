@@ -162,8 +162,10 @@
                 </form>
                 {% endif %}
                 <div class="text-sm mt-1 text-gray-600 dark:text-gray-300">
-                    {% if photo.is_public %}
-                    <i class="fa-solid fa-users mr-1"></i> Public
+                    {% if photo.visibility == 'any' %}
+                    <i class="fa-solid fa-users mr-1"></i> Any User
+                    {% elif photo.visibility == 'group' %}
+                    <i class="fa-solid fa-user-group mr-1"></i> Group
                     {% else %}
                     <i class="fa-solid fa-lock mr-1"></i> Private
                     {% endif %}
