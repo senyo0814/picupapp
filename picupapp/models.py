@@ -46,6 +46,7 @@ class PhotoUpload(models.Model):
 
     visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='private')
     group = models.ForeignKey(PhotoGroup, null=True, blank=True, on_delete=models.SET_NULL, related_name='photos')
+    shared_with = models.ManyToManyField(User, related_name='shared_photos', blank=True)
 
     def __str__(self):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
