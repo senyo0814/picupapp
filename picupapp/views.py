@@ -7,6 +7,8 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 
+from django.urls import reverse
+
 from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
