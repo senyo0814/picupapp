@@ -277,7 +277,7 @@ def update_comment(request):
         try:
             photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
             photo.comment = new_comment
-            photo.visibility = new_visibility
+            photo.visibility = 'any' if new_visibility else 'private'
             photo.save()
             photo.shared_with.set(shared_with_ids)
             return redirect('picupapp:landing')
