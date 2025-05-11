@@ -179,7 +179,9 @@ def landing(request):
                     visibility=visibility,
                 )
 
-                if visibility == 'group' and selected_group_id:
+                if visibility == 'group':
+                    if not selected_group_id:
+                        return HttpResponse("Group visibility requires selecting a group.", status=400)
                     photo.photo_group_id = selected_group_id
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
@@ -191,7 +193,7 @@ def landing(request):
             'photos': valid_photos,
             'username': request.user.username,
             'all_users': User.objects.exclude(id=request.user.id),
-            'user_groups': Group.objects.filter(members=request.user)
+            'user_groups': user_groups
         })
 
     except Exception as e:
