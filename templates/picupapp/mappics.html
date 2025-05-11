@@ -230,6 +230,12 @@
         });
     }
 </script>
+
+<!-- ? Script at the end to load map -->
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
+</script>
+
 <script>
     const darkIcon = document.getElementById('darkModeIcon');
     const darkContainer = document.getElementById('darkModeToggleContainer');
@@ -256,10 +262,5 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         applyThemeIcon(isDark);
     });
-</script>
-
-
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
 </script>
 {% endblock %}
