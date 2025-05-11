@@ -293,7 +293,7 @@ def photo_map_view(request):
     user_groups = PhotoGroup.objects.filter(members=request.user)
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
-        other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
         models.Q(group__members=request.user)
