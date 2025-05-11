@@ -26,18 +26,31 @@
 </div>
 
 <!-- Row 2: Horizontal Legend -->
+<!-- Legend Row with Search -->
 <div id="legend"
      class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+
+    <!-- Search Box -->
+    <div class="mb-2 flex items-center gap-2">
+        <input type="text" id="legendSearch" placeholder="Search user..."
+               class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
+    </div>
+
+    <!-- Horizontal Legend List -->
     <ul id="legendList" class="flex flex-wrap items-center gap-4">
         <li>
-            <label for="legend-select-all" class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
-                <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="accent-blue-600" />
+            <label for="legend-select-all"
+                   class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input type="radio" id="legend-select-all" name="legendFilter" value="all"
+                       class="accent-blue-600" />
                 <span>Select All</span>
             </label>
         </li>
-        <!-- Legend items will be appended here by JS -->
+        <!-- Dynamic user legend buttons injected here -->
     </ul>
 </div>
+
+
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
 </div>
@@ -178,8 +191,16 @@
                     allUsers.size === activeUsers.size &&
                     [...allUsers].every(u => activeUsers.has(u));
 
-
                 renderMarkers();
+
+                // Setup live filter on legend search box
+                document.getElementById('legendSearch').addEventListener('input', (e) => {
+                    const keyword = e.target.value.toLowerCase();
+                    document.querySelectorAll('#legendList button[data-user]').forEach(btn => {
+                        const user = btn.getAttribute('data-user').toLowerCase();
+                        btn.parentElement.style.display = user.includes(keyword) ? '' : 'none';
+                    });
+                });
             });
         });
 
