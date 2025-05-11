@@ -132,6 +132,8 @@ def landing(request):
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
             selected_group_id = request.POST.get('photo_group')
+            selected_group_id = int(selected_group_id) if selected_group_id else None
+
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
