@@ -53,11 +53,6 @@
     <div id="map" class="h-full w-full rounded"></div>
 </div>
 
-<!-- Embed JSON data for all users and groups -->
-{{ user_photos|json_script:"user-photos-data" }}
-{{ other_photos|json_script:"other-photos-data" }}
-
-<!-- Parse JSON before usage -->
 <script>
     const userPhotos = {{ user_photos|safe }};
     const otherPhotos = {{ other_photos|safe }};
@@ -107,7 +102,7 @@
         if (selectAll) {
             selectAll.addEventListener('change', () => {
                 if (selectAll.checked) {
-                    activeTags = new Set([...allUsers, ...allGroups]);
+                    activeTags = new Set(allPhotos.flatMap(p => [p.user, p.group].filter(Boolean)));
                 } else {
                     activeTags.clear();
                 }
@@ -124,23 +119,7 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
-        const tagMap = {};
-
-        allUsers.forEach(user => {
-            if (!globalUserColorMap[user]) {
-                globalUserColorMap[user] = allColors[colorIndex % allColors.length];
-                colorIndex++;
-            }
-            tagMap[user] = [];
-        });
-
-        allGroups.forEach(group => {
-            if (!globalUserColorMap[group]) {
-                globalUserColorMap[group] = allColors[colorIndex % allColors.length];
-                colorIndex++;
-            }
-            tagMap[group] = [];
-        });
+        const tagMap = {}; // key = user or group
 
         allPhotos.forEach(photo => {
             if (!photo.latitude || !photo.longitude) return;
@@ -149,6 +128,10 @@
             if (photo.group) tags.push(photo.group);
 
             tags.forEach(tag => {
+                if (!globalUserColorMap[tag]) {
+                    globalUserColorMap[tag] = allColors[colorIndex % allColors.length];
+                    colorIndex++;
+                }
                 if (!tagMap[tag]) tagMap[tag] = [];
                 tagMap[tag].push(photo);
             });
@@ -164,12 +147,12 @@
 
             const li = document.createElement('li');
             li.innerHTML = `
-                <button data-user="${tag}"
-                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                    <span>${highlightMatch(tag, keyword)}</span>
-                </button>
-            `;
+            <button data-user="${tag}"
+                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                <span>${highlightMatch(tag, keyword)}</span>
+            </button>
+        `;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
@@ -182,20 +165,20 @@
                     map,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                              <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`,
+                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                          <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                        </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                    <div class="text-sm">
-                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
-                        <p><strong>${photo.user}</strong>${photo.group ? ` <em>(${photo.group})</em>` : ''}</p>
-                        <p>${photo.comment || 'No comment'}</p>
-                        <p class="text-gray-500 text-xs">${photo.taken}</p>
-                    </div>
-                `;
+                <div class="text-sm">
+                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
+                    <p><strong>${photo.user}</strong>${photo.group ? ` <em>(${photo.group})</em>` : ''}</p>
+                    <p>${photo.comment || 'No comment'}</p>
+                    <p class="text-gray-500 text-xs">${photo.taken}</p>
+                </div>
+            `;
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => infowindow.open(map, marker));
 
@@ -215,7 +198,7 @@
                     activeTags.add(tag);
                 }
 
-                const allTags = new Set([...allUsers, ...allGroups]);
+                const allTags = new Set(allPhotos.flatMap(p => [p.user, p.group].filter(Boolean)));
                 document.querySelector('input[name="legendFilter"][value="all"]').checked =
                     allTags.size === activeTags.size &&
                     [...allTags].every(t => activeTags.has(t));
@@ -224,13 +207,10 @@
             });
         });
     }
+
 </script>
 
 
-<!-- ✅ Script at the end to load map -->
-<script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
-</script>
 
 <script>
     const darkIcon = document.getElementById('darkModeIcon');
@@ -258,5 +238,10 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         applyThemeIcon(isDark);
     });
+</script>
+
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
 </script>
 {% endblock %}
