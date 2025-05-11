@@ -294,8 +294,8 @@ User = get_user_model()
 def photo_map_view(request):
     username = request.user.username
     user_groups = PhotoGroup.objects.filter(members=request.user)
-    all_users = User.objects.all().values_list('username', flat=True)
-    all_groups = PhotoGroup.objects.all().values_list('name', flat=True)
+    all_users = list(User.objects.values_list('username', flat=True))
+    all_groups = list(PhotoGroup.objects.values_list('name', flat=True))
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
@@ -309,8 +309,8 @@ def photo_map_view(request):
         'user_photos': serialize_photos(user_photos),
         'other_photos': serialize_photos(other_photos),
         'user_groups': user_groups,
-        'all_users': list(all_users),
-        'all_groups': list(all_groups),
+        'all_users': all_users,
+        'all_groups': all_groups,
     })
 
 def serialize_photos(qs):
