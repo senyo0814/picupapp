@@ -128,15 +128,17 @@ from django.db import models  # Make sure this is imported for models.Q
 @login_required
 def landing(request):
     try:
+        user_groups = Group.objects.filter(members=request.user)
+
         valid_photos = PhotoUpload.objects.filter(
             models.Q(uploaded_by=request.user) |
-            models.Q(is_public=True) |
-            models.Q(photo_group__members=request.user)  # ✅ new group-based visibility
-        ).distinct().select_related('uploaded_by').prefetch_related('shared_with').order_by('-uploaded_at').exclude(image='')
+            models.Q(visibility='any') |
+            models.Q(photo_group__in=user_groups)
+        ).distinct().select_related('uploaded_by').order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
-            visibility_public = request.POST.get('visibility') == 'public'
-            shared_ids = request.POST.getlist('shared_with')
+            visibility = request.POST.get('visibility', 'private')
+            selected_group_id = request.POST.get('photo_group')
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
@@ -174,26 +176,28 @@ def landing(request):
                     latitude=lat,
                     longitude=lon,
                     photo_taken_date=taken_date,
-                    is_public=visibility_public
+                    visibility=visibility,
                 )
+
+                if visibility == 'group' and selected_group_id:
+                    photo.photo_group_id = selected_group_id
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
                 photo.save()
-
-                if shared_ids:
-                    photo.shared_with.set(User.objects.filter(id__in=shared_ids))
 
             return redirect('picupapp:landing')
 
         return render(request, 'picupapp/landing.html', {
             'photos': valid_photos,
             'username': request.user.username,
-            'all_users': User.objects.exclude(id=request.user.id)
+            'all_users': User.objects.exclude(id=request.user.id),
+            'user_groups': Group.objects.filter(members=request.user)
         })
 
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
+
 
 # --- Delete Photo ---
 
