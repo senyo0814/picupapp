@@ -63,8 +63,12 @@
                 <p class="text-gray-600 dark:text-gray-300">Drop files here or click to select</p>
             </div>
 
-            <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 dark:text-white"></div>
-            <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left dark:text-white"></div>
+            <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 dark:text-white">
+                <!-- preview items inserted via JS -->
+            </div>
+            <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left dark:text-white">
+                <!-- comment inputs inserted via JS -->
+            </div>
 
             <div id="metadata-wrapper" class="w-full overflow-x-auto mt-6" style="display: none;">
                 <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300 dark:border-gray-600">
@@ -397,9 +401,10 @@
 
                         const commentInput = document.createElement('div');
                         commentInput.innerHTML = `
-                                                                                <label class="block text-sm font-medium text-gray-700">Comment for ${file.name}</label>
-                                                                                <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                                                                            `;
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Comment for ${file.name}</label>
+                            <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                        `;
+
                         container.appendChild(commentInput);
 
                         preview.appendChild(container);
