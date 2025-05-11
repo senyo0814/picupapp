@@ -1,17 +1,15 @@
 {% extends 'picupapp/base.html' %}
 
 {% block content %}
-<div class="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6">
-    <!-- Left: Title -->
-    <div class="flex items-center gap-3">
+<!-- Row 1: Title and Controls -->
+<div class="mb-2 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3 flex-wrap">
         <h5 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <i class="fas fa-map-marker-alt fa-2xl"></i>
-            <span class="hidden sm:inline">Photo Map</span>
+            <i class="fas fa-map-marker-alt fa-2xl"></i> <span class="hidden sm:inline">Photo Map</span>
         </h5>
     </div>
 
-    <!-- Right: Back + Theme -->
-    <div class="flex items-center gap-2 sm:ml-auto">
+    <div class="flex items-center gap-2 ml-auto">
         <a href="{% url 'picupapp:landing' %}"
            class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-2 rounded shadow transition">
             <i class="fa-solid fa-arrow-left"></i>
@@ -25,24 +23,21 @@
                title="Toggle Dark Mode"></i>
         </div>
     </div>
-
-    <!-- Legend -->
-    <div id="legend"
-         class="w-fit p-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm self-start">
-        <h3 class="font-semibold px-2 mb-2 text-gray-900 dark:text-gray-100">Users</h3>
-        <ul id="legendList" class="space-y-1 max-h-60 overflow-y-auto pr-1">
-            <li>
-                <label for="legend-select-all" class="px-2 flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
-                    <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="accent-blue-600" />
-                    <span>All</span>
-                </label>
-            </li>
-        </ul>
-    </div>
 </div>
 
-
-
+<!-- Row 2: Horizontal Legend -->
+<div id="legend"
+     class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+    <ul id="legendList" class="flex flex-wrap items-center gap-4">
+        <li>
+            <label for="legend-select-all" class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="accent-blue-600" />
+                <span>Select All</span>
+            </label>
+        </li>
+        <!-- Legend items will be appended here by JS -->
+    </ul>
+</div>
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
 </div>
