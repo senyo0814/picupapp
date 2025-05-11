@@ -4,13 +4,22 @@
 <div class="max-w-xl mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
     <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Create a New Group</h2>
 
+    {% if messages %}
+    <div class="mb-4 text-red-600 text-sm">
+        {% for message in messages %}
+        {{ message }}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
 
         <div class="mb-4">
             <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Group Name</label>
             <input type="text" id="name" name="name" required
-                   class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white">
+                   class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                   value="{{ request.POST.name }}">
         </div>
 
         <div class="mb-4">
@@ -18,7 +27,10 @@
             <select name="members" id="members" multiple
                     class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white h-48">
                 {% for user in all_users %}
-                <option value="{{ user.id }}">{{ user.username }}</option>
+                <option value="{{ user.id }}"
+                        {% if user.id|stringformat:"s" in request.POST.getlist('members') %}selected{% endif %}>
+                    {{ user.username }}
+                </option>
                 {% endfor %}
             </select>
             <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (Cmd on Mac) to select multiple members.</p>

@@ -1,23 +1,24 @@
-﻿from django.shortcuts import render, redirect, get_object_or_404
+﻿import io
+import logging
+import os
+from datetime import datetime
+from PIL import Image
+from PIL.ExifTags import TAGS, GPSTAGS
+
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.http import HttpResponse, JsonResponse
-from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
 from django.db import models
-
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 
 from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
-from PIL import Image
-from PIL.ExifTags import TAGS, GPSTAGS
-from datetime import datetime
-import io
-import logging
-import os
 
 logger = logging.getLogger(__name__)
 
@@ -321,13 +322,20 @@ def serialize_photos(qs):
 @login_required
 def create_group_view(request):
     if request.method == 'POST':
-        name = request.POST.get('name')
+        name = request.POST.get('name', '').strip()
         member_ids = request.POST.getlist('members')
-        if name:
+
+        # Check for existing group with the same name (case-insensitive)
+        if PhotoGroup.objects.filter(name__iexact=name).exists():
+            messages.error(request, "A group with this name already exists.")
+        elif name:
             group = PhotoGroup.objects.create(name=name, created_by=request.user)
             members = User.objects.filter(id__in=member_ids)
             group.members.set(members)
+            group.members.add(request.user)  # Ensure creator is also a member
             return redirect(f"{reverse('picupapp:landing')}?new_group=1")
+        else:
+            messages.error(request, "Group name is required.")
 
     all_users = User.objects.exclude(id=request.user.id)
     return render(request, 'picupapp/create_group.html', {

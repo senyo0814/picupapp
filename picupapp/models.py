@@ -19,7 +19,7 @@ def user_directory_path(instance, filename):
     return path
 
 class PhotoGroup(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)  # <-- add unique=True
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name='photo_groups')
 
