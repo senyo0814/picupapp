@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect, get_object_or_404
+﻿from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -119,6 +119,7 @@ from .exif_utils import extract_gps_and_datetime
 from datetime import datetime
 import io
 import logging
+from .models import PhotoGroup
 
 logger = logging.getLogger(__name__)
 
@@ -129,8 +130,8 @@ def landing(request):
     try:
         valid_photos = PhotoUpload.objects.filter(
             models.Q(uploaded_by=request.user) |
-            models.Q(shared_with=request.user) |
-            models.Q(is_public=True)
+            models.Q(is_public=True) |
+            models.Q(photo_group__members=request.user)  # ✅ new group-based visibility
         ).distinct().select_related('uploaded_by').prefetch_related('shared_with').order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
