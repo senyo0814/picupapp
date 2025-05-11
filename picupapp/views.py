@@ -292,8 +292,6 @@ def photo_map_view(request):
     username = request.user.username
     user_groups = PhotoGroup.objects.filter(members=request.user)
 
-    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
-
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
@@ -306,6 +304,7 @@ def photo_map_view(request):
         'other_photos': serialize_photos(other_photos),
         'user_groups': user_groups,
     })
+
 
 def serialize_photos(qs):
     return [
