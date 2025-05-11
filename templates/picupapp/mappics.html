@@ -54,6 +54,10 @@
 </div>
 
 <script>
+    const allUsers = {{ all_users|safe }};
+    const allGroups = {{ all_groups|safe }};
+</script>
+<script>
     const userPhotos = {{ user_photos|safe }};
     const otherPhotos = {{ other_photos|safe }};
     const allPhotos = [...userPhotos, ...otherPhotos];
@@ -110,9 +114,6 @@
             });
         }
     }
- 
-    const allUsers = {{ all_users|safe }};
-    const allGroups = {{ all_groups| safe }};
 
     function renderMarkers() {
         markers.forEach(m => m.setMap(null));
