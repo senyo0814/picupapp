@@ -17,6 +17,7 @@ googleapis-common-protos==1.70.0
 httplib2==0.22.0
 idna==3.10
 oauthlib==3.2.2
+pillow==11.2.1
 proto-plus==1.26.1
 protobuf==6.30.2
 psycopg2-binary==2.9.10
