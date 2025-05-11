@@ -15,7 +15,7 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span class="hidden sm:inline">Back to Landing</span>
         </a>
-        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;"
+        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;" 
              id="darkModeToggleContainer">
             <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
             <i id="darkModeIcon"
@@ -28,11 +28,12 @@
 <!-- Row 2: Horizontal Legend -->
 <!-- Legend Row with Search -->
 <!-- Legend Row -->
-<div class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+<div id="legend"
+     class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
 
     <!-- Search Box -->
     <div class="mb-2 flex items-center gap-2">
-        <input type="text" id="legendSearch" placeholder="Search user or group..."
+        <input type="text" id="legendSearch" placeholder="Search user..."
                class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
     </div>
 
@@ -48,7 +49,6 @@
         </li>
     </ul>
 </div>
-
 
 
 
@@ -70,7 +70,7 @@
         '#d35400', '#7f8c8d', '#8e44ad', '#16a085'
     ];
     let colorIndex = 0;
-    let activeTags = new Set();
+    let activeUsers = new Set();
 
     function highlightMatch(text, keyword) {
         if (!keyword) return text;
@@ -89,15 +89,18 @@
         document.getElementById('legendSearch').addEventListener('input', () => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
 
-            activeTags = new Set();
+            // Update activeUsers to match search
+            activeUsers = new Set();
             allPhotos.forEach(p => {
                 const user = (p.user || 'Unknown');
-                const group = (p.group || '').trim();
-                if (user.toLowerCase().includes(keyword)) activeTags.add(user);
-                if (group && group.toLowerCase().includes(keyword)) activeTags.add(group);
+                if (user.toLowerCase().includes(keyword)) {
+                    activeUsers.add(user);
+                }
             });
 
+            // Uncheck Select All if search narrows result
             document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
             renderMarkers();
         });
     }
@@ -110,47 +113,45 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
-        const tagMap = {}; // key = user or group
+        const userMarkersMap = {};
 
         allPhotos.forEach(photo => {
             if (!photo.latitude || !photo.longitude) return;
 
             const user = photo.user || 'Unknown';
-            const group = photo.group || null;
 
-            [user, group].forEach(tag => {
-                if (!tag) return;
-                if (!globalUserColorMap[tag]) {
-                    globalUserColorMap[tag] = allColors[colorIndex % allColors.length];
-                    colorIndex++;
-                }
-                if (!tagMap[tag]) tagMap[tag] = [];
-                tagMap[tag].push(photo);
-            });
+            if (!globalUserColorMap[user]) {
+                globalUserColorMap[user] = allColors[colorIndex % allColors.length];
+                colorIndex++;
+            }
+
+            if (!userMarkersMap[user]) {
+                userMarkersMap[user] = [];
+            }
+            userMarkersMap[user].push(photo);
         });
 
-        Object.entries(tagMap).forEach(([tag, photos]) => {
+        Object.entries(userMarkersMap).forEach(([user, photos]) => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
-            if (keyword && !tag.toLowerCase().includes(keyword)) return;
+            if (keyword && !user.toLowerCase().includes(keyword)) return;
 
-            const color = globalUserColorMap[tag];
-            const isActive = activeTags.has(tag);
+            const color = globalUserColorMap[user];
+            const isActive = activeUsers.has(user);
 
             const li = document.createElement('li');
             li.innerHTML = `
-                <button data-user="${tag}"
+                <button data-user="${user}"
                     class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${
                         isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''
                     }">
                     <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                    <span>${highlightMatch(tag, keyword)}</span>
+                    <span>${highlightMatch(user, keyword)}</span>
                 </button>
             `;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
-                const matched = [photo.user, photo.group].some(v => activeTags.size === 0 || activeTags.has(v));
-                if (!matched) return;
+                if (activeUsers.size > 0 && !activeUsers.has(user)) return;
 
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
@@ -160,48 +161,60 @@
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                             <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
                               <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`
+                            </svg>`)}`,
                     }
                 });
 
                 const popup = `
                     <div class="text-sm">
                         <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
-                        <p><strong>${photo.user}</strong>${photo.group ? ` <em>(${photo.group})</em>` : ''}</p>
+                        <p><strong>${user}</strong></p>
                         <p>${photo.comment || 'No comment'}</p>
                         <p class="text-gray-500 text-xs">${photo.taken}</p>
                     </div>
                 `;
                 const infowindow = new google.maps.InfoWindow({ content: popup });
-                marker.addListener("click", () => infowindow.open(map, marker));
+                marker.addListener("click", () => {
+                    infowindow.open(map, marker);
+                    google.maps.event.addListenerOnce(infowindow, 'closeclick', () => {
+                        if (markers.length > 0) {
+                            const newBounds = new google.maps.LatLngBounds();
+                            markers.forEach(m => newBounds.extend(m.getPosition()));
+                            map.fitBounds(newBounds);
+                        }
+                    });
+                });
 
                 markers.push(marker);
                 bounds.extend(pos);
             });
         });
 
-        if (markers.length > 0) map.fitBounds(bounds);
+        if (markers.length > 0) {
+            map.fitBounds(bounds);
+        }
 
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
-                const tag = btn.getAttribute('data-user');
-                if (activeTags.has(tag)) {
-                    activeTags.delete(tag);
+                const user = btn.getAttribute('data-user');
+                if (activeUsers.has(user)) {
+                    activeUsers.delete(user);
                 } else {
-                    activeTags.add(tag);
+                    activeUsers.add(user);
                 }
 
-                const allTags = new Set(allPhotos.flatMap(p => [p.user, p.group].filter(Boolean)));
+                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
                 document.querySelector('input[name="legendFilter"][value="all"]').checked =
-                    allTags.size === activeTags.size &&
-                    [...allTags].every(t => activeTags.has(t));
+                    allUsers.size === activeUsers.size &&
+                    [...allUsers].every(u => activeUsers.has(u));
 
                 renderMarkers();
             });
         });
     }
 </script>
-
 
 <script>
     const darkIcon = document.getElementById('darkModeIcon');
