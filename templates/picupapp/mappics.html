@@ -59,10 +59,6 @@
 
 <!-- Parse JSON before usage -->
 <script>
-    const userPhotos = JSON.parse(document.getElementById('user-photos-data').textContent || '[]');
-    const otherPhotos = JSON.parse(document.getElementById('other-photos-data').textContent || '[]');
-    const allPhotos = [...userPhotos, ...otherPhotos];
-
     const userPhotos = {{ user_photos|safe }};
     const otherPhotos = {{ other_photos|safe }};
     const allPhotos = [...userPhotos, ...otherPhotos];
