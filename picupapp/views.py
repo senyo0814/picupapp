@@ -117,11 +117,10 @@ def extract_gps_and_datetime(file):
 
 # --- Landing View ---
 
-
-
 @login_required
 def landing(request):
     try:
+        from .models import PhotoGroup  # Ensure correct import
         user_groups = PhotoGroup.objects.filter(members=request.user)
 
         valid_photos = PhotoUpload.objects.filter(
@@ -132,7 +131,7 @@ def landing(request):
 
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
-            selected_group_id = request.POST.get('group')
+            selected_group_id = request.POST.get('photo_group')
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
@@ -193,7 +192,6 @@ def landing(request):
     except Exception as e:
         logger.exception("Landing view error:")
         return HttpResponse("Something went wrong.", status=500)
-
 
 # --- Delete Photo ---
 
