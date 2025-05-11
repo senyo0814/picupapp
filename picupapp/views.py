@@ -132,7 +132,10 @@ def landing(request):
 
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
-            selected_group_id = request.POST.get('photo_group')
+            selected_group_id = request.POST.get('photo_group') if visibility == 'group' else None
+
+            if visibility == 'group' and not selected_group_id:
+                return JsonResponse({"error": "Group ID is required for group visibility."}, status=400)
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
@@ -173,15 +176,14 @@ def landing(request):
                     visibility=visibility,
                 )
 
-                if visibility == 'group':
-                    if not selected_group_id:
-                        return HttpResponse("Group visibility requires selecting a group.", status=400)
+                if selected_group_id:
                     photo.group_id = selected_group_id
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
                 photo.save()
 
             return redirect('picupapp:landing')
+
 
         return render(request, 'picupapp/landing.html', {
             'photos': valid_photos,

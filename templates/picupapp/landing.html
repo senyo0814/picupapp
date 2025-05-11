@@ -116,7 +116,7 @@
                 </div>
             </div>
 
-            
+
 
             <button type="submit" class="spinner-link mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
                 Upload Photos
@@ -431,28 +431,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                                                <tr>
-                                                                                                    <td class="border px-4 py-2">${file.name}</td>
-                                                                                                    <td class="border px-4 py-2">${date}</td>
-                                                                                                    <td class="border px-4 py-2">${model}</td>
-                                                                                                    <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                                    <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                                    <td class="border px-4 py-2">
-                                                                                                        ${lat && lon
+                                                                                                    <tr>
+                                                                                                        <td class="border px-4 py-2">${file.name}</td>
+                                                                                                        <td class="border px-4 py-2">${date}</td>
+                                                                                                        <td class="border px-4 py-2">${model}</td>
+                                                                                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                                        <td class="border px-4 py-2">
+                                                                                                            ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                                                                                    </td>
-                                                                                                </tr>
-                                                                                            `;
+                                                                                                        </td>
+                                                                                                    </tr>
+                                                                                                `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                                    <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                                    <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                                    <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                                `;
+                                                                                                        <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                                        <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                                    `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
@@ -548,6 +548,16 @@
             const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
             formData.append('visibility', visibility);
 
+            // ? Add group ID if visibility is "group"
+            if (visibility === 'group') {
+                const groupId = document.getElementById('photoGroup')?.value;
+                if (!groupId) {
+                    alert("Please select a group.");
+                    return false;
+                }
+                formData.append('photo_group', groupId);
+            }
+
             document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
                 formData.append('shared_with', option.value);
             });
@@ -578,6 +588,7 @@
             return false;
         }
     </script>
+
     <script>
         document.querySelectorAll('input[name="visibility"]').forEach(radio => {
             radio.addEventListener('change', () => {
