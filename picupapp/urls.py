@@ -14,4 +14,7 @@ urlpatterns = [
     path('check-media/', views.check_media_access, name='check_media'),
     path('metadata/', views.metadata_table_view, name='metadata_table'),
     path('update-comment/', views.update_comment, name='update_comment'),
+    path('create-group/', views.create_group_view, name='create_group'),
+    path('api/my-groups/', views.get_user_groups, name='get_user_groups'),
+
 ]

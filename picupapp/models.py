@@ -1,21 +1,15 @@
 from django.db import models
 from django.contrib.auth.models import User
 from PIL import Image
-from .exif_utils import extract_gps_and_datetime
 import logging
 from datetime import datetime
+from .exif_utils import extract_gps_and_datetime
 from picupapp.storage_backends import PublicGoogleCloudStorage
 
-from .exif_utils import extract_gps_and_datetime  # already in your imports
-
 def user_directory_path(instance, filename):
-    # Try to extract date from image EXIF
     try:
         _, _, photo_date = extract_gps_and_datetime(instance.image)
-        if photo_date:
-            date_str = photo_date.date().isoformat()
-        else:
-            date_str = datetime.now().date().isoformat()
+        date_str = photo_date.date().isoformat() if photo_date else datetime.now().date().isoformat()
     except Exception as e:
         logging.warning(f"[WARN] EXIF extraction failed: {e}")
         date_str = datetime.now().date().isoformat()
@@ -24,10 +18,24 @@ def user_directory_path(instance, filename):
     logging.info(f"[DEBUG] Computed upload path: {path}")
     return path
 
+class PhotoGroup(models.Model):
+    name = models.CharField(max_length=100)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    members = models.ManyToManyField(User, related_name='photo_groups')
+
+    def __str__(self):
+        return self.name
+
 class PhotoUpload(models.Model):
+    VISIBILITY_CHOICES = [
+        ('private', 'Private'),
+        ('any', 'Any User'),
+        ('group', 'Group'),
+    ]
+
     image = models.ImageField(
         upload_to=user_directory_path,
-        storage=PublicGoogleCloudStorage()  # 👈 explicitly set storage backend
+        storage=PublicGoogleCloudStorage()
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -36,8 +44,8 @@ class PhotoUpload(models.Model):
     longitude = models.FloatField(null=True, blank=True)
     photo_taken_date = models.DateTimeField(null=True, blank=True)
 
-    shared_with = models.ManyToManyField(User, blank=True, related_name='shared_photos')
-    is_public = models.BooleanField(default=False)
+    visibility = models.CharField(max_length=10, choices=VISIBILITY_CHOICES, default='private')
+    group = models.ForeignKey(PhotoGroup, null=True, blank=True, on_delete=models.SET_NULL, related_name='photos')
 
     def __str__(self):
         return f"{self.image.name} uploaded by {self.uploaded_by}"
@@ -50,17 +58,14 @@ class PhotoUpload(models.Model):
 
             try:
                 lat, lon, photo_date = extract_gps_and_datetime(self.image)
-
                 if lat is not None:
                     self.latitude = lat
                 if lon is not None:
                     self.longitude = lon
                 if photo_date:
                     self.photo_taken_date = photo_date
-
             except Exception as e:
                 logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
 
         logging.info(f"[DEBUG] Final image name about to save: {self.image.name}")
         super().save(*args, **kwargs)
-

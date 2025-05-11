@@ -11,6 +11,8 @@ from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
 import os
 from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import PhotoGroup
 
 logger = logging.getLogger(__name__)
 
@@ -316,3 +318,25 @@ def serialize_photos(qs):
             "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
         } for p in qs
     ]
+
+@login_required
+def create_group_view(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        member_ids = request.POST.getlist('members')
+        if name:
+            group = PhotoGroup.objects.create(name=name, created_by=request.user)
+            members = User.objects.filter(id__in=member_ids)
+            group.members.set(members)
+            return redirect(f"{reverse('picupapp:landing')}?new_group=1")
+
+    all_users = User.objects.exclude(id=request.user.id)
+    return render(request, 'picupapp/create_group.html', {
+        'all_users': all_users
+    })
+
+@login_required
+def get_user_groups(request):
+    groups = PhotoGroup.objects.filter(created_by=request.user).values('id', 'name')
+    return JsonResponse(list(groups), safe=False)
+
