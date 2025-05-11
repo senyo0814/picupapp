@@ -3,18 +3,22 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
-from .models import PhotoUpload
 from django.conf import settings
-import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.db import models
+
+from .models import PhotoUpload, PhotoGroup, Group
+from .exif_utils import extract_gps_and_datetime
+
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
 from datetime import datetime
+import io
+import logging
 import os
-from django.views.decorators.csrf import csrf_exempt
-from django.http import JsonResponse
-from .models import PhotoGroup
 
 logger = logging.getLogger(__name__)
+
 
 # --- Auth Views ---
 
@@ -111,19 +115,7 @@ def extract_gps_and_datetime(file):
 
 # --- Landing View ---
 
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render, redirect
-from django.http import HttpResponse
-from .models import PhotoUpload
-from .exif_utils import extract_gps_and_datetime
-from datetime import datetime
-import io
-import logging
-from .models import PhotoGroup
 
-logger = logging.getLogger(__name__)
-
-from django.db import models  # Make sure this is imported for models.Q
 
 @login_required
 def landing(request):
