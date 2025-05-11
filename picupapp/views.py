@@ -287,6 +287,8 @@ def update_comment(request):
         except PhotoUpload.DoesNotExist:
             return HttpResponse("Unauthorized", status=403)
 
+from django.db.models import Q
+
 @login_required
 def photo_map_view(request):
     username = request.user.username
@@ -294,10 +296,12 @@ def photo_map_view(request):
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
 
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
-        models.Q(visibility='any') |
-        models.Q(shared_with=request.user) |
-        models.Q(group__members=request.user)
+    other_photos = PhotoUpload.objects.filter(
+        ~Q(uploaded_by=request.user) & (
+            Q(visibility='any') |
+            Q(shared_with=request.user) |
+            Q(group__in=user_groups)
+        )
     ).distinct()
 
     return render(request, 'picupapp/mappics.html', {
@@ -306,7 +310,6 @@ def photo_map_view(request):
         'other_photos': serialize_photos(other_photos),
         'user_groups': user_groups,
     })
-
 
 def serialize_photos(qs):
     return [
