@@ -125,12 +125,12 @@ def landing(request):
         valid_photos = PhotoUpload.objects.filter(
             models.Q(uploaded_by=request.user) |
             models.Q(visibility='any') |
-            models.Q(photo_group__in=user_groups)
+            models.Q(group__in=user_groups)
         ).distinct().select_related('uploaded_by').order_by('-uploaded_at').exclude(image='')
 
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
-            selected_group_id = request.POST.get('photo_group')
+            selected_group_id = request.POST.get('group')
 
             for idx, f in enumerate(request.FILES.getlist('images')):
                 copy = io.BytesIO(f.read())
@@ -174,7 +174,7 @@ def landing(request):
                 if visibility == 'group':
                     if not selected_group_id:
                         return HttpResponse("Group visibility requires selecting a group.", status=400)
-                    photo.photo_group_id = selected_group_id
+                    photo.group_id = selected_group_id
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
                 photo.save()
