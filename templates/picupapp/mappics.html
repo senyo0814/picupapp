@@ -1,4 +1,4 @@
-{% extends 'picupapp/base.html' %}
+﻿{% extends 'picupapp/base.html' %}
 
 {% block content %}
 <!-- Row 1: Title and Controls -->
@@ -54,13 +54,14 @@
 </div>
 
 <!-- Embed JSON data for all users and groups -->
-{{ all_users|json_script:"all-users-data" }}
-{{ all_groups|json_script:"all-groups-data" }}
+{{ user_photos|json_script:"user-photos-data" }}
+{{ other_photos|json_script:"other-photos-data" }}
 
 <!-- Parse JSON before usage -->
 <script>
-    const allUsers = JSON.parse(document.getElementById('all-users-data').textContent || '[]');
-    const allGroups = JSON.parse(document.getElementById('all-groups-data').textContent || '[]');
+    const userPhotos = JSON.parse(document.getElementById('user-photos-data').textContent || '[]');
+    const otherPhotos = JSON.parse(document.getElementById('other-photos-data').textContent || '[]');
+    const allPhotos = [...userPhotos, ...otherPhotos];
 
     const userPhotos = {{ user_photos|safe }};
     const otherPhotos = {{ other_photos|safe }};
@@ -230,7 +231,7 @@
 </script>
 
 
-<!-- ? Script at the end to load map -->
+<!-- ✅ Script at the end to load map -->
 <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
 </script>
