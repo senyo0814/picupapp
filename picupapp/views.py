@@ -7,7 +7,7 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.db import models
 
-from .models import PhotoUpload, PhotoGroup, Group
+from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
 from PIL import Image
@@ -120,7 +120,7 @@ def extract_gps_and_datetime(file):
 @login_required
 def landing(request):
     try:
-        user_groups = Group.objects.filter(members=request.user)
+        user_groups = PhotoGroup.objects.filter(members=request.user)
 
         valid_photos = PhotoUpload.objects.filter(
             models.Q(uploaded_by=request.user) |
