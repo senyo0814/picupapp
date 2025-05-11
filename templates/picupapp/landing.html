@@ -187,6 +187,12 @@
                            class="hidden bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
                             View on Map
                         </a>
+                        <a id="modalFacebookShare"
+                           href="#"
+                           target="_blank"
+                           class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
+                            Share on Facebook
+                        </a>
                     </div>
 
                 </form>
@@ -261,6 +267,10 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalSharedWith').value = "";
             document.getElementById('modalSharedWithContainer').style.display = 'none';
+
+            // Facebook share link
+            const encodedUrl = encodeURIComponent(url);
+            document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
             const previousMapRow = document.getElementById('modalMapLink')?.closest('tr');
             if (previousMapRow) previousMapRow.remove();
