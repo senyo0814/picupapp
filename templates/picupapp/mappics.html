@@ -53,16 +53,15 @@
     <div id="map" class="h-full w-full rounded"></div>
 </div>
 
+<!-- Embed JSON data for all users and groups -->
 {{ all_users|json_script:"all-users-data" }}
 {{ all_groups|json_script:"all-groups-data" }}
 
+<!-- Parse JSON before usage -->
 <script>
-    // ? Parse JSON safely before initMap runs
     const allUsers = JSON.parse(document.getElementById('all-users-data').textContent || '[]');
     const allGroups = JSON.parse(document.getElementById('all-groups-data').textContent || '[]');
-</script>
 
-<script>
     const userPhotos = {{ user_photos|safe }};
     const otherPhotos = {{ other_photos|safe }};
     const allPhotos = [...userPhotos, ...otherPhotos];
@@ -130,7 +129,6 @@
 
         const tagMap = {};
 
-        // ? Pre-fill with all users and groups
         allUsers.forEach(user => {
             if (!globalUserColorMap[user]) {
                 globalUserColorMap[user] = allColors[colorIndex % allColors.length];
@@ -189,7 +187,7 @@
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                             <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
                               <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`
+                            </svg>`)}`,
                     }
                 });
 
@@ -230,6 +228,7 @@
         });
     }
 </script>
+
 
 <!-- ? Script at the end to load map -->
 <script async defer
