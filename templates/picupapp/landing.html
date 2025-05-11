@@ -169,452 +169,467 @@
     </div>
 
 
-        <!-- Modal update to allow visibility toggle -->
-        <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-2">
-            <div class="bg-white dark:bg-gray-800 rounded p-4 max-w-xl sm:mx-auto mx-2 relative overflow-y-auto max-h-[90vh]">
-                <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
-                <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain my-4" />
-                <div class="text-sm mt-3">
-                    <form method="POST" action="/update-comment/" id="commentForm">
-                        {% csrf_token %}
-                        <input type="hidden" name="photo_id" id="modalPhotoId">
-                        <label for="modalComment" class="block font-semibold">Comment:</label>
-                        <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1 dark:bg-gray-700 dark:text-white"></textarea>
-                        <div class="mt-2">
-                            <label for="modalVisibility" class="font-semibold">Visibility:</label>
-                            <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-                                <option value="private">Private</option>
-                                <option value="public">Public</option>
-                            </select>
-                        </div>
+    <!-- Modal update to allow visibility toggle -->
+    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-2">
+        <div class="bg-white dark:bg-gray-800 rounded p-4 max-w-xl sm:mx-auto mx-2 relative overflow-y-auto max-h-[90vh]">
+            <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
+            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain my-4" />
+            <div class="text-sm mt-3">
+                <form method="POST" action="/update-comment/" id="commentForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="photo_id" id="modalPhotoId">
+                    <label for="modalComment" class="block font-semibold">Comment:</label>
+                    <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1 dark:bg-gray-700 dark:text-white"></textarea>
+                    <div class="mt-2">
+                        <label for="modalVisibility" class="font-semibold">Visibility:</label>
+                        <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                            <option value="private">Private</option>
+                            <option value="public">Public</option>
+                        </select>
+                    </div>
 
-                        <div id="modalSharedWithContainer" class="mt-2 hidden">
-                            <label for="modalSharedWith" class="font-semibold">Share with other users:</label>
-                            <select name="shared_with_modal" id="modalSharedWith" multiple class="w-full border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-                                <option value="__select_all__">(Select All Users)</option>
-                                {% for user in all_users %}
-                                <option value="{{ user.id }}">{{ user.username }}</option>
-                                {% endfor %}
-                            </select>
-                            <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (or Cmd) to select multiple users.</p>
-                        </div>
+                    <div id="modalSharedWithContainer" class="mt-2 hidden">
+                        <label for="modalSharedWith" class="font-semibold">Share with other users:</label>
+                        <select name="shared_with_modal" id="modalSharedWith" multiple class="w-full border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                            <option value="__select_all__">(Select All Users)</option>
+                            {% for user in all_users %}
+                            <option value="{{ user.id }}">{{ user.username }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (or Cmd) to select multiple users.</p>
+                    </div>
 
-                        <div class="mt-2 flex flex-wrap gap-2 items-center">
-                            <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
-                            <button type="button" onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600">Close</button>
-                            <a id="modalMapLink"
-                               href="#"
-                               target="_blank"
-                               class="hidden bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
-                                View on Map
-                            </a>
-                            <a id="modalFacebookShare"
-                               href="#"
-                               target="_blank"
-                               class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-                                Share on Facebook
-                            </a>
-                        </div>
-                    </form>
+                    <div class="mt-2 flex flex-wrap gap-2 items-center">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
+                        <button type="button" onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600">Close</button>
+                        <a id="modalMapLink"
+                           href="#"
+                           target="_blank"
+                           class="hidden bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
+                            View on Map
+                        </a>
+                        <a id="modalFacebookShare"
+                           href="#"
+                           target="_blank"
+                           class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
+                            Share on Facebook
+                        </a>
+                    </div>
+                </form>
 
-                    <table class="table-auto w-full border border-gray-300 mt-4 dark:border-gray-600">
-                        <tbody>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded By:</th>
-                                <td id="modalUploader" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded At:</th>
-                                <td id="modalUploaded" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Date Taken:</th>
-                                <td id="modalTaken" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Shared With:</th>
-                                <td id="modalSharedWith" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Latitude:</th>
-                                <td id="modalLat" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                            <tr>
-                                <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Longitude:</th>
-                                <td id="modalLon" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                <table class="table-auto w-full border border-gray-300 mt-4 dark:border-gray-600">
+                    <tbody>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded By:</th>
+                            <td id="modalUploader" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded At:</th>
+                            <td id="modalUploaded" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Date Taken:</th>
+                            <td id="modalTaken" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Shared With:</th>
+                            <td id="modalSharedWith" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Latitude:</th>
+                            <td id="modalLat" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Longitude:</th>
+                            <td id="modalLon" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
+    </div>
 
-        <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
-        </div>
-        <script>
-            // Show spinner on page load
-            window.addEventListener('load', () => {
-                document.getElementById('loadingSpinner').classList.add('hidden');
+    <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
+    </div>
+    <script>
+        // Show spinner on page load
+        window.addEventListener('load', () => {
+            document.getElementById('loadingSpinner').classList.add('hidden');
+        });
+
+        // Show spinner on form submit
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', () => {
+                    document.getElementById('loadingSpinner').classList.remove('hidden');
+                });
             });
 
-            // Show spinner on form submit
-            document.addEventListener('DOMContentLoaded', () => {
-                document.querySelectorAll('form').forEach(form => {
-                    form.addEventListener('submit', () => {
+            // Optionally show spinner on links like map page
+            document.querySelectorAll('a').forEach(link => {
+                if (link.classList.contains('spinner-link')) {
+                    link.addEventListener('click', () => {
                         document.getElementById('loadingSpinner').classList.remove('hidden');
                     });
-                });
-
-                // Optionally show spinner on links like map page
-                document.querySelectorAll('a').forEach(link => {
-                    if (link.classList.contains('spinner-link')) {
-                        link.addEventListener('click', () => {
-                            document.getElementById('loadingSpinner').classList.remove('hidden');
-                        });
-                    }
-                });
+                }
             });
-        </script>
-        <script>
-            function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, uploader) {
-                document.getElementById('modalImage').src = url;
-                document.getElementById('modalComment').innerText = comment;
-                document.getElementById('modalUploader').textContent = uploader || 'Unknown';
-                document.getElementById('modalUploaded').innerText = uploaded;
-                document.getElementById('modalTaken').innerText = taken;
-                document.getElementById('modalLat').innerText = lat || "N/A";
-                document.getElementById('modalLon').innerText = lon || "N/A";
-                document.getElementById('modalPhotoId').value = photoId;
-                document.getElementById('modalSharedWith').value = "";
-                document.getElementById('modalSharedWithContainer').style.display = 'none';
+        });
+    </script>
+    <script>
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, uploader) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalComment').innerText = comment;
+            document.getElementById('modalUploader').textContent = uploader || 'Unknown';
+            document.getElementById('modalUploaded').innerText = uploaded;
+            document.getElementById('modalTaken').innerText = taken;
+            document.getElementById('modalLat').innerText = lat || "N/A";
+            document.getElementById('modalLon').innerText = lon || "N/A";
+            document.getElementById('modalPhotoId').value = photoId;
+            document.getElementById('modalSharedWith').value = "";
+            document.getElementById('modalSharedWithContainer').style.display = 'none';
 
-                // Facebook share link
-                const encodedUrl = encodeURIComponent(url);
-                document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            // Facebook share link
+            const encodedUrl = encodeURIComponent(url);
+            document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
-                const previousMapRow = document.getElementById('modalMapLink')?.closest('tr');
-                if (previousMapRow) previousMapRow.remove();
+            const previousMapRow = document.getElementById('modalMapLink')?.closest('tr');
+            if (previousMapRow) previousMapRow.remove();
 
+            if (lat && lon) {
+                const mapLink = document.getElementById('modalMapLink');
                 if (lat && lon) {
-                    const mapLink = document.getElementById('modalMapLink');
-                    if (lat && lon) {
-                        mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
-                        mapLink.classList.remove('hidden');
-                    } else {
-                        mapLink.classList.add('hidden');
-                    }
-                }
-
-                // Preselect users if sharedWith is provided
-                if (sharedWith && sharedWith !== "Private") {
-                    const sharedList = sharedWith.split(",").map(name => name.trim());
-                    const options = document.getElementById('modalSharedWith').options;
-                    for (let opt of options) {
-                        if (sharedList.includes(opt.text)) opt.selected = true;
-                    }
-                    document.getElementById('modalSharedWithContainer').style.display = 'block';
-                    document.getElementById('modalVisibility').value = 'public';
+                    mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
+                    mapLink.classList.remove('hidden');
                 } else {
-                    document.getElementById('modalVisibility').value = 'private';
+                    mapLink.classList.add('hidden');
                 }
-
-                document.getElementById('exifModal').classList.remove('hidden');
-                document.getElementById('exifModal').classList.add('flex');
             }
 
-            function closeExifModal() {
-                document.getElementById('exifModal').classList.remove('flex');
-                document.getElementById('exifModal').classList.add('hidden');
-            }
-        </script>
-        <script>
-            const dropZone = document.getElementById('drop-zone');
-            const fileInput = document.getElementById('file-input');
-            const preview = document.getElementById('preview');
-            const commentContainer = document.getElementById('comment-container');
-            const metadataWrapper = document.getElementById('metadata-wrapper');
-            const metadataBody = document.getElementById('metadata-body');
-
-            dropZone.addEventListener('click', () => fileInput.click());
-            dropZone.addEventListener('dragover', e => {
-                e.preventDefault();
-                dropZone.classList.add('bg-blue-100');
-            });
-            dropZone.addEventListener('dragleave', () => {
-                dropZone.classList.remove('bg-blue-100');
-            });
-            dropZone.addEventListener('drop', e => {
-                e.preventDefault();
-                dropZone.classList.remove('bg-blue-100');
-                fileInput.files = e.dataTransfer.files;
-                showPreview(e.dataTransfer.files);
-            });
-            fileInput.addEventListener('change', () => {
-                showPreview(fileInput.files);
-            });
-        </script>
-
-        <script>
-            let selectedFiles = [];
-
-            function showPreview(files) {
-                const maxPhotos = 5;
-
-                const newFiles = Array.from(files);
-                const combined = [...selectedFiles, ...newFiles];
-
-                if (combined.length > maxPhotos) {
-                    alert(`You can upload a maximum of ${maxPhotos} photos.`);
-                    return;
+            // Preselect users if sharedWith is provided
+            if (sharedWith && sharedWith !== "Private") {
+                const sharedList = sharedWith.split(",").map(name => name.trim());
+                const options = document.getElementById('modalSharedWith').options;
+                for (let opt of options) {
+                    if (sharedList.includes(opt.text)) opt.selected = true;
                 }
-
-                selectedFiles = combined;
-
-                preview.innerHTML = '';
-                commentContainer.innerHTML = '';
-                metadataBody.innerHTML = '';
-                metadataWrapper.style.display = 'none';
-
-                selectedFiles.forEach((file, index) => {
-                    if (!file.type.startsWith('image/')) return;
-
-                    const previewReader = new FileReader();
-                    previewReader.onload = e => {
-                        const container = document.createElement('div');
-                        container.className = 'relative';
-
-                        const img = document.createElement('img');
-                        img.src = e.target.result;
-                        img.className = 'rounded shadow w-full mb-2';
-                        container.appendChild(img);
-
-                        const removeBtn = document.createElement('button');
-                        removeBtn.innerHTML = '&times;';
-                        removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
-                        removeBtn.onclick = () => {
-                            selectedFiles.splice(index, 1);
-                            fileInput.files = createFileList(selectedFiles);
-                            showPreview([]);
-                        };
-                        container.appendChild(removeBtn);
-
-                        const commentInput = document.createElement('div');
-                        commentInput.innerHTML = `
-                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Comment for ${file.name}</label>
-                            <input type="text" name="comment_${index}" class="mt-1 block w-full rounded border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
-                        `;
-
-                        container.appendChild(commentInput);
-
-                        preview.appendChild(container);
-                    };
-                    previewReader.readAsDataURL(file);
-
-                    const exifReader = new FileReader();
-                    exifReader.onload = async e => {
-                        try {
-                            const tags = await ExifReader.load(e.target.result);
-                            const date = tags.DateTimeOriginal?.description || 'N/A';
-                            const model = tags.Model?.description || 'N/A';
-                            const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
-                            const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
-                            const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
-                            const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
-
-                            const lat = getGPSDecimal(latCoord, latRef);
-                            const lon = getGPSDecimal(lonCoord, lonRef);
-
-                            metadataBody.innerHTML += `
-                                                                                    <tr>
-                                                                                        <td class="border px-4 py-2">${file.name}</td>
-                                                                                        <td class="border px-4 py-2">${date}</td>
-                                                                                        <td class="border px-4 py-2">${model}</td>
-                                                                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                        <td class="border px-4 py-2">
-                                                                                            ${lat && lon
-                                    ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
-                                    : 'N/A'}
-                                                                                        </td>
-                                                                                    </tr>
-                                                                                `;
-                            metadataWrapper.style.display = 'block';
-
-                            if (lat !== null && lon !== null) {
-                                const hiddenInputs = document.createElement('div');
-                                hiddenInputs.innerHTML = `
-                                                                                        <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                        <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                    `;
-                                document.getElementById('upload-form').appendChild(hiddenInputs);
-                            }
-
-                        } catch (err) {
-                            console.warn("EXIF read error:", err);
-                        }
-                    };
-                    exifReader.readAsArrayBuffer(file);
-                });
-
-                // Update count display
-                document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
+                document.getElementById('modalSharedWithContainer').style.display = 'block';
+                document.getElementById('modalVisibility').value = 'public';
+            } else {
+                document.getElementById('modalVisibility').value = 'private';
             }
 
+            document.getElementById('exifModal').classList.remove('hidden');
+            document.getElementById('exifModal').classList.add('flex');
+        }
 
-            function createFileList(files) {
-                const dt = new DataTransfer();
-                files.forEach(file => dt.items.add(file));
-                return dt.files;
+        function closeExifModal() {
+            document.getElementById('exifModal').classList.remove('flex');
+            document.getElementById('exifModal').classList.add('hidden');
+        }
+    </script>
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const preview = document.getElementById('preview');
+        const commentContainer = document.getElementById('comment-container');
+        const metadataWrapper = document.getElementById('metadata-wrapper');
+        const metadataBody = document.getElementById('metadata-body');
+
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            dropZone.classList.add('bg-blue-100');
+        });
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('bg-blue-100');
+        });
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('bg-blue-100');
+            fileInput.files = e.dataTransfer.files;
+            showPreview(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', () => {
+            showPreview(fileInput.files);
+        });
+    </script>
+
+    <script>
+        let selectedFiles = [];
+
+        function showPreview(files) {
+            const maxPhotos = 5;
+
+            const newFiles = Array.from(files);
+            const combined = [...selectedFiles, ...newFiles];
+
+            if (combined.length > maxPhotos) {
+                alert(`You can upload a maximum of ${maxPhotos} photos.`);
+                return;
             }
-        </script>
-        <script>
-            function getGPSDecimal(coord, refTag) {
-                if (!coord || coord.length !== 3) return null;
 
-                const getValue = (entry) => {
-                    if (entry?.numerator !== undefined && entry?.denominator !== undefined) {
-                        return entry.numerator / entry.denominator;
-                    } else if (Array.isArray(entry) && entry.length === 2) {
-                        return parseFloat(entry[0]) / parseFloat(entry[1]);
-                    }
-                    return parseFloat(entry);
+            selectedFiles = combined;
+
+            preview.innerHTML = '';
+            commentContainer.innerHTML = '';
+            metadataBody.innerHTML = '';
+            metadataWrapper.style.display = 'none';
+
+            selectedFiles.forEach((file, index) => {
+                if (!file.type.startsWith('image/')) return;
+
+                const previewReader = new FileReader();
+                previewReader.onload = e => {
+                    const container = document.createElement('div');
+                    container.className = 'relative';
+
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.className = 'rounded shadow w-full mb-2';
+                    container.appendChild(img);
+
+                    const removeBtn = document.createElement('button');
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
+                    removeBtn.onclick = () => {
+                        selectedFiles.splice(index, 1);
+                        fileInput.files = createFileList(selectedFiles);
+                        showPreview([]);
+                    };
+                    container.appendChild(removeBtn);
+
+                    const commentInput = createCommentInput(file, index);
+                    container.appendChild(commentInput);
+
+                    preview.appendChild(container);
                 };
+                previewReader.readAsDataURL(file);
 
-                const d = getValue(coord[0]);
-                const m = getValue(coord[1]);
-                const s = getValue(coord[2]);
+                const exifReader = new FileReader();
+                exifReader.onload = async e => {
+                    try {
+                        const tags = await ExifReader.load(e.target.result);
+                        const date = tags.DateTimeOriginal?.description || 'N/A';
+                        const model = tags.Model?.description || 'N/A';
+                        const latCoord = tags.GPSLatitude?.value ?? tags.GPSLatitude;
+                        const latRef = tags.GPSLatitudeRef?.description ?? tags.GPSLatitudeRef;
+                        const lonCoord = tags.GPSLongitude?.value ?? tags.GPSLongitude;
+                        const lonRef = tags.GPSLongitudeRef?.description ?? tags.GPSLongitudeRef;
 
-                if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+                        const lat = getGPSDecimal(latCoord, latRef);
+                        const lon = getGPSDecimal(lonCoord, lonRef);
 
-                let result = d + m / 60.0 + s / 3600.0;
+                        metadataBody.innerHTML += `
+                                                                                        <tr>
+                                                                                            <td class="border px-4 py-2">${file.name}</td>
+                                                                                            <td class="border px-4 py-2">${date}</td>
+                                                                                            <td class="border px-4 py-2">${model}</td>
+                                                                                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                            <td class="border px-4 py-2">
+                                                                                                ${lat && lon
+                                ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
+                                : 'N/A'}
+                                                                                            </td>
+                                                                                        </tr>
+                                                                                    `;
+                        metadataWrapper.style.display = 'block';
 
-                const refRaw = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim();
-                const ref = refRaw.charAt(0).toUpperCase();
-                console.log('Longitude refTag:', refTag, '| Normalized ref:', ref);
+                        if (lat !== null && lon !== null) {
+                            const hiddenInputs = document.createElement('div');
+                            hiddenInputs.innerHTML = `
+                                                                                            <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                            <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                            <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                        `;
+                            document.getElementById('upload-form').appendChild(hiddenInputs);
+                        }
 
-                if (ref === 'S' || ref === 'W') result *= -1;
-
-                return result.toFixed(6);
-            }
-        </script>
-        <script>
-            async function handleUpload(event) {
-                event.preventDefault();
-
-                const maxPhotos = 5;
-                if (selectedFiles.length === 0) {
-                    alert("Please select at least one photo.");
-                    return false;
-                }
-
-                const formData = new FormData();
-                selectedFiles.forEach((file, index) => {
-                    formData.append('images', file);
-                    const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
-                    formData.append(`comment_${index}`, comment);
-                });
-
-                document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
-                    formData.append(input.name, input.value);
-                });
-
-                const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
-                formData.append('visibility', visibility);
-
-                document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
-                    formData.append('shared_with', option.value);
-                });
-
-                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                formData.append('csrfmiddlewaretoken', csrfToken);
-
-                try {
-                    document.getElementById('loadingSpinner').classList.remove('hidden');
-
-                    const response = await fetch("", {
-                        method: "POST",
-                        body: formData,
-                    });
-
-                    if (response.ok) {
-                        location.reload();
-                    } else {
-                        alert("Upload failed. Try again.");
-                        document.getElementById('loadingSpinner').classList.add('hidden');
+                    } catch (err) {
+                        console.warn("EXIF read error:", err);
                     }
-                } catch (error) {
-                    console.error("Upload error:", error);
-                    alert("Upload failed.");
-                    document.getElementById('loadingSpinner').classList.add('hidden');
-                }
+                };
+                exifReader.readAsArrayBuffer(file);
+            });
 
+            // Update count display
+            document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
+        }
+
+
+        function createFileList(files) {
+            const dt = new DataTransfer();
+            files.forEach(file => dt.items.add(file));
+            return dt.files;
+        }
+    </script>
+    <script>
+        function createCommentInput(file, index) {
+            const container = document.createElement('div');
+            container.className = 'relative dark:bg-gray-800 p-2 rounded';
+
+            const label = document.createElement('label');
+            label.className = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
+            label.textContent = `Comment for ${file.name}`;
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.name = `comment_${index}`;
+            input.className = 'mt-1 block w-full rounded border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-100 dark:text-black';
+
+            container.appendChild(label);
+            container.appendChild(input);
+
+            return container;
+        }
+    </script>
+    <script>
+        function getGPSDecimal(coord, refTag) {
+            if (!coord || coord.length !== 3) return null;
+
+            const getValue = (entry) => {
+                if (entry?.numerator !== undefined && entry?.denominator !== undefined) {
+                    return entry.numerator / entry.denominator;
+                } else if (Array.isArray(entry) && entry.length === 2) {
+                    return parseFloat(entry[0]) / parseFloat(entry[1]);
+                }
+                return parseFloat(entry);
+            };
+
+            const d = getValue(coord[0]);
+            const m = getValue(coord[1]);
+            const s = getValue(coord[2]);
+
+            if (isNaN(d) || isNaN(m) || isNaN(s)) return null;
+
+            let result = d + m / 60.0 + s / 3600.0;
+
+            const refRaw = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim();
+            const ref = refRaw.charAt(0).toUpperCase();
+            console.log('Longitude refTag:', refTag, '| Normalized ref:', ref);
+
+            if (ref === 'S' || ref === 'W') result *= -1;
+
+            return result.toFixed(6);
+        }
+    </script>
+    <script>
+        async function handleUpload(event) {
+            event.preventDefault();
+
+            const maxPhotos = 5;
+            if (selectedFiles.length === 0) {
+                alert("Please select at least one photo.");
                 return false;
             }
-        </script>
-        <script>
-            document.querySelectorAll('input[name="visibility"]').forEach(radio => {
-                radio.addEventListener('change', () => {
-                    const sharedBox = document.getElementById('sharedWithContainer');
-                    sharedBox.style.display = radio.value === 'public' ? 'block' : 'none';
+
+            const formData = new FormData();
+            selectedFiles.forEach((file, index) => {
+                formData.append('images', file);
+                const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
+                formData.append(`comment_${index}`, comment);
+            });
+
+            document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
+                formData.append(input.name, input.value);
+            });
+
+            const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
+            formData.append('visibility', visibility);
+
+            document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
+                formData.append('shared_with', option.value);
+            });
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            formData.append('csrfmiddlewaretoken', csrfToken);
+
+            try {
+                document.getElementById('loadingSpinner').classList.remove('hidden');
+
+                const response = await fetch("", {
+                    method: "POST",
+                    body: formData,
                 });
-            });
-        </script>
-        <script>
-            document.getElementById('modalVisibility').addEventListener('change', function () {
-                const sharedBox = document.getElementById('modalSharedWithContainer');
-                sharedBox.style.display = this.value === 'public' ? 'block' : 'none';
-            });
-        </script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const sharedWith = document.getElementById('modalSharedWith');
 
-                sharedWith.addEventListener('change', function (e) {
-                    const isSelectAll = Array.from(sharedWith.selectedOptions)
-                        .some(option => option.value === '__select_all__');
-
-                    if (isSelectAll) {
-                        // Select all real users
-                        Array.from(sharedWith.options).forEach(option => {
-                            if (option.value !== '__select_all__') {
-                                option.selected = true;
-                            } else {
-                                option.selected = false; // Unselect the "Select All" itself
-                            }
-                        });
-                    }
-                });
-            });
-        </script>
-
-        <script>
-            const darkIcon = document.getElementById('darkModeIcon');
-            const darkContainer = document.getElementById('darkModeToggleContainer');
-
-            function applyThemeIcon(isDark) {
-                darkIcon.classList.remove('fa-sun', 'fa-moon');
-                darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
-                darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert("Upload failed. Try again.");
+                    document.getElementById('loadingSpinner').classList.add('hidden');
+                }
+            } catch (error) {
+                console.error("Upload error:", error);
+                alert("Upload failed.");
+                document.getElementById('loadingSpinner').classList.add('hidden');
             }
 
-            const prefersDark = localStorage.getItem('theme') === 'dark' ||
-                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-            if (prefersDark) {
-                document.documentElement.classList.add('dark');
-                applyThemeIcon(true);
-            } else {
-                document.documentElement.classList.remove('dark');
-                applyThemeIcon(false);
-            }
-
-            darkContainer.addEventListener('click', () => {
-                const isDark = document.documentElement.classList.toggle('dark');
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                applyThemeIcon(isDark);
+            return false;
+        }
+    </script>
+    <script>
+        document.querySelectorAll('input[name="visibility"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const sharedBox = document.getElementById('sharedWithContainer');
+                sharedBox.style.display = radio.value === 'public' ? 'block' : 'none';
             });
-        </script>
+        });
+    </script>
+    <script>
+        document.getElementById('modalVisibility').addEventListener('change', function () {
+            const sharedBox = document.getElementById('modalSharedWithContainer');
+            sharedBox.style.display = this.value === 'public' ? 'block' : 'none';
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sharedWith = document.getElementById('modalSharedWith');
+
+            sharedWith.addEventListener('change', function (e) {
+                const isSelectAll = Array.from(sharedWith.selectedOptions)
+                    .some(option => option.value === '__select_all__');
+
+                if (isSelectAll) {
+                    // Select all real users
+                    Array.from(sharedWith.options).forEach(option => {
+                        if (option.value !== '__select_all__') {
+                            option.selected = true;
+                        } else {
+                            option.selected = false; // Unselect the "Select All" itself
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+
+    <script>
+        const darkIcon = document.getElementById('darkModeIcon');
+        const darkContainer = document.getElementById('darkModeToggleContainer');
+
+        function applyThemeIcon(isDark) {
+            darkIcon.classList.remove('fa-sun', 'fa-moon');
+            darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+            darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+        }
+
+        const prefersDark = localStorage.getItem('theme') === 'dark' ||
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+        if (prefersDark) {
+            document.documentElement.classList.add('dark');
+            applyThemeIcon(true);
+        } else {
+            document.documentElement.classList.remove('dark');
+            applyThemeIcon(false);
+        }
+
+        darkContainer.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            applyThemeIcon(isDark);
+        });
+    </script>
 </body>
 </html>
