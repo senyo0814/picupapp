@@ -289,23 +289,21 @@ def update_comment(request):
 
 @login_required
 def photo_map_view(request):
-    # Filter users who have uploaded or shared visible photos
-    shared_users = User.objects.filter(
-        photoupload__isnull=False
-    ).distinct()
-
-    # Include request.user in case of personal view
-    username = request.user.username if request.user.is_authenticated else 'Anonymous'
+    username = request.user.username
+    user_groups = PhotoGroup.objects.filter(members=request.user)
 
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
-        models.Q(visibility='any') | models.Q(shared_with=request.user) | models.Q(group__members=request.user)
+        models.Q(visibility='any') |
+        models.Q(shared_with=request.user) |
+        models.Q(group__members=request.user)
     )
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
         'user_photos': serialize_photos(user_photos),
         'other_photos': serialize_photos(other_photos),
+        'user_groups': user_groups,
     })
 
 def serialize_photos(qs):
@@ -318,6 +316,7 @@ def serialize_photos(qs):
             "comment": p.comment,
             "user": p.uploaded_by.username,
             "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
+            "group": p.group.name if p.group else ''
         } for p in qs
     ]
 
