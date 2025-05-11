@@ -321,25 +321,27 @@ def serialize_photos(qs):
 
 @login_required
 def create_group_view(request):
+    selected_member_ids = []
+
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
-        member_ids = request.POST.getlist('members')
+        selected_member_ids = request.POST.getlist('members')
 
-        # Check for existing group with the same name (case-insensitive)
         if PhotoGroup.objects.filter(name__iexact=name).exists():
             messages.error(request, "A group with this name already exists.")
         elif name:
             group = PhotoGroup.objects.create(name=name, created_by=request.user)
-            members = User.objects.filter(id__in=member_ids)
+            members = User.objects.filter(id__in=selected_member_ids)
             group.members.set(members)
-            group.members.add(request.user)  # Ensure creator is also a member
+            group.members.add(request.user)
             return redirect(f"{reverse('picupapp:landing')}?new_group=1")
         else:
             messages.error(request, "Group name is required.")
 
     all_users = User.objects.exclude(id=request.user.id)
     return render(request, 'picupapp/create_group.html', {
-        'all_users': all_users
+        'all_users': all_users,
+        'selected_member_ids': selected_member_ids
     })
 
 @login_required
