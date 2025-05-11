@@ -28,7 +28,7 @@
                     class="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white h-48">
                 {% for user in all_users %}
                 <option value="{{ user.id }}"
-                        {% if user.id|stringformat:"s" in selected_member_ids %}>
+                        {% if user.id|stringformat:"s" in selected_member_ids %}selected{% endif %}>
                     {{ user.username }}
                 </option>
                 {% endfor %}
