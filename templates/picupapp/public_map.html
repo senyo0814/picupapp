@@ -49,6 +49,16 @@
     <div id="map" class="h-full w-full rounded"></div>
 </div>
 
+<!-- Fullscreen Modal -->
+<div id="fullscreenImageModal"
+     class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] hidden"
+     onclick="closeImageModal()">
+    <img id="fullscreenImage"
+         class="max-w-full max-h-full object-contain cursor-zoom-out"
+         src=""
+         alt="Fullscreen" />
+</div>
+
 <script id="publicPhotosJson" type="application/json">{{ shared_photos_json }}</script>
 <script>
     const allPhotos = JSON.parse(document.getElementById('publicPhotosJson').textContent);
