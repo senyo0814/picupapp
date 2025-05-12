@@ -5,12 +5,10 @@
 <!-- Row 1: Title and Controls -->
 <div class="mb-2 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3 flex-wrap">
-        <h5 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-            <i class="fas fa-map-marker-alt fa-2xl"></i> <span class="hidden sm:inline">Photo Map</span>
-        </h5>
-        <a href="{% url 'picupapp:about' %}"
-           class="text-sm text-blue-600 hover:underline">
-            <i class="fas fa-info-circle mr-1"></i> About
+        <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
+        <a href="{% url 'picupapp:about' %}?next=landing"
+           class="text-sm text-blue-600 dark:text-gray-300 hover:underline">
+            <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
         </a>
     </div>
 
@@ -342,6 +340,22 @@
         document.getElementById('fullscreenImage').src = '';
     }
 </script>
+<script>
+    function updateLogoForTheme() {
+        const isDark = document.documentElement.classList.contains('dark');
+        const logo = document.getElementById('appLogo');
+        logo.src = isDark ? "{% static 'img/logodark.png' %}" : "{% static 'img/logo.png' %}";
+    }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', updateLogoForTheme);
+
+    // Hook into dark mode toggle
+    document.getElementById('darkModeToggleContainer')?.addEventListener('click', () => {
+        setTimeout(updateLogoForTheme, 100); // Delay slightly to allow class toggle
+    });
+</script>
+
 
 
 <script async defer

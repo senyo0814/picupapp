@@ -37,14 +37,15 @@
             </a>
 
             <!-- Logo and Title -->
+            <!-- Logo and Title -->
             <div class="flex flex-col items-center space-y-1">
-                <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
-                <p class="text-xl font-bold text-gray-800 dark:text-white">PicUp</p>
+                <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
                 <a href="{% url 'picupapp:about' %}?next=landing"
-                   class="text-sm text-blue-600 hover:underline">
-                    <i class="fas fa-info-circle mr-1"></i> About
+                   class="text-sm text-blue-600 dark:text-gray-300 hover:underline">
+                    <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
                 </a>
             </div>
+
 
             <!-- Dark Mode Toggle -->
             <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
@@ -488,28 +489,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                                                        <tr>
-                                                                                                            <td class="border px-4 py-2">${file.name}</td>
-                                                                                                            <td class="border px-4 py-2">${date}</td>
-                                                                                                            <td class="border px-4 py-2">${model}</td>
-                                                                                                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                                            <td class="border px-4 py-2">
-                                                                                                                ${lat && lon
+                                                                                                            <tr>
+                                                                                                                <td class="border px-4 py-2">${file.name}</td>
+                                                                                                                <td class="border px-4 py-2">${date}</td>
+                                                                                                                <td class="border px-4 py-2">${model}</td>
+                                                                                                                <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                                                <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                                                <td class="border px-4 py-2">
+                                                                                                                    ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                                                                                            </td>
-                                                                                                        </tr>
-                                                                                                    `;
+                                                                                                                </td>
+                                                                                                            </tr>
+                                                                                                        `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                                            <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                                            <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                                            <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                                        `;
+                                                                                                                <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                                                <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                                                <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                                            `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
@@ -749,6 +750,22 @@
             }
         });
     </script>
+    <script>
+        function updateLogoForTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const logo = document.getElementById('appLogo');
+            logo.src = isDark ? "{% static 'img/logodark.png' %}" : "{% static 'img/logo.png' %}";
+        }
+
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', updateLogoForTheme);
+
+        // Hook into dark mode toggle
+        document.getElementById('darkModeToggleContainer')?.addEventListener('click', () => {
+            setTimeout(updateLogoForTheme, 100); // Delay slightly to allow class toggle
+        });
+    </script>
+
 
 </body>
 </html>
