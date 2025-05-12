@@ -324,7 +324,7 @@ from django.utils.safestring import mark_safe
 from geopy.geocoders import Nominatim
 import json
 
-# @login_required
+@login_required
 def photo_map_view(request):
     username = request.user.username
 
