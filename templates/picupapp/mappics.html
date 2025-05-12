@@ -188,15 +188,20 @@
                     }
                 });
 
-                const popup = `<div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded" />
-                                    <p>
-                                        <strong>${user}</strong>
-                                        ${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}
-                                    </p>
-                                    <p>${photo.comment || 'No comment'}</p>
-                                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
-                                </div>`;
+                const popup = `
+                  <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
+                    <img
+                      src="${photo.image_url}"
+                      class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer"
+                      onclick="toggleFullScreenImage(this)"
+                    />
+                    <p>
+                      <strong>${user}</strong>
+                      ${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}
+                    </p>
+                    <p>${photo.comment || 'No comment'}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                  </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
@@ -309,8 +314,19 @@
     // Call it after allPhotos is defined
     document.addEventListener('DOMContentLoaded', populateCountryDropdown);
 </script>
-
-
+<script>
+    function toggleFullScreenImage(img) {
+        if (!img.classList.contains('fullscreen-img')) {
+            img.classList.add('fixed', 'top-0', 'left-0', 'w-screen', 'h-screen', 'object-contain', 'z-[9999]', 'bg-black', 'p-4', 'fullscreen-img');
+            img.style.backgroundColor = 'rgba(0,0,0,0.8)';
+            img.onclick = () => toggleFullScreenImage(img);
+        } else {
+            img.classList.remove('fixed', 'top-0', 'left-0', 'w-screen', 'h-screen', 'object-contain', 'z-[9999]', 'bg-black', 'p-4', 'fullscreen-img');
+            img.style.backgroundColor = '';
+            img.onclick = () => toggleFullScreenImage(img);
+        }
+    }
+</script>
 
 <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
