@@ -293,15 +293,22 @@ User = get_user_model()
 @login_required
 def photo_map_view(request):
     username = request.user.username
+
+    # Only groups this user is a member of
     user_groups = PhotoGroup.objects.filter(members=request.user)
+
+    # Users and groups for legend display
     all_users = list(User.objects.values_list('username', flat=True))
     all_groups = list(PhotoGroup.objects.values_list('name', flat=True))
 
+    # User's own uploads
     user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
+
+    # Photos shared publicly, directly, or through the user's groups
     other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
-        models.Q(group__members=request.user)
+        models.Q(group__in=user_groups)
     ).distinct()
 
     return render(request, 'picupapp/mappics.html', {
