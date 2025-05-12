@@ -320,7 +320,11 @@ def update_comment(request):
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
-@login_required
+from django.utils.safestring import mark_safe
+from geopy.geocoders import Nominatim
+import json
+
+@login_required 
 def photo_map_view(request):
     username = request.user.username
 
@@ -335,19 +339,21 @@ def photo_map_view(request):
         models.Q(group__in=user_groups)
     ).distinct()
 
-    def serialize_photos(qs):
-        geolocator = Nominatim(user_agent="picupapp")
-        serialized = []
+    geolocator = Nominatim(user_agent="picupapp")
+    country_set = set()
 
+    def serialize_photos(qs):
+        serialized = []
         for p in qs:
             country = ''
             if p.latitude and p.longitude:
                 try:
                     location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en', timeout=5)
                     country = location.raw.get('address', {}).get('country', '')
+                    if country:
+                        country_set.add(country)
                 except Exception:
                     country = ''
-
             serialized.append({
                 "id": p.id,
                 "image_url": p.image.url,
@@ -360,19 +366,24 @@ def photo_map_view(request):
                 "visibility": p.visibility or "private",
                 "country": country
             })
-
         return serialized
+
+    user_data = serialize_photos(user_photos_qs)
+    other_data = serialize_photos(other_photos_qs)
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
-        'user_photos_json': mark_safe(json.dumps(serialize_photos(user_photos_qs))),
-        'other_photos_json': mark_safe(json.dumps(serialize_photos(other_photos_qs))),
+        'user_photos_json': mark_safe(json.dumps(user_data)),
+        'other_photos_json': mark_safe(json.dumps(other_data)),
+        'countries': sorted(country_set),
         'user_groups': user_groups,
         'all_users': all_users,
         'all_groups': all_groups,
         'user_photo_count': user_photos_qs.count(),
         'shared_photo_count': other_photos_qs.count(),
     })
+
+
 @login_required
 def create_group_view(request):
     selected_member_ids = []
