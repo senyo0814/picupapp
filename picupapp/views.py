@@ -132,6 +132,12 @@ def landing(request):
 
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
+            shared_with = request.POST.getlist('shared_with')  # list of user IDs
+
+            # Dynamically detect shared visibility
+            if visibility == 'private' and shared_with:
+                visibility = 'shared'
+
             selected_group_id = request.POST.get('photo_group') if visibility == 'group' else None
 
             if visibility == 'group' and not selected_group_id:
@@ -181,6 +187,9 @@ def landing(request):
 
                 photo.image.save(f.name, ContentFile(f.read()), save=False)
                 photo.save()
+
+                if visibility == 'shared' and shared_with:
+                photo.shared_with.set(shared_with)
 
             return redirect('picupapp:landing')
 
