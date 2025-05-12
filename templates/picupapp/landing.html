@@ -36,6 +36,12 @@
                 <i class="fas fa-globe"></i> View Shared Photo Map
             </a>
 
+            <!-- Logo and Title -->
+            <div class="flex flex-col items-center">
+                <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
+                <p class="text-xl font-bold text-gray-800 dark:text-white">PicUp</p>
+            </div>
+
             <!-- Dark Mode Toggle -->
             <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
                  style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">
@@ -43,12 +49,6 @@
                 <i id="darkModeIcon"
                    class="fas fa-moon text-xl text-blue-600 dark:text-yellow-400 transition"
                    title="Toggle Dark Mode"></i>
-            </div>
-
-            <!-- Logo and Title -->
-            <div class="flex flex-col items-center">
-                <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
-                <p class="text-xl font-bold text-gray-800 dark:text-white">PicUp</p>
             </div>
 
         </div>

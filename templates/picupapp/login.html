@@ -5,20 +5,20 @@
     <meta charset="UTF-8">
     <title>PicUp</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196f3">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="PicUp">
-    <meta name="theme-color" content="#2196f3">
 
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <link rel="apple-touch-icon" href="{% static 'img/logo192.png' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
 
-    <div class="bg-white p-8 rounded shadow-md w-full max-w-sm">
+    <div class="bg-white p-6 sm:p-8 rounded shadow-md w-full max-w-md">
         <!-- Logo -->
-        <div class="flex flex-col items-center mb-6">
+        <div class="flex flex-col items-center mb-6 text-center">
             <img src="{% static 'img/logo.png' %}" alt="PicUp Logo" class="h-24 mb-2">
             <h1 class="text-2xl font-bold text-gray-800">PicUp</h1>
         </div>
@@ -27,35 +27,34 @@
         <p class="text-red-500 text-sm mb-4 text-center">{{ error }}</p>
         {% endif %}
 
-        <form method="post">
+        <form method="post" class="space-y-4">
             {% csrf_token %}
-            <div class="mb-4">
-                <input type="text" name="username" placeholder="Username" required
-                       class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            </div>
-            <div class="mb-6">
-                <input type="password" name="password" placeholder="Password" required
-                       class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
-            </div>
+            <input type="text" name="username" placeholder="Username" required
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+            <input type="password" name="password" placeholder="Password" required
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
             <button type="submit"
-                    class="spinner-link w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+                    class="spinner-link w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
                 Login
             </button>
         </form>
 
-        <p class="mt-4 text-sm text-center">
+        <div class="mt-4 text-sm text-center">
             Don’t have an account?
             <a href="{% url 'picupapp:register' %}" class="spinner-link text-blue-600 hover:underline">Register here</a>
-        </p>
+        </div>
 
-        <p class="mt-4 text-center">
+        <div class="mt-4 text-center">
             <a href="{% url 'picupapp:shared_photo_map' %}"
                class="spinner-link inline-block bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded shadow transition">
-                <i class="fas fa-globe"></i> View Shared Photo Map
+                <i class="fas fa-globe mr-1"></i> View Shared Photo Map
             </a>
-        </p>
+        </div>
     </div>
 
+    <!-- Loading Spinner -->
     <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
@@ -79,5 +78,6 @@
             });
         });
     </script>
+
 </body>
 </html>
