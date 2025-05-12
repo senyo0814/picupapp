@@ -61,8 +61,8 @@
 </div>
 
 <script>
-    const userPhotos = {{ user_photos|safe }};
-    const otherPhotos = {{ other_photos|safe }};
+    const userPhotos = JSON.parse('{{ user_photos|safe|escapejs }}');
+    const otherPhotos = JSON.parse('{{ other_photos|safe|escapejs }}');
     const allPhotos = [...userPhotos, ...otherPhotos];
 
     let markers = [];

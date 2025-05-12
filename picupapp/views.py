@@ -344,14 +344,15 @@ def photo_map_view(request):
             {
                 "id": p.id,
                 "image_url": p.image.url,
-                "latitude": p.latitude,
-                "longitude": p.longitude,
-                "comment": p.comment,
+                "latitude": p.latitude if p.latitude is not None else None,
+                "longitude": p.longitude if p.longitude is not None else None,
+                "comment": p.comment or "",
                 "user": p.uploaded_by.username,
-                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
-                "group": p.group.name if p.group else '',
-                "visibility": p.visibility
-            } for p in qs
+                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "",
+                "group": p.group.name if p.group else "",
+                "visibility": p.visibility or "private",
+            }
+            for p in qs
         ]
 
     return render(request, 'picupapp/mappics.html', {
