@@ -29,5 +29,46 @@
         <p><i class="fas fa-user-cog mr-2"></i><strong>Developer:</strong> Escat Digital Studio</p>
         <p><i class="fas fa-envelope mr-2"></i><strong>Contact:</strong> escarosastore@gmail.com</p>
     </div>
+
+    <!-- Close About Buttons -->
+    <div class="mt-6 flex flex-col sm:flex-row sm:justify-start gap-3">
+        {% if next_page == 'mappics' %}
+        <a href="{% url 'picupapp:mappics' %}"
+           class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600
+                      text-gray-800 dark:text-gray-100 font-medium rounded shadow transition">
+            <i class="fas fa-arrow-left mr-2 text-gray-700 dark:text-gray-100"></i>
+            Close About (Back to Map)
+        </a>
+        {% elif next_page == 'public_map' %}
+        <a href="{% url 'picupapp:public_map' %}"
+           class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600
+                      text-gray-800 dark:text-gray-100 font-medium rounded shadow transition">
+            <i class="fas fa-arrow-left mr-2 text-gray-700 dark:text-gray-100"></i>
+            Close About (Back to Public Map)
+        </a>
+        {% elif user.is_authenticated %}
+        <a href="{% url 'picupapp:landing' %}"
+           class="inline-flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600
+                      text-gray-800 dark:text-gray-100 font-medium rounded shadow transition">
+            <i class="fas fa-arrow-left mr-2 text-gray-700 dark:text-gray-100"></i>
+            Close About (Back to Landing)
+        </a>
+        {% else %}
+        <a href="{% url 'picupapp:login' %}"
+           class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500
+                      text-gray-700 dark:text-gray-100 font-medium rounded shadow transition">
+            <i class="fas fa-sign-in-alt mr-2 text-gray-700 dark:text-gray-100"></i>
+            Close About (Back to Login)
+        </a>
+        {% endif %}
+
+        <!-- Always show JS fallback -->
+        <button onclick="history.back()"
+                class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-600 hover:bg-gray-200 dark:hover:bg-gray-500
+                       text-gray-700 dark:text-gray-100 font-medium rounded shadow transition">
+            <i class="fas fa-times mr-2 text-gray-700 dark:text-gray-100"></i>
+            Close About (Go Back)
+        </button>
+    </div>
 </div>
 {% endblock %}

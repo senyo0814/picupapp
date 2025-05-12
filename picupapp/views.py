@@ -443,6 +443,11 @@ def public_photo_map_view(request):
     })
 
 def about_view(request):
-    return render(request, 'picupapp/about.html')
+    next_page = request.GET.get('next', None)
+    return render(request, 'picupapp/about.html', {
+        'user': request.user,
+        'next_page': next_page,
+    })
+
 
 
