@@ -1,0 +1,25 @@
+{% extends 'picupapp/base.html' %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 rounded shadow">
+    <h1 class="text-2xl font-bold mb-4 text-gray-800 dark:text-white">About MyPicUpApp</h1>
+
+    <p class="mb-4 text-gray-700 dark:text-gray-300">
+        <strong>MyPicUpApp</strong> is a user-friendly web platform built for uploading, managing, and mapping photos with location awareness and smart visibility options.
+    </p>
+
+    <h2 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">Key Features</h2>
+    <ul class="list-disc pl-5 text-gray-700 dark:text-gray-300 mb-4">
+        <li>?? GPS and timestamp extraction from uploaded photos</li>
+        <li>?? Interactive map showing photo locations</li>
+        <li>?? Share photos publicly, privately, or with groups</li>
+        <li>?? Organize uploads into photo groups</li>
+        <li>?? Filter and search by location, user, group, or date</li>
+        <li>?? Email notifications to users or groups when new uploads are made</li>
+    </ul>
+
+    <p class="text-gray-700 dark:text-gray-300">
+        Whether you're documenting field data, coordinating team uploads, or sharing geo-tagged photos, <strong>MyPicUpApp</strong> provides a streamlined experience built on Django, PostgreSQL, and Google Cloud Storage.
+    </p>
+</div>
+{% endblock %}
