@@ -116,15 +116,16 @@
                     }
                 });
 
-                const popup = `<div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded" />
-                                    <p>
-                                        <strong>${user}</strong>
-                                        ${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}
-                                    </p>
-                                    <p>${photo.comment || 'No comment'}</p>
-                                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
-                                </div>`;
+                const popup = `
+                  <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-3 rounded shadow max-w-xs sm:max-w-sm w-[90vw]">
+                    <img src="${photo.image_url}" class="w-full max-h-[250px] object-contain rounded mb-2" />
+                    <p class="mb-1">
+                      <strong>${user}</strong>
+                      ${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}
+                    </p>
+                    <p class="mb-1">${photo.comment || 'No comment'}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                  </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
