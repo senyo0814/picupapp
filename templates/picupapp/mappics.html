@@ -113,48 +113,45 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
-        const tagMap = {}; // Combine both users and groups
+        const userMarkersMap = {};
 
         allPhotos.forEach(photo => {
             if (!photo.latitude || !photo.longitude) return;
 
             const user = photo.user || 'Unknown';
-            const group = photo.group || null;
-            const tags = [user];
-            if (group) tags.push(group);
 
-            tags.forEach(tag => {
-                if (!globalUserColorMap[tag]) {
-                    globalUserColorMap[tag] = allColors[colorIndex % allColors.length];
-                    colorIndex++;
-                }
-                if (!tagMap[tag]) tagMap[tag] = [];
-                tagMap[tag].push(photo);
-            });
+            if (!globalUserColorMap[user]) {
+                globalUserColorMap[user] = allColors[colorIndex % allColors.length];
+                colorIndex++;
+            }
+
+            if (!userMarkersMap[user]) {
+                userMarkersMap[user] = [];
+            }
+            userMarkersMap[user].push(photo);
         });
 
-        const keyword = document.getElementById('legendSearch').value.toLowerCase();
+        Object.entries(userMarkersMap).forEach(([user, photos]) => {
+            const keyword = document.getElementById('legendSearch').value.toLowerCase();
+            if (keyword && !user.toLowerCase().includes(keyword)) return;
 
-        Object.entries(tagMap).forEach(([tag, photos]) => {
-            if (keyword && !tag.toLowerCase().includes(keyword)) return;
-
-            const color = globalUserColorMap[tag];
-            const isActive = activeUsers.has(tag);
+            const color = globalUserColorMap[user];
+            const isActive = activeUsers.has(user);
 
             const li = document.createElement('li');
             li.innerHTML = `
-            <button data-user="${tag}"
-                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''
-                }">
-                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                <span>${highlightMatch(tag, keyword)}</span>
-            </button>
-        `;
+                <button data-user="${user}"
+                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${
+                        isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''
+                    }">
+                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                    <span>${highlightMatch(user, keyword)}</span>
+                </button>
+            `;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
-                const matched = [photo.user, photo.group].some(v => activeUsers.size === 0 || activeUsers.has(v));
-                if (!matched) return;
+                if (activeUsers.size > 0 && !activeUsers.has(user)) return;
 
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
@@ -162,20 +159,20 @@
                     map,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                          <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                        </svg>`)}`,
+                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                              <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                            </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                <div class="text-sm">
-                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
-                    <p><strong>${photo.user}</strong>${photo.group ? ` <em>(${photo.group})</em>` : ''}</p>
-                    <p>${photo.comment || 'No comment'}</p>
-                    <p class="text-gray-500 text-xs">${photo.taken}</p>
-                </div>
-            `;
+                    <div class="text-sm">
+                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2" />
+                        <p><strong>${user}</strong></p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-gray-500 text-xs">${photo.taken}</p>
+                    </div>
+                `;
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
                     infowindow.open(map, marker);
@@ -193,27 +190,30 @@
             });
         });
 
-        if (markers.length > 0) map.fitBounds(bounds);
+        if (markers.length > 0) {
+            map.fitBounds(bounds);
+        }
 
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
-                const tag = btn.getAttribute('data-user');
-                if (activeUsers.has(tag)) {
-                    activeUsers.delete(tag);
+                const user = btn.getAttribute('data-user');
+                if (activeUsers.has(user)) {
+                    activeUsers.delete(user);
                 } else {
-                    activeUsers.add(tag);
+                    activeUsers.add(user);
                 }
 
-                const allTags = new Set(allPhotos.flatMap(p => [p.user, p.group].filter(Boolean)));
+                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
                 document.querySelector('input[name="legendFilter"][value="all"]').checked =
-                    allTags.size === activeUsers.size &&
-                    [...allTags].every(t => activeUsers.has(t));
+                    allUsers.size === activeUsers.size &&
+                    [...allUsers].every(u => activeUsers.has(u));
 
                 renderMarkers();
             });
         });
     }
-
 </script>
 
 <script>
