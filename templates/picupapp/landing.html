@@ -28,16 +28,19 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white p-4 sm:p-6">
     <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded shadow">
-        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <!-- Logo Row with About Link -->
-            <div class="flex items-center justify-between w-full px-4 mb-4">
-                <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
+        <div class="flex items-center justify-between gap-6 mb-4 px-4 flex-wrap sm:flex-nowrap">
+            <!-- Logo -->
+            <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
 
-                <a href="{% url 'picupapp:about' %}?next=landing"
-                   class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
-                    <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
-                </a>
-            </div>
+            <!-- About Link -->
+            <a href="{% url 'picupapp:about' %}?next=landing"
+               class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
+                <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
+            </a>
+
+            <!-- Spacer (optional, pushes toggle to far right) -->
+            <div class="flex-grow"></div>
+
             <!-- Dark Mode Toggle -->
             <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
                  style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">
@@ -46,8 +49,8 @@
                    class="fas fa-moon text-xl text-blue-600 dark:text-yellow-400 transition"
                    title="Toggle Dark Mode"></i>
             </div>
-
         </div>
+
 
         <h1 class="text-xl font-bold mb-4 text-center">Welcome, {{ username }}!</h1>
 
