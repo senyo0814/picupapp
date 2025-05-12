@@ -324,7 +324,7 @@ from django.utils.safestring import mark_safe
 from geopy.geocoders import Nominatim
 import json
 
-@login_required 
+@login_required
 def photo_map_view(request):
     username = request.user.username
 
@@ -340,9 +340,9 @@ def photo_map_view(request):
     ).distinct()
 
     geolocator = Nominatim(user_agent="picupapp")
-    country_set = set()
 
     def serialize_photos(qs):
+        country_set = set()
         serialized = []
         for p in qs:
             country = ''
@@ -350,10 +350,10 @@ def photo_map_view(request):
                 try:
                     location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en', timeout=5)
                     country = location.raw.get('address', {}).get('country', '')
-                    if country:
-                        country_set.add(country)
                 except Exception:
                     country = ''
+            if country:
+                country_set.add(country)
             serialized.append({
                 "id": p.id,
                 "image_url": p.image.url,
@@ -366,13 +366,11 @@ def photo_map_view(request):
                 "visibility": p.visibility or "private",
                 "country": country
             })
-        return serialized
+        return serialized, country_set
 
-    # Serialize and collect countries once for both querysets
     combined_qs = list(user_photos_qs) + list(other_photos_qs)
-    all_data = serialize_photos(combined_qs)
+    all_data, country_set = serialize_photos(combined_qs)
 
-    # Split data back
     user_data = [p for p in all_data if p['user'] == username]
     other_data = [p for p in all_data if p['user'] != username]
 
