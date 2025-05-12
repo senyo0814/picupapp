@@ -294,16 +294,23 @@ def metadata_table_view(request):
 def update_comment(request):
     if request.method == 'POST':
         photo_id = request.POST.get('photo_id')
-        new_comment = request.POST.get('comment')
-        new_visibility = request.POST.get('visibility', 'private')
-        shared_with_ids = request.POST.getlist('shared_with')
+        comment = request.POST.get('comment', '')
+        visibility = request.POST.get('visibility', 'private')
+        group_id = request.POST.get('group_id') if visibility == 'group' else None
+        shared_with_ids = request.POST.getlist('shared_with_modal') if visibility == 'shared' else []
 
         try:
             photo = PhotoUpload.objects.get(id=photo_id, uploaded_by=request.user)
-            photo.comment = new_comment
-            photo.visibility = 'any' if new_visibility else 'private'
+            photo.comment = comment
+            photo.visibility = visibility
+            photo.group_id = group_id if group_id else None
             photo.save()
-            photo.shared_with.set(shared_with_ids)
+
+            if visibility == 'shared':
+                photo.shared_with.set(shared_with_ids)
+            else:
+                photo.shared_with.clear()
+
             return redirect('picupapp:landing')
         except PhotoUpload.DoesNotExist:
             return HttpResponse("Unauthorized", status=403)

@@ -151,20 +151,22 @@
             {% if photo.image %}
             <div class="bg-white dark:bg-gray-700 rounded shadow p-2">
                 <button onclick="showExifModal(
-                '{{ photo.image.url }}',
-                '{{ photo.comment|escapejs }}',
-                '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}',
-                '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}',
-                '{{ photo.latitude }}',
-                '{{ photo.longitude }}',
-                '{{ photo.id }}',
-                '{{ photo.shared_with.all|join:", " }}',
-                '{{ photo.uploaded_by.username }}'
-            )"
-                        class="spinner-link w-full">
-
+                    '{{ photo.image.url }}',
+                    '{{ photo.comment|escapejs }}',
+                    '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}',
+                    '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}',
+                    '{{ photo.latitude }}',
+                    '{{ photo.longitude }}',
+                    '{{ photo.id }}',
+                    '{{ photo.shared_with.all|join:", " }}',
+                    '{{ photo.uploaded_by.username }}',
+                    '{{ photo.visibility }}',
+                    '{{ photo.group.id|default_if_none:"" }}'
+                )"
+                class="spinner-link w-full">
                     <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                 </button>
+
                 <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
                 {% if photo.comment %}
                 <p class="text-sm mt-1 text-gray-700 dark:text-gray-300 italic">"{{ photo.comment }}"</p>
@@ -320,56 +322,58 @@
         });
     </script>
     <script>
-        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, uploader) {
+        function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, uploader, visibility, groupId) {
             document.getElementById('modalImage').src = url;
-            document.getElementById('modalComment').innerText = comment;
+            document.getElementById('modalComment').value = comment;
             document.getElementById('modalUploader').textContent = uploader || 'Unknown';
-            document.getElementById('modalUploaded').innerText = uploaded;
-            document.getElementById('modalTaken').innerText = taken;
-            document.getElementById('modalLat').innerText = lat || "N/A";
-            document.getElementById('modalLon').innerText = lon || "N/A";
+            document.getElementById('modalUploaded').textContent = uploaded;
+            document.getElementById('modalTaken').textContent = taken;
+            document.getElementById('modalLat').textContent = lat || "N/A";
+            document.getElementById('modalLon').textContent = lon || "N/A";
             document.getElementById('modalPhotoId').value = photoId;
-            document.getElementById('modalSharedWith').value = "";
-            document.getElementById('modalSharedWithContainer').style.display = 'none';
 
-            // Facebook share link
-            const encodedUrl = encodeURIComponent(url);
-            document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            const visSelect = document.getElementById('modalVisibility');
+            const sharedBox = document.getElementById('modalSharedWithContainer');
+            const groupBox = document.getElementById('modalGroupContainer');
+            const sharedSelect = document.getElementById('modalSharedWith');
+            const groupSelect = document.getElementById('modalGroup');
 
-            const previousMapRow = document.getElementById('modalMapLink')?.closest('tr');
-            if (previousMapRow) previousMapRow.remove();
+            visSelect.value = visibility || 'private';
+            sharedBox.style.display = 'none';
+            groupBox.style.display = 'none';
+            sharedSelect.value = "";
 
-            if (lat && lon) {
-                const mapLink = document.getElementById('modalMapLink');
-                if (lat && lon) {
-                    mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
-                    mapLink.classList.remove('hidden');
-                } else {
-                    mapLink.classList.add('hidden');
+            // Handle visibility
+            if (visibility === 'shared') {
+                sharedBox.style.display = 'block';
+                const sharedList = (sharedWith || "").split(",").map(name => name.trim());
+                for (let opt of sharedSelect.options) {
+                    opt.selected = sharedList.includes(opt.text);
+                }
+            } else if (visibility === 'group') {
+                groupBox.style.display = 'block';
+                if (groupSelect && groupId) {
+                    groupSelect.value = groupId;
                 }
             }
 
-            // Preselect users if sharedWith is provided
-            if (sharedWith && sharedWith !== "Private") {
-                const sharedList = sharedWith.split(",").map(name => name.trim());
-                const options = document.getElementById('modalSharedWith').options;
-                for (let opt of options) {
-                    if (sharedList.includes(opt.text)) opt.selected = true;
-                }
-                document.getElementById('modalSharedWithContainer').style.display = 'block';
-                document.getElementById('modalVisibility').value = 'public';
+            // Set Facebook share link
+            const encodedUrl = encodeURIComponent(url);
+            document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+
+            // Set map link if lat/lon exist
+            const mapLink = document.getElementById('modalMapLink');
+            if (lat && lon) {
+                mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
+                mapLink.classList.remove('hidden');
             } else {
-                document.getElementById('modalVisibility').value = 'private';
+                mapLink.classList.add('hidden');
             }
 
             document.getElementById('exifModal').classList.remove('hidden');
             document.getElementById('exifModal').classList.add('flex');
         }
 
-        function closeExifModal() {
-            document.getElementById('exifModal').classList.remove('flex');
-            document.getElementById('exifModal').classList.add('hidden');
-        }
     </script>
     <script>
         const dropZone = document.getElementById('drop-zone');
