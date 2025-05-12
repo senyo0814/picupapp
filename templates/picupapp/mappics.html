@@ -1,4 +1,5 @@
 ﻿{% extends 'picupapp/base.html' %}
+{% load static %}
 {% load humanize %}
 
 {% block content %}
@@ -7,7 +8,6 @@
     <!-- Logo Row with About Link -->
     <div class="flex items-center justify-between w-full px-4 mb-4">
         <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
-
         <a href="{% url 'picupapp:about' %}?next=landing"
            class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
             <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
