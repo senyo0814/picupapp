@@ -357,8 +357,8 @@ def photo_map_view(request):
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
-        'user_photos': serialize_photos(user_photos_qs),
-        'other_photos': serialize_photos(other_photos_qs),
+        'user_photos_json': mark_safe(json.dumps(serialize_photos(user_photos_qs))),
+        'other_photos_json': mark_safe(json.dumps(serialize_photos(other_photos_qs))),
         'user_groups': user_groups,
         'all_users': all_users,
         'all_groups': all_groups,

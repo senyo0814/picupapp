@@ -60,10 +60,17 @@
     <div id="map" class="h-full w-full rounded"></div>
 </div>
 
+<script id="userPhotosJson" type="application/json">{{ user_photos_json }}</script>
+<script id="otherPhotosJson" type="application/json">{{ other_photos_json }}</script>
+
 <script>
-    const userPhotos = JSON.parse(`{{ user_photos|safe|escapejs }}`);
-    const otherPhotos = JSON.parse(`{{ other_photos|safe|escapejs }}`);
+    const userPhotos = JSON.parse(document.getElementById('userPhotosJson').textContent);
+    const otherPhotos = JSON.parse(document.getElementById('otherPhotosJson').textContent);
     const allPhotos = [...userPhotos, ...otherPhotos];
+</script>
+
+
+<script>
 
     let markers = [];
     let map;
