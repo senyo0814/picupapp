@@ -1,6 +1,7 @@
 ﻿import io
-import logging
 import os
+import json
+import logging
 from datetime import datetime
 from PIL import Image
 from PIL.ExifTags import TAGS, GPSTAGS
@@ -15,15 +16,14 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.safestring import mark_safe
+
+from geopy.geocoders import Nominatim
 
 from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
-from django.utils.safestring import mark_safe
-import json
-
 logger = logging.getLogger(__name__)
-
 
 # --- Auth Views ---
 
@@ -324,17 +324,11 @@ User = get_user_model()
 def photo_map_view(request):
     username = request.user.username
 
-    # Groups the current user belongs to
     user_groups = PhotoGroup.objects.filter(members=request.user)
-
-    # For legend display
     all_users = list(User.objects.values_list('username', flat=True))
     all_groups = list(PhotoGroup.objects.values_list('name', flat=True))
 
-    # User's own uploads (including private)
     user_photos_qs = PhotoUpload.objects.filter(uploaded_by=request.user)
-
-    # Shared or public photos from others
     other_photos_qs = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
@@ -342,20 +336,32 @@ def photo_map_view(request):
     ).distinct()
 
     def serialize_photos(qs):
-        return [
-            {
+        geolocator = Nominatim(user_agent="picupapp")
+        serialized = []
+
+        for p in qs:
+            country = ''
+            if p.latitude and p.longitude:
+                try:
+                    location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en', timeout=5)
+                    country = location.raw.get('address', {}).get('country', '')
+                except Exception:
+                    country = ''
+
+            serialized.append({
                 "id": p.id,
                 "image_url": p.image.url,
-                "latitude": p.latitude if p.latitude is not None else None,
-                "longitude": p.longitude if p.longitude is not None else None,
+                "latitude": p.latitude,
+                "longitude": p.longitude,
                 "comment": p.comment or "",
                 "user": p.uploaded_by.username,
                 "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "",
                 "group": p.group.name if p.group else "",
                 "visibility": p.visibility or "private",
-            }
-            for p in qs
-        ]
+                "country": country
+            })
+
+        return serialized
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
@@ -367,21 +373,6 @@ def photo_map_view(request):
         'user_photo_count': user_photos_qs.count(),
         'shared_photo_count': other_photos_qs.count(),
     })
-
-def serialize_photos(qs):
-    return [
-        {
-            "id": p.id,
-            "image_url": p.image.url,
-            "latitude": p.latitude,
-            "longitude": p.longitude,
-            "comment": p.comment,
-            "user": p.uploaded_by.username,
-            "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
-            "group": p.group.name if p.group else ''
-        } for p in qs
-    ]
-
 @login_required
 def create_group_view(request):
     selected_member_ids = []
@@ -411,34 +402,4 @@ def create_group_view(request):
 def get_user_groups(request):
     groups = PhotoGroup.objects.filter(created_by=request.user).values('id', 'name')
     return JsonResponse(list(groups), safe=False)
-
-
-
-from geopy.geocoders import Nominatim
-
-def serialize_photos(qs):
-    geolocator = Nominatim(user_agent="picupapp")
-    result = []
-    for p in qs:
-        country = ''
-        if p.latitude and p.longitude:
-            try:
-                location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en')
-                country = location.raw['address'].get('country', '')
-            except:
-                pass
-        result.append({
-            'id': p.id,
-            'image_url': p.image.url,
-            'latitude': p.latitude,
-            'longitude': p.longitude,
-            'comment': p.comment,
-            'user': p.uploaded_by.username,
-            'taken': p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
-            'group': p.group.name if p.group else '',
-            'visibility': p.visibility,
-            'country': country,
-        })
-    return result
-
 
