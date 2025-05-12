@@ -412,3 +412,33 @@ def get_user_groups(request):
     groups = PhotoGroup.objects.filter(created_by=request.user).values('id', 'name')
     return JsonResponse(list(groups), safe=False)
 
+
+
+from geopy.geocoders import Nominatim
+
+def serialize_photos(qs):
+    geolocator = Nominatim(user_agent="picupapp")
+    result = []
+    for p in qs:
+        country = ''
+        if p.latitude and p.longitude:
+            try:
+                location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en')
+                country = location.raw['address'].get('country', '')
+            except:
+                pass
+        result.append({
+            'id': p.id,
+            'image_url': p.image.url,
+            'latitude': p.latitude,
+            'longitude': p.longitude,
+            'comment': p.comment,
+            'user': p.uploaded_by.username,
+            'taken': p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
+            'group': p.group.name if p.group else '',
+            'visibility': p.visibility,
+            'country': country,
+        })
+    return result
+
+
