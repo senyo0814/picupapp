@@ -128,7 +128,7 @@ def landing(request):
             models.Q(uploaded_by=request.user) |
             models.Q(visibility='any') |
             models.Q(group__in=user_groups)
-        ).distinct().select_related('uploaded_by').order_by('-uploaded_at').exclude(image='')
+        ).distinct().select_related('uploaded_by').prefetch_related('shared_with').order_by('-uploaded_at')
 
         if request.method == 'POST':
             visibility = request.POST.get('visibility', 'private')
