@@ -21,20 +21,36 @@
     </div>
 </div>
 
-<div id="legend" class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+<!-- Row 2: Horizontal Legend -->
+<!-- Legend Row with Search -->
+<!-- Legend Row -->
+<div id="legend"
+     class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+
+    <!-- Search Box -->
     <div class="mb-2 flex items-center gap-2">
-        <input type="text" id="legendSearch" placeholder="Search user..." class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
+        <input type="text" id="legendSearch" placeholder="Search user..."
+               class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
     </div>
+
+    <!-- Horizontal Legend -->
     <ul id="legendList" class="flex flex-wrap items-center gap-4">
         <li>
-            <label class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
-                <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked />
+            <label for="legend-select-all"
+                   class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input type="radio" id="legend-select-all" name="legendFilter" value="all"
+                       class="accent-blue-600" />
                 <span>Select All</span>
             </label>
         </li>
     </ul>
 </div>
-
+<div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+    <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span> &nbsp;|&nbsp;
+    <span>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+</div>
+<!--<p>Debug: user={{ user_photo_count }} shared={{ shared_photo_count }}</p>-->
+<!-- Country Filter Dropdown -->
 <div class="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
     <label for="countryFilter" class="font-semibold">Country:</label>
     <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
