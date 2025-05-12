@@ -56,17 +56,15 @@
 </div>
 <!--<p>Debug: user={{ user_photo_count }} shared={{ shared_photo_count }}</p>-->
 <!-- Country Filter Dropdown -->
-<div class="mb-2 flex items-center gap-2">
-    <label for="countryFilter" class="text-sm font-medium text-gray-700 dark:text-gray-200">Country:</label>
-    <select id="countryFilter"
-            class="text-sm px-2 py-1 border rounded dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600">
+<div class="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+    <label for="countryFilter" class="font-semibold">Country:</label>
+    <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
         <option value="">All Countries</option>
         {% for country in countries %}
         <option value="{{ country }}">{{ country }}</option>
         {% endfor %}
     </select>
 </div>
-
 
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
@@ -80,7 +78,6 @@
     const otherPhotos = JSON.parse(document.getElementById('otherPhotosJson').textContent);
     const allPhotos = [...userPhotos, ...otherPhotos];
 </script>
-
 
 <script>
 
@@ -288,8 +285,16 @@
     let activeCountry = '';
 
     function populateCountryDropdown() {
-        const countrySet = new Set(allPhotos.map(p => p.country).filter(Boolean));
+        const countrySet = new Set();
+        allPhotos.forEach(p => {
+            if (p.country && !countrySet.has(p.country)) {
+                countrySet.add(p.country);
+            }
+        });
+
         const select = document.getElementById('countryFilter');
+        select.innerHTML = '<option value="">All Countries</option>'; // Clear duplicates
+
         [...countrySet].sort().forEach(country => {
             const opt = document.createElement('option');
             opt.value = country;
@@ -303,7 +308,10 @@
         });
     }
 
+    // Call it after allPhotos is defined
+    document.addEventListener('DOMContentLoaded', populateCountryDropdown);
 </script>
+
 
 
 <script async defer
