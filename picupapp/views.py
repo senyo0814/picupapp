@@ -431,7 +431,7 @@ def public_photo_map_view(request):
                 "user": p.uploaded_by.username,
                 "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "",
                 "visibility": p.visibility or "private",
-                "country": getattr(p, "country", ""),
+                "country": getattr(p, "country", "") or "Unknown",
             }
             for p in qs
         ]
