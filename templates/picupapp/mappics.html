@@ -61,8 +61,8 @@
 </div>
 
 <script>
-    const userPhotos = JSON.parse('{{ user_photos|safe|escapejs }}');
-    const otherPhotos = JSON.parse('{{ other_photos|safe|escapejs }}');
+    const userPhotos = JSON.parse(`{{ user_photos|safe|escapejs }}`);
+    const otherPhotos = JSON.parse(`{{ other_photos|safe|escapejs }}`);
     const allPhotos = [...userPhotos, ...otherPhotos];
 
     let markers = [];
