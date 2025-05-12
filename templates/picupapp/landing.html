@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -194,7 +194,9 @@
                         <label for="modalVisibility" class="font-semibold">Visibility:</label>
                         <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
                             <option value="private">Private</option>
-                            <option value="public">Public</option>
+                            <option value="any">Public (Any User)</option>
+                            <option value="group">Group</option>
+                            <option value="shared">Share with Users</option>
                         </select>
                     </div>
 
@@ -208,7 +210,15 @@
                         </select>
                         <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (or Cmd) to select multiple users.</p>
                     </div>
-
+                    <div id="modalGroupContainer" class="mt-2 hidden">
+                        <label for="modalGroup" class="font-semibold">Select Group:</label>
+                        <select name="group_id" id="modalGroup" class="w-full border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                            <option value="">-- Choose Group --</option>
+                            {% for group in user_groups %}
+                            <option value="{{ group.id }}">{{ group.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
                     <div class="mt-2 flex flex-wrap gap-2 items-center">
                         <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
                         <button type="button" onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600">Close</button>
@@ -298,6 +308,8 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalSharedWith').value = "";
             document.getElementById('modalSharedWithContainer').style.display = 'none';
+            document.getElementById('modalVisibility').value = photo.visibility || 'private';
+            document.getElementById('modalVisibility').dispatchEvent(new Event('change'));
 
             // Facebook share link
             const encodedUrl = encodeURIComponent(url);
@@ -548,7 +560,7 @@
             const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
             formData.append('visibility', visibility);
 
-            // ? Add group ID if visibility is "group"
+            // ✅ Add group ID if visibility is "group"
             if (visibility === 'group') {
                 const groupId = document.getElementById('photoGroup')?.value;
                 if (!groupId) {
@@ -600,7 +612,16 @@
     <script>
         document.getElementById('modalVisibility').addEventListener('change', function () {
             const sharedBox = document.getElementById('modalSharedWithContainer');
-            sharedBox.style.display = this.value === 'public' ? 'block' : 'none';
+            const groupBox = document.getElementById('modalGroupContainer');
+
+            sharedBox.style.display = 'none';
+            groupBox.style.display = 'none';
+
+            if (this.value === 'shared') {
+                sharedBox.style.display = 'block';
+            } else if (this.value === 'group') {
+                groupBox.style.display = 'block';
+            }
         });
     </script>
     <script>
