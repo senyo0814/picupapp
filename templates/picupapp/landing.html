@@ -101,9 +101,14 @@
                         <input type="radio" name="visibility" value="group">
                         <span class="ml-1">Group</span>
                     </label>
+                    <label>
+                        <input type="radio" name="visibility" value="shared">
+                        <span class="ml-1">Shared</span>
+                    </label>
                 </div>
             </div>
 
+            <!-- Group dropdown -->
             <div class="mb-4" id="groupDropdown" style="display: none;">
                 <label for="photoGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Select Group</label>
                 <select name="photo_group" id="photoGroup" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
@@ -116,7 +121,16 @@
                 </div>
             </div>
 
-
+            <!-- Shared user multi-select -->
+            <div class="mb-4" id="sharedUserSelect" style="display: none;">
+                <label for="sharedWith" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Share with specific users</label>
+                <select name="shared_with" id="sharedWith" multiple class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                    {% for user in all_users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                    {% endfor %}
+                </select>
+                <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (Cmd) to select multiple users.</p>
+            </div>
 
             <button type="submit" class="spinner-link mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
                 Upload Photos
@@ -450,28 +464,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                                                    <tr>
-                                                                                                        <td class="border px-4 py-2">${file.name}</td>
-                                                                                                        <td class="border px-4 py-2">${date}</td>
-                                                                                                        <td class="border px-4 py-2">${model}</td>
-                                                                                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                                        <td class="border px-4 py-2">
-                                                                                                            ${lat && lon
+                                                                                                        <tr>
+                                                                                                            <td class="border px-4 py-2">${file.name}</td>
+                                                                                                            <td class="border px-4 py-2">${date}</td>
+                                                                                                            <td class="border px-4 py-2">${model}</td>
+                                                                                                            <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                                            <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                                            <td class="border px-4 py-2">
+                                                                                                                ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                                                                                        </td>
-                                                                                                    </tr>
-                                                                                                `;
+                                                                                                            </td>
+                                                                                                        </tr>
+                                                                                                    `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                                        <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                                        <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                                    `;
+                                                                                                            <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                                            <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                                            <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                                        `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
@@ -611,11 +625,13 @@
     <script>
         document.querySelectorAll('input[name="visibility"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                const groupDropdown = document.getElementById('groupDropdown');
-                groupDropdown.style.display = radio.value === 'group' ? 'block' : 'none';
+                const val = radio.value;
+                document.getElementById('groupDropdown').style.display = val === 'group' ? 'block' : 'none';
+                document.getElementById('sharedUserSelect').style.display = val === 'shared' ? 'block' : 'none';
             });
         });
     </script>
+
     <script>
         document.getElementById('modalVisibility').addEventListener('change', function () {
             const sharedBox = document.getElementById('modalSharedWithContainer');
