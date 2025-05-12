@@ -216,8 +216,20 @@ def logout_view(request):
 
 @login_required
 def map_pics_view(request):
-    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
+    user_photos = PhotoUpload.objects.filter(
+        uploaded_by=request.user,
+        latitude__isnull=False,
+        longitude__isnull=False
+    )
+
+    # Only include public, shared-with-user, or shared-to-user's group photos
+    user_groups = PhotoGroup.objects.filter(members=request.user)
+
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+        models.Q(visibility='any') |
+        models.Q(shared_with=request.user) |
+        models.Q(group__in=user_groups)
+    ).filter(latitude__isnull=False, longitude__isnull=False).distinct()
 
     def serialize(photos):
         return [
