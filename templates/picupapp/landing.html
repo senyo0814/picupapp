@@ -30,11 +30,7 @@
     <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded shadow">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
 
-            <!-- Shared Photo Map Button -->
-            <a href="{% url 'picupapp:shared_photo_map' %}"
-               class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
-                <i class="fas fa-globe"></i> View Shared Photo Map
-            </a>
+            
 
             <!-- Logo and Title -->
             <!-- Logo and Title -->
@@ -158,6 +154,11 @@
         <div class="flex justify-center mb-4">
             <a href="{% url 'picupapp:mappics' %}" class="spinner-link bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
                 View Photo Map
+            </a>
+            <!-- Shared Photo Map Button -->
+            <a href="{% url 'picupapp:shared_photo_map' %}"
+               class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
+                <i class="fas fa-globe"></i> View Public Photo Map
             </a>
         </div>
 
