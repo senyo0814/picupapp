@@ -417,12 +417,27 @@ def get_user_groups(request):
     groups = PhotoGroup.objects.filter(created_by=request.user).values('id', 'name')
     return JsonResponse(list(groups), safe=False)
 
+
 def public_photo_map_view(request):
     shared_photos = PhotoUpload.objects.filter(visibility='any')
+    geolocator = Nominatim(user_agent="picupapp-public")
+
+    country_set = set()
 
     def serialize_photos(qs):
-        return [
-            {
+        serialized = []
+        for p in qs:
+            country = ''
+            if p.latitude and p.longitude:
+                try:
+                    location = geolocator.reverse(f"{p.latitude}, {p.longitude}", language='en', timeout=5)
+                    country = location.raw.get('address', {}).get('country', '')
+                except Exception:
+                    country = ''
+            if country:
+                country_set.add(country)
+
+            serialized.append({
                 "id": p.id,
                 "image_url": p.image.url,
                 "latitude": p.latitude,
@@ -431,16 +446,17 @@ def public_photo_map_view(request):
                 "user": p.uploaded_by.username,
                 "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "",
                 "visibility": p.visibility or "private",
-                "country": getattr(p, "country", "") or "Unknown",
-            }
-            for p in qs
-        ]
+                "country": country
+            })
+        return serialized
 
     serialized_photos = serialize_photos(shared_photos)
 
     return render(request, 'picupapp/public_map.html', {
         'shared_photos_json': mark_safe(json.dumps(serialized_photos)),
+        'countries': sorted(country_set),
     })
+
 
 def about_view(request):
     next_page = request.GET.get('next', None)
