@@ -6,7 +6,7 @@
 <div class="mb-2 flex flex-wrap items-center justify-between gap-4">
     <!-- Logo Row with About Link -->
     <div class="flex items-center justify-between w-full px-4 mb-4">
-        <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
+        <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
 
         <a href="{% url 'picupapp:about' %}?next=landing"
            class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
@@ -345,7 +345,7 @@
     function updateLogoForTheme() {
         const isDark = document.documentElement.classList.contains('dark');
         const logo = document.getElementById('appLogo');
-        logo.src = isDark ? "{% static 'img/logodark.png' %}" : "{% static 'img/logo.png' %}";
+        logo.src = isDark ? "{% static 'img/logosidedark.png' %}" : "{% static 'img/logoside.png' %}";
     }
 
     // Run on page load
