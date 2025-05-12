@@ -29,20 +29,15 @@
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white p-4 sm:p-6">
     <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded shadow">
         <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
+            <!-- Logo Row with About Link -->
+            <div class="flex items-center justify-between w-full px-4 mb-4">
+                <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
 
-            
-
-            <!-- Logo and Title -->
-            <!-- Logo and Title -->
-            <div class="flex flex-col items-center space-y-1">
-                <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
                 <a href="{% url 'picupapp:about' %}?next=landing"
-                   class="text-sm text-blue-600 dark:text-gray-300 hover:underline">
+                   class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
                     <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
                 </a>
             </div>
-
-
             <!-- Dark Mode Toggle -->
             <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
                  style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">

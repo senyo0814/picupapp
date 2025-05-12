@@ -4,14 +4,15 @@
 {% block content %}
 <!-- Row 1: Title and Controls -->
 <div class="mb-2 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3 flex-wrap">
-        <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
+    <!-- Logo Row with About Link -->
+    <div class="flex items-center justify-between w-full px-4 mb-4">
+        <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
+
         <a href="{% url 'picupapp:about' %}?next=landing"
-           class="text-sm text-blue-600 dark:text-gray-300 hover:underline">
+           class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
             <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
         </a>
     </div>
-
     <div class="flex items-center gap-2 ml-auto">
         <a href="{% url 'picupapp:landing' %}"
            class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-2 rounded shadow transition">
