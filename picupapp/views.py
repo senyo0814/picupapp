@@ -19,6 +19,8 @@ from django.views.decorators.csrf import csrf_exempt
 from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
+from django.utils.safestring import mark_safe
+import json
 
 logger = logging.getLogger(__name__)
 
