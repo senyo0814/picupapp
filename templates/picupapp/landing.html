@@ -308,8 +308,6 @@
             document.getElementById('modalPhotoId').value = photoId;
             document.getElementById('modalSharedWith').value = "";
             document.getElementById('modalSharedWithContainer').style.display = 'none';
-            document.getElementById('modalVisibility').value = photo.visibility || 'private';
-            document.getElementById('modalVisibility').dispatchEvent(new Event('change'));
 
             // Facebook share link
             const encodedUrl = encodeURIComponent(url);
