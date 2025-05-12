@@ -216,20 +216,8 @@ def logout_view(request):
 
 @login_required
 def map_pics_view(request):
-    user_photos = PhotoUpload.objects.filter(
-        uploaded_by=request.user,
-        latitude__isnull=False,
-        longitude__isnull=False
-    )
-
-    # Only include public, shared-with-user, or shared-to-user's group photos
-    user_groups = PhotoGroup.objects.filter(members=request.user)
-
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
-        models.Q(visibility='any') |
-        models.Q(shared_with=request.user) |
-        models.Q(group__in=user_groups)
-    ).filter(latitude__isnull=False, longitude__isnull=False).distinct()
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).exclude(latitude=None).exclude(longitude=None)
 
     def serialize(photos):
         return [
@@ -306,47 +294,30 @@ User = get_user_model()
 def photo_map_view(request):
     username = request.user.username
 
-    # Groups the current user belongs to
+    # Only groups this user is a member of
     user_groups = PhotoGroup.objects.filter(members=request.user)
 
-    # For legend display
+    # Users and groups for legend display
     all_users = list(User.objects.values_list('username', flat=True))
     all_groups = list(PhotoGroup.objects.values_list('name', flat=True))
 
-    # User's own uploads (including private)
-    user_photos_qs = PhotoUpload.objects.filter(uploaded_by=request.user)
+    # User's own uploads
+    user_photos = PhotoUpload.objects.filter(uploaded_by=request.user)
 
-    # Shared or public photos from others
-    other_photos_qs = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+    # Photos shared publicly, directly, or through the user's groups
+    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
         models.Q(group__in=user_groups)
     ).distinct()
 
-    def serialize_photos(qs):
-        return [
-            {
-                "id": p.id,
-                "image_url": p.image.url,
-                "latitude": p.latitude,
-                "longitude": p.longitude,
-                "comment": p.comment,
-                "user": p.uploaded_by.username,
-                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
-                "group": p.group.name if p.group else '',
-                "visibility": p.visibility
-            } for p in qs
-        ]
-
     return render(request, 'picupapp/mappics.html', {
         'username': username,
-        'user_photos': serialize_photos(user_photos_qs),
-        'other_photos': serialize_photos(other_photos_qs),
+        'user_photos': serialize_photos(user_photos),
+        'other_photos': serialize_photos(other_photos),
         'user_groups': user_groups,
         'all_users': all_users,
         'all_groups': all_groups,
-        'user_photo_count': user_photos_qs.count(),
-        'shared_photo_count': other_photos_qs.count(),
     })
 
 def serialize_photos(qs):
