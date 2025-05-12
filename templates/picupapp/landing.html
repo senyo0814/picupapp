@@ -28,6 +28,11 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white p-4 sm:p-6">
     <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded shadow">
+        <a href="{% url 'picupapp:shared_photo_map' %}"
+           class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
+            <i class="fas fa-globe"></i> View Shared Photo Map
+        </a>
+
         <div class="flex justify-end mb-4">
             <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">
                 <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
@@ -163,7 +168,7 @@
                     '{{ photo.visibility }}',
                     '{{ photo.group.id|default_if_none:"" }}'
                 )"
-                class="spinner-link w-full">
+                        class="spinner-link w-full">
                     <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
                 </button>
 
