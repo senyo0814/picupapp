@@ -368,8 +368,13 @@ def photo_map_view(request):
             })
         return serialized
 
-    user_data = serialize_photos(user_photos_qs)
-    other_data = serialize_photos(other_photos_qs)
+    # Serialize and collect countries once for both querysets
+    combined_qs = list(user_photos_qs) + list(other_photos_qs)
+    all_data = serialize_photos(combined_qs)
+
+    # Split data back
+    user_data = [p for p in all_data if p['user'] == username]
+    other_data = [p for p in all_data if p['user'] != username]
 
     return render(request, 'picupapp/mappics.html', {
         'username': username,
