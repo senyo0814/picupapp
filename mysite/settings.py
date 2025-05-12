@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'picupapp',
     'storages',
+    'django.contrib.humanize',
 ]
 
 LOGIN_URL = '/login/'
