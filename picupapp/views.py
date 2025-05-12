@@ -442,7 +442,7 @@ def public_photo_map_view(request):
         'shared_photos_json': mark_safe(json.dumps(serialized_photos)),
     })
 
-    def about_view(request):
+def about_view(request):
     return render(request, 'picupapp/about.html')
 
 
