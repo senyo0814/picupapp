@@ -17,5 +17,6 @@ urlpatterns = [
     path('update-comment/', views.update_comment, name='update_comment'),
     path('create-group/', views.create_group_view, name='create_group'),
     path('api/my-groups/', views.get_user_groups, name='get_user_groups'),
+    path('shared-map/', views.public_photo_map_view, name='shared_photo_map'),
 
 ]

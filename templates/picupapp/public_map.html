@@ -1,0 +1,60 @@
+{% extends 'picupapp/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<!-- Shared Photo Map Header -->
+<div class="mb-2 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3 flex-wrap">
+        <h5 class="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+            <i class="fas fa-globe fa-2xl"></i> <span class="hidden sm:inline">Shared Photo Map</span>
+        </h5>
+    </div>
+    <div class="flex items-center gap-2 ml-auto">
+        <a href="/" class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-2 rounded shadow transition">
+            <i class="fa-solid fa-home"></i>
+            <span class="hidden sm:inline">Home</span>
+        </a>
+        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;" id="darkModeToggleContainer">
+            <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
+            <i id="darkModeIcon" class="fas fa-moon text-xl text-blue-600 dark:text-yellow-400 transition" title="Toggle Dark Mode"></i>
+        </div>
+    </div>
+</div>
+
+<div id="legend" class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+    <div class="mb-2 flex items-center gap-2">
+        <input type="text" id="legendSearch" placeholder="Search user..." class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
+    </div>
+    <ul id="legendList" class="flex flex-wrap items-center gap-4">
+        <li>
+            <label class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input type="radio" name="legendFilter" value="all" class="accent-blue-600" checked />
+                <span>Select All</span>
+            </label>
+        </li>
+    </ul>
+</div>
+
+<div class="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
+    <label for="countryFilter" class="font-semibold">Country:</label>
+    <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+        <option value="">All Countries</option>
+        {% for country in countries %}
+        <option value="{{ country }}">{{ country }}</option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
+    <div id="map" class="h-full w-full rounded"></div>
+</div>
+
+<script id="publicPhotosJson" type="application/json">{{ shared_photos_json }}</script>
+<script>
+    const allPhotos = JSON.parse(document.getElementById('publicPhotosJson').textContent);
+</script>
+
+{% include 'picupapp/includes/map-scripts.html' %}
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap"></script>
+{% endblock %}
