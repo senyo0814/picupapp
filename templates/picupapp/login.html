@@ -44,6 +44,12 @@
             Don’t have an account?
             <a href="{% url 'picupapp:register' %}" class="spinner-link text-blue-600 hover:underline">Register here</a>
         </p>
+        <p class="mt-4 text-sm text-center">
+            <a href="{% url 'picupapp:shared_photo_map' %}"
+               class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
+                <i class="fas fa-globe"></i> View Shared Photo Map
+            </a>
+        </p>
     </div>
     <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>

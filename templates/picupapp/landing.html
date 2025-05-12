@@ -28,22 +28,29 @@
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white p-4 sm:p-6">
     <div class="w-full max-w-3xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 rounded shadow">
-        <a href="{% url 'picupapp:shared_photo_map' %}"
-           class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
-            <i class="fas fa-globe"></i> View Shared Photo Map
-        </a>
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-4">
 
-        <div class="flex justify-end mb-4">
-            <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">
+            <!-- Shared Photo Map Button -->
+            <a href="{% url 'picupapp:shared_photo_map' %}"
+               class="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
+                <i class="fas fa-globe"></i> View Shared Photo Map
+            </a>
+
+            <!-- Dark Mode Toggle -->
+            <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
+                 style="padding: 0.12em 0.5em;" id="darkModeToggleContainer" onclick="toggleDarkMode()">
                 <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
                 <i id="darkModeIcon"
                    class="fas fa-moon text-xl text-blue-600 dark:text-yellow-400 transition"
                    title="Toggle Dark Mode"></i>
             </div>
-        </div>
-        <div class="flex flex-col items-center mb-4">
-            <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-32" />
-            <p class="text-xl font-bold text-gray-800 dark:text-white">PicUp</p>
+
+            <!-- Logo and Title -->
+            <div class="flex flex-col items-center">
+                <img src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-20" />
+                <p class="text-xl font-bold text-gray-800 dark:text-white">PicUp</p>
+            </div>
+
         </div>
 
         <h1 class="text-xl font-bold mb-4 text-center">Welcome, {{ username }}!</h1>
@@ -55,7 +62,6 @@
             </a>
         </div>
         {% endif %}
-
 
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 dark:bg-gray-800 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
