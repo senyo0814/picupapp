@@ -189,7 +189,7 @@ def landing(request):
                 photo.save()
 
                 if visibility == 'shared' and shared_with:
-                photo.shared_with.set(shared_with)
+                    photo.shared_with.set(shared_with)
 
             return redirect('picupapp:landing')
 
