@@ -3,31 +3,36 @@
 {% load humanize %}
 
 {% block content %}
-<!-- Row 1: Title and Controls -->
-<div class="mb-2 flex flex-wrap items-center justify-between gap-4">
-    <!-- Logo Row with About Link -->
-    <div class="flex items-center justify-between w-full px-4">
+<!-- Row 1: Title and Controls - Horizontal Layout -->
+<div class="mb-2 flex items-center justify-between gap-4 flex-wrap px-4">
+
+    <!-- Logo and About -->
+    <div class="flex items-center gap-3">
         <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-20 w-auto" />
         <a href="{% url 'picupapp:about' %}?next=landing"
            class="flex items-center text-sm text-blue-600 dark:text-gray-300 hover:underline">
             <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
         </a>
     </div>
+
+    <!-- Controls (Back + Theme) -->
     <div class="flex items-center gap-2 ml-auto">
         <a href="{% url 'picupapp:landing' %}"
            class="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-2 rounded shadow transition">
             <i class="fa-solid fa-arrow-left"></i>
             <span class="hidden sm:inline">Back to Landing</span>
         </a>
-        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;"
-             id="darkModeToggleContainer">
+        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer"
+             style="padding: 0.12em 0.5em;" id="darkModeToggleContainer">
             <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
             <i id="darkModeIcon"
                class="fas fa-moon text-xl text-blue-600 dark:text-yellow-400 transition"
                title="Toggle Dark Mode"></i>
         </div>
     </div>
+
 </div>
+
 
 <!-- Row 2: Horizontal Legend -->
 <!-- Legend Row with Search -->
