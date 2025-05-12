@@ -15,7 +15,7 @@
             <i class="fa-solid fa-arrow-left"></i>
             <span class="hidden sm:inline">Back to Landing</span>
         </a>
-        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;" 
+        <div class="flex border rounded-md border-gray-400 items-center px-2 gap-2 cursor-pointer" style="padding: 0.12em 0.5em;"
              id="darkModeToggleContainer">
             <span class="text-sm text-gray-700 dark:text-gray-200 hidden sm:inline">Theme</span>
             <i id="darkModeIcon"
@@ -49,9 +49,10 @@
         </li>
     </ul>
 </div>
-
-
-
+<div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+    <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span> &nbsp;|&nbsp;
+    <span>Shared with you: <strong>{{ shared_photo_count }}</strong></span>
+</div>
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
 </div>

@@ -215,39 +215,45 @@ def logout_view(request):
 # --- Map View ---
 
 @login_required
-def map_pics_view(request):
-    user_photos = PhotoUpload.objects.filter(
+def photo_map_view(request):
+    username = request.user.username
+    user_groups = PhotoGroup.objects.filter(members=request.user)
+
+    # User's own uploaded photos (include GPS)
+    user_photos_qs = PhotoUpload.objects.filter(
         uploaded_by=request.user,
         latitude__isnull=False,
         longitude__isnull=False
     )
 
-    # Only include public, shared-with-user, or shared-to-user's group photos
-    user_groups = PhotoGroup.objects.filter(members=request.user)
-
-    other_photos = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
+    # Shared/public photos (exclude user's own), with GPS
+    other_photos_qs = PhotoUpload.objects.exclude(uploaded_by=request.user).filter(
         models.Q(visibility='any') |
         models.Q(shared_with=request.user) |
         models.Q(group__in=user_groups)
     ).filter(latitude__isnull=False, longitude__isnull=False).distinct()
 
-    def serialize(photos):
+    def serialize_photos(qs):
         return [
             {
+                "id": p.id,
+                "image_url": p.image.url,
                 "latitude": p.latitude,
                 "longitude": p.longitude,
-                "image_url": settings.MEDIA_URL + str(p.image),
-                "comment": p.comment or "",
-                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else "Unknown",
-                "user": p.uploaded_by.username
-            }
-            for p in photos
+                "comment": p.comment,
+                "user": p.uploaded_by.username,
+                "taken": p.photo_taken_date.strftime("%Y-%m-%d %H:%M") if p.photo_taken_date else '',
+                "group": p.group.name if p.group else '',
+                "visibility": p.visibility  # for lock icon
+            } for p in qs
         ]
 
     return render(request, 'picupapp/mappics.html', {
-        'user_photos': serialize(user_photos),
-        'other_photos': serialize(other_photos),
-        'username': request.user.username
+        'username': username,
+        'user_photos': serialize_photos(user_photos_qs),
+        'other_photos': serialize_photos(other_photos_qs),
+        'user_photo_count': user_photos_qs.count(),
+        'shared_photo_count': other_photos_qs.count(),
     })
 
 def check_media_access(request):
