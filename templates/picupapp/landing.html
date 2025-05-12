@@ -166,16 +166,6 @@
                     <i class="fa-solid fa-users mr-1"></i> Any User
                     {% elif photo.visibility == 'group' %}
                     <i class="fa-solid fa-user-group mr-1"></i> Group
-                    {% elif photo.visibility == 'shared' %}
-                    <i class="fa-solid fa-user-plus mr-1"></i> Shared
-                    <br />
-                    <span class="ml-5">
-                        {% for u in photo.shared_with.all %}
-                        {{ u.username }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                        (none)
-                        {% endfor %}
-                    </span>
                     {% else %}
                     <i class="fa-solid fa-lock mr-1"></i> Private
                     {% endif %}
@@ -187,6 +177,7 @@
             {% endfor %}
         </div>
     </div>
+
 
     <!-- Modal update to allow visibility toggle -->
     <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hidden flex items-center justify-center p-2">
