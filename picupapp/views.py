@@ -178,6 +178,14 @@ def landing(request):
 
                 from django.core.files.base import ContentFile
 
+                original_file = ContentFile(f.read())
+                original_file.name = f.name
+
+                # ✅ Apply watermark
+                from .utils import add_watermark
+                watermarked = add_watermark(original_file, request.user.username)
+                watermarked.seek(0)
+
                 photo = PhotoUpload(
                     uploaded_by=request.user,
                     comment=comment,
@@ -190,7 +198,7 @@ def landing(request):
                 if selected_group_id:
                     photo.group_id = selected_group_id
 
-                photo.image.save(f.name, ContentFile(f.read()), save=False)
+                photo.image.save(f.name, watermarked, save=False)
                 photo.save()
 
                 if visibility == 'shared' and shared_with:
@@ -508,53 +516,4 @@ def change_profile_view(request):
     return render(request, 'registration/change_profile.html', {
         'form': password_form,
     })
-
-from .models import PhotoUpload
-from django.utils.timezone import now
-from django.shortcuts import redirect
-from picupapp.utils import add_watermark
-
-def upload_photos(request):
-    if request.method == 'POST':
-        images = request.FILES.getlist('images')
-        visibility = request.POST.get('visibility', 'private')
-        photo_group = request.POST.get('photo_group')
-        shared_with = request.POST.getlist('shared_with')
-
-        for i, image_file in enumerate(images):
-            try:
-                # ✅ Apply watermark
-                watermarked = add_watermark(image_file, request.user.username)
-                watermarked.seek(0)  # reset pointer
-
-                # ✅ Generate a unique filename
-                filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
-                print(f"[DEBUG] Preparing to save: {filename}")
-
-                # ✅ Create model instance
-                photo = PhotoUpload(
-                    uploaded_by=request.user,
-                    visibility=visibility,
-                    upload_date=now()
-                )
-
-                if visibility == 'group' and photo_group:
-                    photo.photo_group_id = photo_group
-
-                # ✅ Save image if watermarking succeeded
-                if watermarked:
-                    photo.image.save(filename, watermarked)
-                    photo.save()
-
-                    if visibility == 'shared' and shared_with:
-                        photo.shared_with.set(shared_with)
-
-                    print(f"[INFO] ✅ Photo saved: {filename} by {request.user.username}")
-                else:
-                    print(f"[WARN] ❌ Skipped image #{i}: watermarking failed or returned None.")
-
-            except Exception as e:
-                print(f"[ERROR] ❌ Failed to process image #{i} ({getattr(image_file, 'name', 'unknown')}): {e}")
-
-        return redirect('picupapp:landing')
 
