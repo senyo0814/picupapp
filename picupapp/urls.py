@@ -19,5 +19,5 @@ urlpatterns = [
     path('api/my-groups/', views.get_user_groups, name='get_user_groups'),
     path('shared-map/', views.public_photo_map_view, name='shared_photo_map'),
     path('about/', views.about_view, name='about'),
-    path('change-password/', views.change_profile_view, name='change_profile'),
+    path('change-profile/', views.change_profile_view, name='change_profile'),
 ]
