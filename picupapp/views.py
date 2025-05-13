@@ -505,7 +505,7 @@ def change_profile_view(request):
             else:
                 messages.success(request, "Profile updated.")
 
-    return render(request, 'picupapp/change_profile.html', {
+    return render(request, 'registration/change_profile.html', {
         'form': password_form,
     })
 
