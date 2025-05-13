@@ -510,9 +510,9 @@ def change_profile_view(request):
     })
 
 from .models import PhotoUpload
-from .utils import add_watermark
 from django.utils.timezone import now
 from django.shortcuts import redirect
+from picupapp.utils import add_watermark
 
 def upload_photos(request):
     if request.method == 'POST':
@@ -522,25 +522,32 @@ def upload_photos(request):
         shared_with = request.POST.getlist('shared_with')
 
         for i, image_file in enumerate(images):
-            # ✅ Apply watermark before saving
-            watermarked = add_watermark(image_file, request.user.username)
-            watermarked.seek(0)  # Ensure pointer is at start
+            try:
+                # ✅ Apply watermark
+                watermarked = add_watermark(image_file, request.user.username)
+                watermarked.seek(0)  # Ensure correct stream position
 
-            photo = PhotoUpload(
-                uploaded_by=request.user,
-                visibility=visibility,
-                upload_date=now()
-            )
+                # ✅ Create photo object
+                photo = PhotoUpload(
+                    uploaded_by=request.user,
+                    visibility=visibility,
+                    upload_date=now()
+                )
 
-            if visibility == 'group' and photo_group:
-                photo.photo_group_id = photo_group
+                if visibility == 'group' and photo_group:
+                    photo.photo_group_id = photo_group
 
-            filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
-            photo.image.save(filename, watermarked)
+                filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
+                photo.image.save(filename, watermarked)
 
-            photo.save()
+                photo.save()
 
-            if visibility == 'shared' and shared_with:
-                photo.shared_with.set(shared_with)
+                if visibility == 'shared' and shared_with:
+                    photo.shared_with.set(shared_with)
+
+                print(f"[INFO] Saved photo: {filename} by {request.user.username}")
+
+            except Exception as e:
+                print(f"[ERROR] Failed to process image #{i} for user {request.user.username}: {e}")
 
         return redirect('picupapp:landing')
