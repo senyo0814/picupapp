@@ -25,20 +25,14 @@
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
 
-    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
-        const count = filteredPhotos.length;
-        document.getElementById('selectedCountryName')?.textContent = selectedCountry || "All Countries";
-        document.getElementById('photoCountForCountry')?.textContent = count;
-        document.getElementById('pluralSuffix')?.textContent = count === 1 ? '' : 's';
-    }
-
-    function initMap() {
+        function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 2,
             center: { lat: 37.7749, lng: -122.4194 }
         });
 
         renderMarkers();
+
         populateCountryDropdown();
 
         document.getElementById('legendSearch').addEventListener('input', () => {
@@ -50,9 +44,25 @@
                     activeUsers.add(user);
                 }
             });
+
+
             document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
             renderMarkers();
         });
+    }
+
+    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
+        const count = filteredPhotos.length;
+        const nameEl = document.getElementById('selectedCountryName');
+        const countEl = document.getElementById('photoCountForCountry');
+        const suffixEl = document.getElementById('pluralSuffix');
+
+        if (nameEl && countEl && suffixEl) {
+            nameEl.textContent = selectedCountry || 'All Countries';
+            countEl.textContent = count;
+            suffixEl.textContent = count === 1 ? '' : 's';
+        }
     }
 
     function renderMarkers() {
