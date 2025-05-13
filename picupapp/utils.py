@@ -24,25 +24,15 @@ def add_watermark(image_file, username):
         logo_height = max(20, int(height * 0.04))
         y = height - logo_height - 5  # align baseline with logo, 5px padding
 
-        # ✅ Prepare transparent text layer
+        # ✅ Draw text with shadow (outline effect)
         text_layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
         text_draw = ImageDraw.Draw(text_layer)
 
-        # ✅ Measure text size
-        text_width, text_height = text_draw.textsize(user_text, font=font)
-        padding = 8
-        bg_x0 = x - padding
-        bg_y0 = y - padding
-        bg_x1 = x + text_width + padding
-        bg_y1 = y + text_height + padding
+        shadow_offsets = [(1, 1), (-1, -1), (1, -1), (-1, 1)]
+        for dx, dy in shadow_offsets:
+            text_draw.text((x + dx, y + dy), user_text, font=font, fill=(0, 0, 0, 160))
 
-        # ✅ Draw white background box
-        text_draw.rectangle([bg_x0, bg_y0, bg_x1, bg_y1], fill=(255, 255, 255, 200))  # slightly transparent white
-
-        # ✅ Draw black text on top
-        text_draw.text((x, y), user_text, font=font, fill=(0, 0, 0, 255))
-
-        # ✅ Merge layers
+        text_draw.text((x, y), user_text, font=font, fill=(255, 255, 255, 230))
         watermark = Image.alpha_composite(watermark, text_layer)
 
         # ✅ Add logo
