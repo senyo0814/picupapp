@@ -11,7 +11,7 @@ def add_watermark(image_file, username):
         width, height = base.size
         watermark = Image.new("RGBA", base.size)
 
-        # ✅ Scaled font
+        # ✅ Font scaling
         font_size = max(14, int(height * 0.025))
         try:
             font = ImageFont.truetype("arial.ttf", font_size)
@@ -19,18 +19,21 @@ def add_watermark(image_file, username):
             font = ImageFont.load_default()
 
         user_text = f"Posted by {username}"
-        x = 10
-        y = height - font_size - 10
+        x = 20
+        y = height - font_size - 20
 
-        # ✅ Transparent text layer
+        # ✅ Draw text with shadow (outline effect)
         text_layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
         text_draw = ImageDraw.Draw(text_layer)
-        text_draw.text((x + 1, y + 1), user_text, font=font, fill=(0, 0, 0, 160))  # shadow
-        text_draw.text((x, y), user_text, font=font, fill=(255, 255, 255, 200))    # main text
 
+        shadow_offsets = [(1, 1), (-1, -1), (1, -1), (-1, 1)]
+        for dx, dy in shadow_offsets:
+            text_draw.text((x + dx, y + dy), user_text, font=font, fill=(0, 0, 0, 160))
+
+        text_draw.text((x, y), user_text, font=font, fill=(255, 255, 255, 230))
         watermark = Image.alpha_composite(watermark, text_layer)
 
-        # ✅ Load logo using staticfiles finder
+        # ✅ Add logo
         logo_path = finders.find("img/logoside.png")
         if logo_path:
             try:
@@ -38,17 +41,15 @@ def add_watermark(image_file, username):
                 logo_height = max(20, int(height * 0.04))
                 aspect_ratio = logo.width / logo.height
                 logo = logo.resize((int(logo_height * aspect_ratio), logo_height))
-
-                logo_pos = (width - logo.width - 10, height - logo.height - 10)
+                logo_pos = (width - logo.width - 20, height - logo.height - 20)
                 watermark.paste(logo, logo_pos, logo)
             except Exception as e:
                 print(f"[WARN] Failed to paste logo: {e}")
         else:
             print("[WARN] Logo not found in static files.")
 
-        # ✅ Merge watermark with image
+        # ✅ Final image
         combined = Image.alpha_composite(base, watermark).convert("RGB")
-
         buffer = BytesIO()
         combined.save(buffer, format="JPEG")
         buffer.seek(0)
