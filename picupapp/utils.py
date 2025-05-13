@@ -12,7 +12,7 @@ def add_watermark(image_file, username):
         watermark = Image.new("RGBA", base.size)
 
         # ✅ Font scaling
-        font_size = max(18, int(height * 0.105))  # ~10.5% of image height
+        font_size = max(18, int(height * 0.05))  # ~5.0% of image height
         try:
             font = ImageFont.truetype("arial.ttf", font_size)
         except IOError:
