@@ -522,32 +522,34 @@ def upload_photos(request):
         shared_with = request.POST.getlist('shared_with')
 
         for i, image_file in enumerate(images):
-            # ✅ Add watermark before saving
+            # ✅ Apply watermark
             watermarked = add_watermark(image_file, request.user.username)
+            watermarked.seek(0)  # ✅ IMPORTANT: reset file pointer
 
-            # Create instance
+            # Create the PhotoUpload instance
             photo = PhotoUpload(
                 uploaded_by=request.user,
                 visibility=visibility,
                 upload_date=now()
             )
 
-            # Assign group if needed
+            # Handle group visibility
             if visibility == 'group' and photo_group:
                 photo.photo_group_id = photo_group
 
-            # Save watermarked image
+            # Save the watermarked image
             filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
             photo.image.save(filename, watermarked)
 
-            # Save to get ID before assigning many-to-many
+            # Save instance before assigning M2M fields
             photo.save()
 
-            # Assign shared users (many-to-many)
+            # Handle shared visibility (many-to-many)
             if visibility == 'shared' and shared_with:
                 photo.shared_with.set(shared_with)
 
         return redirect('picupapp:landing')
+
 
 
 
