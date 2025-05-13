@@ -23,6 +23,9 @@ from geopy.geocoders import Nominatim
 from .models import PhotoUpload, PhotoGroup
 from .exif_utils import extract_gps_and_datetime
 
+from collections import Counter
+
+
 logger = logging.getLogger(__name__)
 
 # --- Auth Views ---
