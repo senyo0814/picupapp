@@ -525,9 +525,13 @@ def upload_photos(request):
             try:
                 # ✅ Apply watermark
                 watermarked = add_watermark(image_file, request.user.username)
-                watermarked.seek(0)  # Ensure correct stream position
+                watermarked.seek(0)  # reset pointer
 
-                # ✅ Create photo object
+                # ✅ Generate a unique filename
+                filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
+                print(f"[DEBUG] Preparing to save: {filename}")
+
+                # ✅ Create model instance
                 photo = PhotoUpload(
                     uploaded_by=request.user,
                     visibility=visibility,
@@ -537,17 +541,20 @@ def upload_photos(request):
                 if visibility == 'group' and photo_group:
                     photo.photo_group_id = photo_group
 
-                filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
-                photo.image.save(filename, watermarked)
+                # ✅ Save image if watermarking succeeded
+                if watermarked:
+                    photo.image.save(filename, watermarked)
+                    photo.save()
 
-                photo.save()
+                    if visibility == 'shared' and shared_with:
+                        photo.shared_with.set(shared_with)
 
-                if visibility == 'shared' and shared_with:
-                    photo.shared_with.set(shared_with)
-
-                print(f"[INFO] Saved photo: {filename} by {request.user.username}")
+                    print(f"[INFO] ✅ Photo saved: {filename} by {request.user.username}")
+                else:
+                    print(f"[WARN] ❌ Skipped image #{i}: watermarking failed or returned None.")
 
             except Exception as e:
-                print(f"[ERROR] Failed to process image #{i} for user {request.user.username}: {e}")
+                print(f"[ERROR] ❌ Failed to process image #{i} ({getattr(image_file, 'name', 'unknown')}): {e}")
 
         return redirect('picupapp:landing')
+
