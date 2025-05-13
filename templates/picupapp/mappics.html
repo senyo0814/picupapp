@@ -14,8 +14,8 @@
     <!-- Icons Group: Home, About, Dark Mode, Change Profile -->
     <div class="flex items-center border border-gray-400 rounded px-3 py-2 gap-3">
         <!-- Home Icon -->
-        <a href="/" class="text-blue-600 dark:text-gray-300">
-            <i class="fas fa-home"></i>
+        <a href="{% url 'picupapp:landing' %}" class="text-blue-600 dark:text-gray-300">
+            <i class="fa-solid fa-arrow-left"></i>
         </a>
 
         <!-- About Icon -->
@@ -35,7 +35,7 @@
         </a>
         {% endif %}
     </div>
-</div>
+    </div>
 
 
 <!-- Row 2: Horizontal Legend -->
