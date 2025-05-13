@@ -470,5 +470,46 @@ def about_view(request):
         'next_page': next_page,
     })
 
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+@login_required
+def change_profile_view(request):
+    user = request.user
+    password_form = PasswordChangeForm(user, request.POST or None)
+
+    if request.method == 'POST':
+        new_username = request.POST.get('username', '').strip()
+        new_email = request.POST.get('email', '').strip()
+
+        # Only update if values are provided and different
+        if new_username and new_username != user.username:
+            user.username = new_username
+        if new_email and new_email != user.email:
+            user.email = new_email
+
+        if password_form.is_valid():
+            password_form.save()
+            update_session_auth_hash(request, user)
+            user.save()
+            messages.success(request, "Profile and password updated successfully.")
+            return redirect('picupapp:change_profile')
+        else:
+            # Even if password is invalid, save other profile fields
+            user.save()
+            if password_form.has_changed():
+                messages.warning(request, "Username/email updated, but password not changed.")
+            else:
+                messages.success(request, "Profile updated.")
+
+    return render(request, 'picupapp/change_profile.html', {
+        'form': password_form,
+    })
+
+
+
 
 

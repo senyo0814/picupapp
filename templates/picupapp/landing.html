@@ -54,13 +54,14 @@
 
         <h1 class="text-xl font-bold mb-4 text-center">Welcome, {{ username }}!</h1>
 
-        {% if user.is_authenticated %}
-        <div class="text-center my-2">
-            <a href="{% url 'change_password' %}" class="text-sm text-blue-600 hover:underline">
+        <div class="text-center my-6">
+            {% if user.is_authenticated %}
+            <a href="{% url 'picupapp:change_profile' %}" class="text-sm text-blue-600 hover:underline">
+                <i class="fas fa-user-cog mr-1"></i>
                 Change your password
             </a>
+            {% endif %}
         </div>
-        {% endif %}
 
         <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 dark:bg-gray-800 text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
