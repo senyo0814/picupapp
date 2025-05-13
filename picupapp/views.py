@@ -510,8 +510,9 @@ def change_profile_view(request):
     })
 
 from .models import PhotoUpload
-from .utils import add_watermark  # <-- import watermark function
+from .utils import add_watermark
 from django.utils.timezone import now
+from django.shortcuts import redirect
 
 def upload_photos(request):
     if request.method == 'POST':
@@ -521,27 +522,34 @@ def upload_photos(request):
         shared_with = request.POST.getlist('shared_with')
 
         for i, image_file in enumerate(images):
+            # ✅ Add watermark before saving
             watermarked = add_watermark(image_file, request.user.username)
 
+            # Create instance
             photo = PhotoUpload(
                 uploaded_by=request.user,
                 visibility=visibility,
                 upload_date=now()
             )
 
+            # Assign group if needed
             if visibility == 'group' and photo_group:
                 photo.photo_group_id = photo_group
-            elif visibility == 'shared':
-                # Save now to get ID first, then add M2M
-                photo.save()
-                photo.shared_with.set(shared_with)
-                continue
 
             # Save watermarked image
-            photo.image.save(f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg", watermarked)
+            filename = f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg"
+            photo.image.save(filename, watermarked)
+
+            # Save to get ID before assigning many-to-many
             photo.save()
 
+            # Assign shared users (many-to-many)
+            if visibility == 'shared' and shared_with:
+                photo.shared_with.set(shared_with)
+
         return redirect('picupapp:landing')
+
+
 
 
 

@@ -16,14 +16,14 @@ def add_watermark(image_file, username):
 
         width, height = base.size
 
-        # Draw left watermark (Posted by ...)
+        # ? Draw "Posted by username" at lower-left
         user_text = f"Posted by {username}"
         user_size = draw.textsize(user_text, font=font)
         user_pos = (10, height - user_size[1] - 10)
         draw.text((user_pos[0] + 1, user_pos[1] + 1), user_text, font=font, fill="black")
         draw.text(user_pos, user_text, font=font, fill="white")
 
-        # Load and paste logo only (no text)
+        # ? Paste PicUp logo at lower-right
         logo_path = os.path.join(settings.BASE_DIR, 'picupapp/static/img/logoside.png')
         try:
             logo = Image.open(logo_path).convert("RGBA")
@@ -32,12 +32,14 @@ def add_watermark(image_file, username):
             logo = logo.resize((int(logo_height * aspect_ratio), logo_height))
 
             logo_pos = (width - logo.width - 10, height - logo.height - 10)
-            watermark.paste(logo, logo_pos, logo)  # Use alpha for transparency
+            watermark.paste(logo, logo_pos, logo)  # Respect transparency
         except Exception as e:
             print(f"[WARN] Could not load logo: {e}")
 
+        # ? Merge watermark and return file
         combined = Image.alpha_composite(base, watermark).convert("RGB")
 
         buffer = BytesIO()
         combined.save(buffer, format="JPEG")
-        return ContentFile(buffer.getvalue())
+
+        return ContentFile(buffer.getvalue(), name=image_file.name)
