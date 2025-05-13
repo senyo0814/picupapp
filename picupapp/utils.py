@@ -12,7 +12,7 @@ def add_watermark(image_file, username):
         watermark = Image.new("RGBA", base.size)
 
         # ✅ Font scaling
-        font_size = max(24, int(height * 0.07))  # 7% of height, min 24px
+        font_size = max(18, int(height * 0.07))  # ~7.0% of image height (bigger)
 
         try:
             font = ImageFont.truetype("arial.ttf", font_size)
@@ -21,15 +21,18 @@ def add_watermark(image_file, username):
 
         user_text = f"Posted by {username}"
         x = 20
-        bottom_padding = max(20, int(height * 0.03))  # Safe bottom margin
-        y = height - font_size - bottom_padding
+        logo_height = max(20, int(height * 0.04))
+        y = height - logo_height - 5  # align baseline with logo, 5px padding
 
-        # ✅ Draw white text only (no shadow)
+        # ✅ Draw text with shadow (outline effect)
         text_layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
         text_draw = ImageDraw.Draw(text_layer)
-        text_draw.text((x, y), user_text, font=font, fill=(255, 255, 255, 240))
 
-        # ✅ Merge with watermark
+        shadow_offsets = [(1, 1), (-1, -1), (1, -1), (-1, 1)]
+        for dx, dy in shadow_offsets:
+            text_draw.text((x + dx, y + dy), user_text, font=font, fill=(0, 0, 0, 160))
+
+        text_draw.text((x, y), user_text, font=font, fill=(255, 255, 255, 230))
         watermark = Image.alpha_composite(watermark, text_layer)
 
         # ✅ Add logo
