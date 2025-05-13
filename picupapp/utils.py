@@ -12,7 +12,8 @@ def add_watermark(image_file, username):
         watermark = Image.new("RGBA", base.size)
 
         # ✅ Font scaling
-        font_size = max(18, int(height * 0.05))  # ~5.0% of image height
+        font_size = max(18, int(height * 0.07))  # ~7.0% of image height (bigger)
+
         try:
             font = ImageFont.truetype("arial.ttf", font_size)
         except IOError:
@@ -20,7 +21,8 @@ def add_watermark(image_file, username):
 
         user_text = f"Posted by {username}"
         x = 20
-        y = height - font_size - 20
+        logo_height = max(20, int(height * 0.04))
+        y = height - logo_height - 5  # align baseline with logo, 5px padding
 
         # ✅ Draw text with shadow (outline effect)
         text_layer = Image.new("RGBA", base.size, (0, 0, 0, 0))
