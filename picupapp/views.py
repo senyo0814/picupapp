@@ -509,6 +509,41 @@ def change_profile_view(request):
         'form': password_form,
     })
 
+from .models import PhotoUpload
+from .utils import add_watermark  # <-- import watermark function
+from django.utils.timezone import now
+
+def upload_photos(request):
+    if request.method == 'POST':
+        images = request.FILES.getlist('images')
+        visibility = request.POST.get('visibility', 'private')
+        photo_group = request.POST.get('photo_group')
+        shared_with = request.POST.getlist('shared_with')
+
+        for i, image_file in enumerate(images):
+            watermarked = add_watermark(image_file, request.user.username)
+
+            photo = PhotoUpload(
+                uploaded_by=request.user,
+                visibility=visibility,
+                upload_date=now()
+            )
+
+            if visibility == 'group' and photo_group:
+                photo.photo_group_id = photo_group
+            elif visibility == 'shared':
+                # Save now to get ID first, then add M2M
+                photo.save()
+                photo.shared_with.set(shared_with)
+                continue
+
+            # Save watermarked image
+            photo.image.save(f"{request.user.username}_{now().strftime('%Y%m%d%H%M%S')}_{i}.jpg", watermarked)
+            photo.save()
+
+        return redirect('picupapp:landing')
+
+
 
 
 
