@@ -60,10 +60,17 @@
         </li>
     </ul>
 </div>
+{% if user.is_authenticated %}
 <div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
     <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span> &nbsp;|&nbsp;
     <span>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
 </div>
+{% else %}
+<div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+    <span>Publicly shared photos: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+</div>
+{% endif %}
+
 <!--<p>Debug: user={{ user_photo_count }} shared={{ shared_photo_count }}</p>-->
 <!-- Country Filter Dropdown -->
 <div class="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
@@ -75,7 +82,10 @@
         {% endfor %}
     </select>
 </div>
-
+<div id="countryPhotoCount" class="mb-2 text-sm text-gray-600 dark:text-gray-300">
+    Showing photos from <strong id="selectedCountryName">All Countries</strong>:
+    <strong id="photoCountForCountry">0</strong> photo<span id="pluralSuffix">s</span>
+</div>
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
 </div>

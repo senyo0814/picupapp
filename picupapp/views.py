@@ -422,7 +422,7 @@ def public_photo_map_view(request):
     shared_photos = PhotoUpload.objects.filter(visibility='any')
     geolocator = Nominatim(user_agent="picupapp-public")
 
-    country_set = set()
+    country_counter = Counter()
 
     def serialize_photos(qs):
         serialized = []
@@ -435,7 +435,7 @@ def public_photo_map_view(request):
                 except Exception:
                     country = ''
             if country:
-                country_set.add(country)
+                country_counter[country] += 1
 
             serialized.append({
                 "id": p.id,
@@ -452,11 +452,13 @@ def public_photo_map_view(request):
 
     serialized_photos = serialize_photos(shared_photos)
 
+    sorted_countries = [country for country, _ in country_counter.most_common()] or sorted(country_counter.keys())
+
     return render(request, 'picupapp/public_map.html', {
         'shared_photos_json': mark_safe(json.dumps(serialized_photos)),
-        'countries': sorted(country_set),
+        'shared_photo_count': shared_photos.count(),
+        'countries': sorted_countries,
     })
-
 
 def about_view(request):
     next_page = request.GET.get('next', None)

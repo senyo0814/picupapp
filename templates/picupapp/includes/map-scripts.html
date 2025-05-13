@@ -8,7 +8,6 @@
 </script>
 
 <script>
-
     let markers = [];
     let map;
     const globalUserColorMap = {};
@@ -26,6 +25,13 @@
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
 
+    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
+        const count = filteredPhotos.length;
+        document.getElementById('selectedCountryName')?.textContent = selectedCountry || "All Countries";
+        document.getElementById('photoCountForCountry')?.textContent = count;
+        document.getElementById('pluralSuffix')?.textContent = count === 1 ? '' : 's';
+    }
+
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 2,
@@ -33,13 +39,10 @@
         });
 
         renderMarkers();
-
         populateCountryDropdown();
 
         document.getElementById('legendSearch').addEventListener('input', () => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
-
-            // Update activeUsers to match search
             activeUsers = new Set();
             allPhotos.forEach(p => {
                 const user = (p.user || 'Unknown');
@@ -47,10 +50,7 @@
                     activeUsers.add(user);
                 }
             });
-
-            // Uncheck Select All if search narrows result
             document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
-
             renderMarkers();
         });
     }
@@ -63,14 +63,17 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
-        const userMarkersMap = {};
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
-        const filteredPositions = [];
+        const filteredPhotos = allPhotos.filter(photo => {
+            return (!selectedCountry || photo.country === selectedCountry) &&
+                (!activeUsers.size || activeUsers.has(photo.user || 'Unknown')) &&
+                photo.latitude && photo.longitude;
+        });
 
-        allPhotos.forEach(photo => {
-            if (!photo.latitude || !photo.longitude) return;
-            if (selectedCountry && photo.country !== selectedCountry) return;
+        updateCountryPhotoCount(filteredPhotos, selectedCountry);
 
+        const userMarkersMap = {};
+        filteredPhotos.forEach(photo => {
             const user = photo.user || 'Unknown';
 
             if (!globalUserColorMap[user]) {
@@ -93,44 +96,33 @@
 
             const li = document.createElement('li');
             li.innerHTML = `
-            <button data-user="${user}"
-                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                <span>${highlightMatch(user, keyword)}</span>
-            </button>
-        `;
+                <button data-user="${user}"
+                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                    <span>${highlightMatch(user, keyword)}</span>
+                </button>`;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
-                if (activeUsers.size > 0 && !activeUsers.has(user)) return;
-
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
                     position: pos,
                     map,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                          <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                        </svg>`)}`,
+                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                                <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                            </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                  <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                    <img
-                      src="${photo.image_url}"
-                      class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer"
-                      onclick="showFullscreenImage('${photo.image_url}')"
-                    />
-
-                    <p>
-                      <strong>${user}</strong>
-                      ${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}
-                    </p>
-                    <p>${photo.comment || 'No comment'}</p>
-                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
-                  </div>`;
+                    <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
+                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
+                        <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                    </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
@@ -146,22 +138,13 @@
 
                 markers.push(marker);
                 bounds.extend(pos);
-                filteredPositions.push(pos);
             });
         });
 
-        // Zoom to filtered country's bounds
-        if (selectedCountry && markers.length > 0) {
-            const countryBounds = new google.maps.LatLngBounds();
-            markers.forEach(m => countryBounds.extend(m.getPosition()));
-            map.fitBounds(countryBounds);
-        } else if (markers.length > 0) {
-            const allBounds = new google.maps.LatLngBounds();
-            markers.forEach(m => allBounds.extend(m.getPosition()));
-            map.fitBounds(allBounds);
+        if (markers.length > 0) {
+            map.fitBounds(bounds);
         }
 
-        // Legend toggle logic
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const user = btn.getAttribute('data-user');
@@ -170,7 +153,6 @@
                 } else {
                     activeUsers.add(user);
                 }
-
                 document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
                 const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
@@ -182,8 +164,8 @@
             });
         });
     }
-
 </script>
+
 
 <script>
     const darkIcon = document.getElementById('darkModeIcon');
