@@ -58,32 +58,37 @@
         </li>
     </ul>
 </div>
-{% if user.is_authenticated %}
-<div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-    <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span> &nbsp;|&nbsp;
-    <span>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
-</div>
-{% else %}
-<div class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-    <span>Publicly shared photos: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
-</div>
-{% endif %}
+<div class="mb-4 flex flex-col sm:flex-row justify-between gap-4 text-sm text-gray-600 dark:text-gray-300">
 
-<!--<p>Debug: user={{ user_photo_count }} shared={{ shared_photo_count }}</p>-->
-<!-- Country Filter Dropdown -->
-<div class="mb-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200">
-    <label for="countryFilter" class="font-semibold">Country:</label>
-    <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-        <option value="">All Countries</option>
-        {% for country in countries %}
-        <option value="{{ country }}">{{ country }}</option>
-        {% endfor %}
-    </select>
+    <!-- Left Side: Country Filter + Count -->
+    <div class="flex flex-col text-gray-700 dark:text-gray-200">
+        <div class="flex items-center gap-2">
+            <label for="countryFilter" class="font-semibold">Country:</label>
+            <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                <option value="">All Countries</option>
+                {% for country in countries %}
+                <option value="{{ country }}">{{ country }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="countryPhotoCount" class="mt-1">
+            Showing photos from <strong id="selectedCountryName">All Countries</strong>:
+            <strong id="photoCountForCountry">0</strong> photo<span id="pluralSuffix">s</span>
+        </div>
+    </div>
+
+    <!-- Right Side: Upload / Shared Count -->
+    <div class="flex flex-col sm:items-end text-gray-600 dark:text-gray-300">
+        {% if user.is_authenticated %}
+        <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span>
+        <span>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+        {% else %}
+        <span>Publicly shared photos: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+        {% endif %}
+    </div>
+
 </div>
-<div id="countryPhotoCount" class="mb-2 text-sm text-gray-600 dark:text-gray-300">
-    Showing photos from <strong id="selectedCountryName">All Countries</strong>:
-    <strong id="photoCountForCountry">0</strong> photo<span id="pluralSuffix">s</span>
-</div>
+
 <div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
     <div id="map" class="h-full w-full rounded"></div>
 </div>
