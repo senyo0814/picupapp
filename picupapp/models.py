@@ -11,7 +11,7 @@ def user_directory_path(instance, filename):
         _, _, photo_date = extract_gps_and_datetime(instance.image)
         date_str = photo_date.date().isoformat() if photo_date else datetime.now().date().isoformat()
     except Exception as e:
-        logging.warning(f"[WARN] EXIF extraction failed: {e}")
+        logging.warning(f"[WARN] EXIF extraction failed in path: {e}")
         date_str = datetime.now().date().isoformat()
 
     path = f'user_{instance.uploaded_by.id}/{date_str}/{filename}'
@@ -19,7 +19,7 @@ def user_directory_path(instance, filename):
     return path
 
 class PhotoGroup(models.Model):
-    name = models.CharField(max_length=100, unique=True)  # <-- add unique=True
+    name = models.CharField(max_length=100, unique=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     members = models.ManyToManyField(User, related_name='photo_groups')
 
@@ -35,7 +35,9 @@ class PhotoUpload(models.Model):
 
     image = models.ImageField(
         upload_to=user_directory_path,
-        storage=PublicGoogleCloudStorage()
+        storage=PublicGoogleCloudStorage(),  # ? make sure this backend is working
+        blank=False,  # ? Ensure image is required
+        null=False
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -49,14 +51,13 @@ class PhotoUpload(models.Model):
     shared_with = models.ManyToManyField(User, related_name='shared_photos', blank=True)
 
     def __str__(self):
-        return f"{self.image.name} uploaded by {self.uploaded_by}"
+        return f"{self.image.name if self.image else '[No image]'} uploaded by {self.uploaded_by}"
 
     def save(self, *args, **kwargs):
         is_new = self._state.adding
 
         if is_new and self.image:
-            logging.info(f"[DEBUG] Uploading image to: {self.image.url}")
-
+            logging.info(f"[DEBUG] Image field is populated: {self.image.name}")
             try:
                 lat, lon, photo_date = extract_gps_and_datetime(self.image)
                 if lat is not None:
@@ -66,7 +67,7 @@ class PhotoUpload(models.Model):
                 if photo_date:
                     self.photo_taken_date = photo_date
             except Exception as e:
-                logging.getLogger(__name__).exception(f"EXIF extraction failed: {e}")
+                logging.getLogger(__name__).warning(f"[WARN] EXIF extraction failed: {e}")
 
-        logging.info(f"[DEBUG] Final image name about to save: {self.image.name}")
+        logging.info(f"[DEBUG] Final image name about to save: {self.image.name if self.image else '[EMPTY]'}")
         super().save(*args, **kwargs)
