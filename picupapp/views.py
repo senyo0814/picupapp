@@ -178,8 +178,7 @@ def landing(request):
 
                 from django.core.files.base import ContentFile
 
-                original_file = ContentFile(f.read())
-                original_file.name = f.name
+                original_file = f
 
                 # ✅ Apply watermark
                 from .utils import add_watermark
