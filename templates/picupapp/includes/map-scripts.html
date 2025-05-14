@@ -2,8 +2,6 @@
     let markers = [];
     let map;
     let clusteredBounds = null;
-    let userFilterManuallySet = false;
-
 
     const globalUserColorMap = {};
     const allColors = [
@@ -81,75 +79,33 @@
         renderMarkers();
         populateCountryDropdown();
 
-        // 🔍 User Filter by Search
         document.getElementById('legendSearch').addEventListener('input', () => {
-            userFilterManuallySet = true;
-            const keyword = document.getElementById('legendSearch').value.toLowerCase().trim();
+            const keyword = document.getElementById('legendSearch').value.toLowerCase();
             activeUsers = new Set();
 
-            if (keyword) {
-                allPhotos.forEach(p => {
-                    const user = p.user || 'Unknown';
-                    if (user.toLowerCase().includes(keyword)) {
-                        activeUsers.add(user);
-                    }
-                });
+            if (keyword.trim()) {
+                const matchedUsers = new Set(
+                    allPhotos
+                        .map(p => p.user || 'Unknown')
+                        .filter(user => user.toLowerCase().includes(keyword))
+                );
+                matchedUsers.forEach(u => activeUsers.add(u));
             }
 
-            // 🧹 Uncheck "All" filter if search is active
+            // Uncheck "All" filter when a keyword is typed
             const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
             if (allFilter) allFilter.checked = false;
 
             renderMarkers();
         });
 
-        document.getElementById('legend-select-all')?.addEventListener('change', () => {
-            activeUsers.clear();
-            userFilterManuallySet = false;
-            document.getElementById('legendSearch').value = '';
-            renderMarkers();
-        });
-
-
-        let updateFiltersTimeout;
         map.addListener('bounds_changed', () => {
-            clearTimeout(updateFiltersTimeout);
-            updateFiltersTimeout = setTimeout(() => {
-                const bounds = map.getBounds();
-                const selectedCountry = document.getElementById('countryFilter')?.value || '';
-
-                if (!bounds || !window.filteredPhotos) return;
-
-                const visiblePhotos = window.filteredPhotos.filter(photo => {
-                    if (!photo.latitude || !photo.longitude) return false;
-                    const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
-                    return bounds.contains(latLng);
-                });
-
-                // ✅ Always update country count
-                updateCountryPhotoCount(visiblePhotos, selectedCountry);
-
-                // 🚫 Stop here if user has manually filtered users
-                if (userFilterManuallySet) return;
-
-                // ✅ Only update activeUsers from visible photos if not manually set
-                activeUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
-
-                // ✅ Update "Select All"
-                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-                const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
-                if (allFilter) {
-                    allFilter.checked =
-                        allUsers.size === activeUsers.size &&
-                        [...allUsers].every(u => activeUsers.has(u));
-                }
-
-                renderMarkers();
-            }, 300); // debounce
+            const selectedCountry = document.getElementById('countryFilter')?.value || '';
+            if (window.filteredPhotos) {
+                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
+            }
         });
-
     }
-
 
     function renderMarkers() {
         markers.forEach(m => m.setMap(null));
@@ -162,8 +118,9 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const isUserMatch = activeUsers.size === 0 || activeUsers.has(photo.user || 'Unknown');
+            const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
             const isPublic = photo.visibility === 'any';
+
             const userVisible = isPublic || isUserMatch;
             const countryMatch = !selectedCountry || photo.country === selectedCountry;
 
@@ -188,55 +145,59 @@
 
         Object.entries(userMarkersMap).forEach(([user, photos]) => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
+
             const color = globalUserColorMap[user];
             const isActive = activeUsers.has(user);
 
-            // ✅ Create Legend Item
             const li = document.createElement('li');
             li.innerHTML = `
-            <button data-user="${user}"
-                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                <span>${highlightMatch(user, keyword)}</span>
-            </button>`;
+                <button data-user="${user}"
+                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                    <span>${highlightMatch(user, keyword)}</span>
+                </button>`;
             legendList.appendChild(li);
 
-            // ✅ Render Markers for this user
             photos.forEach(photo => {
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
                     position: pos,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                            <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                        </svg>`)}`
+                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                                <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                            </svg>`)}`
                     }
                 });
 
                 const popup = `
-                <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
-                    <img src="${photo.image_url}"
-                         class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                         onclick="showFullscreenImage('${photo.image_url}')" />
-                    <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
-                        <p class="font-semibold">
-                            ${user}
-                            ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
-                        </p>
-                        <p>${photo.comment || 'No comment'}</p>
-                        <p class="text-[10px] text-white/70">${photo.taken}</p>
-                    </div>
-                </div>`;
+                    <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
+                        <!-- Image fills container -->
+                        <img src="${photo.image_url}"
+                             class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                             onclick="showFullscreenImage('${photo.image_url}')" />
+
+                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
+                        <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
+                            <p class="font-semibold">
+                                ${user}
+                                ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
+                            </p>
+                            <p>${photo.comment || 'No comment'}</p>
+                            <p class="text-[10px] text-white/70">${photo.taken}</p>
+                        </div>
+                    </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
 
-                marker.addListener("click", () => infowindow.open(map, marker));
+                marker.addListener("click", () => {
+                    infowindow.open(map, marker);
+                });
 
                 infowindow.addListener('closeclick', () => {
                     if (map && marker.getPosition()) {
                         const center = marker.getPosition();
-                        const offsetLat = 0.0045;
+                        const offsetLat = 0.0045; // ~500 meters
                         const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
 
                         const bounds = new google.maps.LatLngBounds(
@@ -246,7 +207,10 @@
 
                         setTimeout(() => {
                             google.maps.event.trigger(map, 'resize');
-                            setTimeout(() => map.fitBounds(bounds), 200);
+                            setTimeout(() => {
+                                map.fitBounds(bounds);
+                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
+                            }, 200);
                         }, 200);
                     }
                 });
@@ -275,32 +239,17 @@
                 } else {
                     activeUsers.add(user);
                 }
-
-                userFilterManuallySet = true;  // <-- Add this
+                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
                 const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-                const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
-                if (allFilter) {
-                    allFilter.checked =
-                        allUsers.size === activeUsers.size &&
-                        [...allUsers].every(u => activeUsers.has(u));
-                }
+                document.querySelector('input[name="legendFilter"][value="all"]').checked =
+                    allUsers.size === activeUsers.size &&
+                    [...allUsers].every(u => activeUsers.has(u));
 
                 renderMarkers();
             });
         });
     }
-
-    function resetUserFilters() {
-        activeUsers.clear();
-        userFilterManuallySet = false;
-        document.getElementById('legendSearch').value = '';
-        const allRadio = document.querySelector('input[name="legendFilter"][value="all"]');
-        if (allRadio) allRadio.checked = true;
-        renderMarkers();
-    }
-
-
 
     function closeImageModal() {
         const modal = document.getElementById('fullscreenImageModal');
