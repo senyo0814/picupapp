@@ -178,8 +178,9 @@
                     if (map && marker.getPosition()) {
                         const center = marker.getPosition();
 
-                        const offsetLat = 0.0009; // ≈ 100 meters in latitude
-                        const offsetLng = 0.0009 / Math.cos(center.lat() * (Math.PI / 180)); // Adjust for latitude
+                        // ≈ 500 meters in degrees latitude (~0.0045)
+                        const offsetLat = 0.0045;
+                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180)); // Adjust for latitude
 
                         const bounds = new google.maps.LatLngBounds(
                             new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
@@ -190,7 +191,7 @@
                             google.maps.event.trigger(map, 'resize');
                             setTimeout(() => {
                                 map.fitBounds(bounds);
-                                console.log(`✅ Fit to ~100m radius around ${center.toUrlValue()}`);
+                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
                             }, 200);
                         }, 200);
                     }
