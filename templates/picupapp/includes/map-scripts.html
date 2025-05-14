@@ -1,3 +1,5 @@
+﻿<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
 <script id="userPhotosJson" type="application/json">{{ user_photos_json }}</script>
 <script id="otherPhotosJson" type="application/json">{{ other_photos_json }}</script>
 
@@ -25,14 +27,13 @@
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
 
-        function initMap() {
+    function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 2,
             center: { lat: 37.7749, lng: -122.4194 }
         });
 
         renderMarkers();
-
         populateCountryDropdown();
 
         document.getElementById('legendSearch').addEventListener('input', () => {
@@ -45,25 +46,33 @@
                 }
             });
 
-
             document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
-
             renderMarkers();
         });
     }
 
-    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
-        const count = filteredPhotos.length;
-        const nameEl = document.getElementById('selectedCountryName');
-        const countEl = document.getElementById('photoCountForCountry');
-        const suffixEl = document.getElementById('pluralSuffix');
+    // Custom cluster renderer
+    const clusterRenderer = {
+        render: ({ count, position }) => {
+            const isDark = document.documentElement.classList.contains("dark");
+            const fillColor = isDark ? "#facc15" : "#2563eb"; // Yellow or Blue
+            const textColor = isDark ? "#000000" : "#ffffff";
 
-        if (nameEl && countEl && suffixEl) {
-            nameEl.textContent = selectedCountry || 'All Countries';
-            countEl.textContent = count;
-            suffixEl.textContent = count === 1 ? '' : 's';
+            return new google.maps.Marker({
+                position,
+                icon: {
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                    <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
+                        <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" font-family="Arial" fill="${textColor}">${count}</text>
+                    </svg>
+                `)}`,
+                    scaledSize: new google.maps.Size(50, 50),
+                },
+                zIndex: google.maps.Marker.MAX_ZINDEX + count,
+            });
         }
-    }
+    };
 
     function renderMarkers() {
         markers.forEach(m => m.setMap(null));
@@ -97,6 +106,8 @@
             userMarkersMap[user].push(photo);
         });
 
+        const createdMarkers = [];
+
         Object.entries(userMarkersMap).forEach(([user, photos]) => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
             if (keyword && !user.toLowerCase().includes(keyword)) return;
@@ -106,33 +117,32 @@
 
             const li = document.createElement('li');
             li.innerHTML = `
-                <button data-user="${user}"
-                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                    <span>${highlightMatch(user, keyword)}</span>
-                </button>`;
+            <button data-user="${user}"
+                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                <span>${highlightMatch(user, keyword)}</span>
+            </button>`;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
                     position: pos,
-                    map,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                                <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`,
+                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                            <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                        </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                    <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
-                        <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
-                        <p>${photo.comment || 'No comment'}</p>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
-                    </div>`;
+                <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
+                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
+                    <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
+                    <p>${photo.comment || 'No comment'}</p>
+                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
@@ -146,13 +156,20 @@
                     });
                 });
 
-                markers.push(marker);
+                createdMarkers.push(marker);
                 bounds.extend(pos);
             });
         });
 
-        if (markers.length > 0) {
+        if (createdMarkers.length > 0) {
             map.fitBounds(bounds);
+
+            // ✅ Create cluster with custom renderer
+            new markerClusterer.MarkerClusterer({
+                map,
+                markers: createdMarkers,
+                renderer: clusterRenderer
+            });
         }
 
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
@@ -174,6 +191,7 @@
             });
         });
     }
+
 </script>
 
 
