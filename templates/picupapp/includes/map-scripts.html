@@ -162,11 +162,27 @@
                 });
 
                 const popup = `
-                    <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
-                        <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
-                        <p>${photo.comment || 'No comment'}</p>
-                        <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                    <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
+                        <!-- Image fills container -->
+                        <img src="${photo.image_url}" 
+                             class="absolute inset-0 w-full h-full object-cover cursor-pointer" 
+                             onclick="showFullscreenImage('${photo.image_url}')" />
+
+                        <!-- Overlay: Top Right Close Icon -->
+                        <button title="Close" onclick="google.maps.event.trigger(map, 'click')" 
+                                class="absolute top-2 right-2 text-white bg-black/60 backdrop-blur-sm rounded-full p-1 text-xs hover:bg-black/80">
+                            &times;
+                        </button>
+
+                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
+                        <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
+                            <p class="font-semibold">
+                                ${user}
+                                ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
+                            </p>
+                            <p>${photo.comment || 'No comment'}</p>
+                            <p class="text-[10px] text-white/70">${photo.taken}</p>
+                        </div>
                     </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
