@@ -18,17 +18,26 @@
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
 
-    function updateCountryPhotoCount(allFilteredPhotos, selectedCountry) {
-        const visiblePhotos = allFilteredPhotos.filter(photo => {
+    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
+        const visiblePhotos = filteredPhotos.filter(photo => {
             if (!map || !photo.latitude || !photo.longitude) return false;
             const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
             return map.getBounds()?.contains(latLng);
         });
 
-        const count = visiblePhotos.length;
+        const countryCountMap = {};
+        visiblePhotos.forEach(p => {
+            if (!p.country) return;
+            countryCountMap[p.country] = (countryCountMap[p.country] || 0) + 1;
+        });
+
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
+
+        const count = selectedCountry && countryCountMap[selectedCountry]
+            ? countryCountMap[selectedCountry]
+            : visiblePhotos.length;
 
         if (nameEl && countEl && suffixEl) {
             nameEl.textContent = selectedCountry || 'All Countries';
@@ -83,8 +92,8 @@
         });
 
         map.addListener('bounds_changed', () => {
+            const selectedCountry = document.getElementById('countryFilter')?.value || '';
             if (window.filteredPhotos) {
-                const selectedCountry = document.getElementById('countryFilter')?.value || '';
                 updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
             }
         });
@@ -106,21 +115,17 @@
                 photo.latitude && photo.longitude;
         });
 
-        window.filteredPhotos = filteredPhotos; // Make accessible for bounds_changed
+        window.filteredPhotos = filteredPhotos;
         updateCountryPhotoCount(filteredPhotos, selectedCountry);
 
         const userMarkersMap = {};
         filteredPhotos.forEach(photo => {
             const user = photo.user || 'Unknown';
-
             if (!globalUserColorMap[user]) {
                 globalUserColorMap[user] = allColors[colorIndex % allColors.length];
                 colorIndex++;
             }
-
-            if (!userMarkersMap[user]) {
-                userMarkersMap[user] = [];
-            }
+            if (!userMarkersMap[user]) userMarkersMap[user] = [];
             userMarkersMap[user].push(photo);
         });
 
@@ -150,7 +155,7 @@
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                             <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
                                 <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`,
+                            </svg>`)}`
                     }
                 });
 
@@ -232,9 +237,7 @@
     function populateCountryDropdown() {
         const countrySet = new Set();
         allPhotos.forEach(p => {
-            if (p.country) {
-                countrySet.add(p.country);
-            }
+            if (p.country) countrySet.add(p.country);
         });
 
         const select = document.getElementById('countryFilter');
