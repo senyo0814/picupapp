@@ -25,22 +25,24 @@
             return map.getBounds()?.contains(latLng);
         });
 
-        const countryCountMap = {};
+        // 🔍 Get unique countries in visible markers
+        const countries = new Set();
         visiblePhotos.forEach(p => {
-            if (!p.country) return;
-            countryCountMap[p.country] = (countryCountMap[p.country] || 0) + 1;
+            if (p.country) countries.add(p.country.trim());
         });
 
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
 
-        const count = selectedCountry && countryCountMap[selectedCountry]
-            ? countryCountMap[selectedCountry]
-            : visiblePhotos.length;
+        const count = visiblePhotos.length;
 
         if (nameEl && countEl && suffixEl) {
-            nameEl.textContent = selectedCountry || 'All Countries';
+            if (countries.size === 1) {
+                nameEl.textContent = [...countries][0];
+            } else {
+                nameEl.textContent = 'Var Countries';
+            }
             countEl.textContent = count;
             suffixEl.textContent = count === 1 ? '' : 's';
         }
