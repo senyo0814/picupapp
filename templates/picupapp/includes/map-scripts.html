@@ -18,8 +18,14 @@
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
 
-    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
-        const count = filteredPhotos.length;
+    function updateCountryPhotoCount(allFilteredPhotos, selectedCountry) {
+        const visiblePhotos = allFilteredPhotos.filter(photo => {
+            if (!map || !photo.latitude || !photo.longitude) return false;
+            const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
+            return map.getBounds()?.contains(latLng);
+        });
+
+        const count = visiblePhotos.length;
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
@@ -75,6 +81,13 @@
             document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
             renderMarkers();
         });
+
+        map.addListener('bounds_changed', () => {
+            if (window.filteredPhotos) {
+                const selectedCountry = document.getElementById('countryFilter')?.value || '';
+                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
+            }
+        });
     }
 
     function renderMarkers() {
@@ -93,6 +106,7 @@
                 photo.latitude && photo.longitude;
         });
 
+        window.filteredPhotos = filteredPhotos; // Make accessible for bounds_changed
         updateCountryPhotoCount(filteredPhotos, selectedCountry);
 
         const userMarkersMap = {};
@@ -151,13 +165,6 @@
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
                     infowindow.open(map, marker);
-                    google.maps.event.addListenerOnce(infowindow, 'closeclick', () => {
-                        if (markers.length > 0) {
-                            const newBounds = new google.maps.LatLngBounds();
-                            markers.forEach(m => newBounds.extend(m.getPosition()));
-                            map.fitBounds(newBounds);
-                        }
-                    });
                 });
 
                 createdMarkers.push(marker);
@@ -196,7 +203,22 @@
         });
     }
 
-    
+    function closeImageModal() {
+        const modal = document.getElementById('fullscreenImageModal');
+        const img = document.getElementById('fullscreenImage');
+        modal.classList.add('hidden');
+        img.src = '';
+
+        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
+            setTimeout(() => {
+                google.maps.event.trigger(map, 'resize');
+                setTimeout(() => {
+                    map.fitBounds(clusteredBounds);
+                    console.log('✅ map.fitBounds(clusteredBounds) executed.');
+                }, 200);
+            }, 200);
+        }
+    }
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
@@ -219,7 +241,6 @@
         if (!select) return;
 
         select.innerHTML = '<option value="">All Countries</option>';
-
         [...countrySet].sort().forEach(country => {
             const opt = document.createElement('option');
             opt.value = country;
@@ -231,40 +252,4 @@
             renderMarkers();
         });
     }
-
-    function closeImageModal() {
-        const modal = document.getElementById('fullscreenImageModal');
-        const img = document.getElementById('fullscreenImage');
-        modal.classList.add('hidden');
-        img.src = '';
-
-        // ✅ Log current clusteredBounds info
-        if (!map) {
-            console.warn('Map not initialized.');
-            return;
-        }
-
-        if (!clusteredBounds) {
-            console.warn('clusteredBounds is null.');
-            return;
-        }
-
-        if (clusteredBounds.isEmpty()) {
-            console.warn('clusteredBounds is empty.');
-            return;
-        }
-
-        console.log('✅ Re-centering map using clusteredBounds:', clusteredBounds.toString());
-
-        // Force map resize then fit bounds
-        setTimeout(() => {
-            google.maps.event.trigger(map, 'resize');
-
-            setTimeout(() => {
-                map.fitBounds(clusteredBounds);
-                console.log('✅ map.fitBounds(clusteredBounds) executed.');
-            }, 200);
-        }, 200);
-    }
-
 </script>
