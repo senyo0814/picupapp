@@ -100,22 +100,13 @@
 
 <!-- Fullscreen Modal -->
 <div id="fullscreenImageModal"
-     class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] hidden">
-
-    <!-- Close Button -->
-    <button onclick="closeImageModal(true)"
-            class="absolute top-4 right-4 text-white text-2xl font-bold px-3 py-1 bg-black bg-opacity-60 rounded hover:bg-opacity-90 z-[99999]">
-        &times;
-    </button>
-
-    <!-- Fullscreen Image -->
+     class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] hidden"
+     onclick="closeImageModal()">
     <img id="fullscreenImage"
          class="max-w-full max-h-full object-contain cursor-zoom-out"
-         onclick="closeImageModal(false)"  <!-- Close without recentering -->
-    src=""
-    alt="Fullscreen" />
+         src=""
+         alt="Fullscreen" />
 </div>
-
 
 <script id="publicPhotosJson" type="application/json">{{ shared_photos_json }}</script>
 <script>

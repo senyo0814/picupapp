@@ -172,6 +172,21 @@
                     infowindow.open(map, marker);
                 });
 
+                // ✅ Recenter to cluster when the popup is closed
+                infowindow.addListener('closeclick', () => {
+                    if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
+                        // Delay ensures map layout is stable before fitting
+                        setTimeout(() => {
+                            google.maps.event.trigger(map, 'resize');
+                            setTimeout(() => {
+                                map.fitBounds(clusteredBounds);
+                                console.log('✅ Recentered after InfoWindow close');
+                            }, 200);
+                        }, 200);
+                    }
+                });
+
+
                 createdMarkers.push(marker);
                 bounds.extend(pos);
             });
@@ -208,13 +223,13 @@
         });
     }
 
-    function closeImageModal(recenter = false) {
+    function closeImageModal() {
         const modal = document.getElementById('fullscreenImageModal');
         const img = document.getElementById('fullscreenImage');
         modal.classList.add('hidden');
         img.src = '';
 
-        if (recenter && map && clusteredBounds && !clusteredBounds.isEmpty()) {
+        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
             setTimeout(() => {
                 google.maps.event.trigger(map, 'resize');
                 setTimeout(() => {
@@ -224,7 +239,6 @@
             }, 200);
         }
     }
-
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
