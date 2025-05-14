@@ -208,13 +208,13 @@
         });
     }
 
-    function closeImageModal() {
+    function closeImageModal(recenter = false) {
         const modal = document.getElementById('fullscreenImageModal');
         const img = document.getElementById('fullscreenImage');
         modal.classList.add('hidden');
         img.src = '';
 
-        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
+        if (recenter && map && clusteredBounds && !clusteredBounds.isEmpty()) {
             setTimeout(() => {
                 google.maps.event.trigger(map, 'resize');
                 setTimeout(() => {
@@ -224,6 +224,7 @@
             }, 200);
         }
     }
+
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
