@@ -240,6 +240,8 @@
 
         // ✅ Ensure map is re-rendered and recentered
         if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
+            console.log('Re-centering map using clusteredBounds:', clusteredBounds.toString());
+
             setTimeout(() => {
                 google.maps.event.trigger(map, 'resize');
 
@@ -250,8 +252,5 @@
             }, 200);
         }
     }
-
-
-
 
 </script>
