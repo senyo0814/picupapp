@@ -163,18 +163,12 @@
 
                 const popup = `
                     <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
-                        <!-- Image -->
+                        <!-- Image fills container -->
                         <img src="${photo.image_url}" 
                              class="absolute inset-0 w-full h-full object-cover cursor-pointer" 
                              onclick="showFullscreenImage('${photo.image_url}')" />
 
-                        <!-- Custom close button -->
-                        <button onclick="closeImageModal()" 
-                                class="absolute top-2 right-2 bg-black/50 text-white text-lg px-2 rounded hover:bg-black/80 z-10">
-                            &times;
-                        </button>
-
-                        <!-- Bottom overlay info -->
+                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
                         <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
                             <p class="font-semibold">
                                 ${user}
@@ -254,15 +248,12 @@
         });
     }
 
-    window.closeImageModal = function () {
+    function closeImageModal() {
         const modal = document.getElementById('fullscreenImageModal');
         const img = document.getElementById('fullscreenImage');
-        if (modal && img) {
-            modal.classList.add('hidden');
-            img.src = '';
-        }
+        modal.classList.add('hidden');
+        img.src = '';
     }
-
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
