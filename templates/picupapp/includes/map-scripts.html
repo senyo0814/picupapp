@@ -118,11 +118,12 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
-            const isPublic = photo.visibility === 'any';
+            const user = photo.user || 'Unknown';
+            const isSelectedUser = activeUsers.has(user);
+            const isUnfiltered = activeUsers.size === 0;
 
             return (!selectedCountry || photo.country === selectedCountry) &&
-                (isPublic || isUserMatch) &&
+                (isUnfiltered || isSelectedUser) &&
                 photo.latitude && photo.longitude;
         });
 
