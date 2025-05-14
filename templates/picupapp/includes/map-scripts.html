@@ -202,11 +202,15 @@
         modal.classList.add('hidden');
         img.src = '';
 
-        // ✅ Recenter using stored bounds
-        if (clusteredBounds && map) {
-            map.fitBounds(clusteredBounds);
+        // ✅ Give time for map to resize after DOM changes
+        if (map && clusteredBounds) {
+            setTimeout(() => {
+                google.maps.event.trigger(map, 'resize'); // Force Google Maps to re-calc layout
+                map.fitBounds(clusteredBounds);
+            }, 300); // Slight delay to allow modal animation to finish
         }
     }
+
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
