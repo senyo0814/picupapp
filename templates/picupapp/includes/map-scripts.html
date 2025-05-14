@@ -135,7 +135,6 @@
 
         Object.entries(userMarkersMap).forEach(([user, photos]) => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
-            if (keyword && !user.toLowerCase().includes(keyword)) return;
 
             const color = globalUserColorMap[user];
             const isActive = activeUsers.has(user);
