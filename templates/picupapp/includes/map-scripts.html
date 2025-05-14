@@ -103,6 +103,14 @@
             renderMarkers();
         });
 
+        document.getElementById('legend-select-all')?.addEventListener('change', () => {
+            activeUsers.clear();
+            userFilterManuallySet = false;
+            document.getElementById('legendSearch').value = '';
+            renderMarkers();
+        });
+
+
         let updateFiltersTimeout;
         map.addListener('bounds_changed', () => {
             clearTimeout(updateFiltersTimeout);
@@ -154,7 +162,7 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const isUserMatch = !userFilterManuallySet || activeUsers.has(photo.user || 'Unknown');
+            const isUserMatch = activeUsers.size === 0 || activeUsers.has(photo.user || 'Unknown');
             const isPublic = photo.visibility === 'any';
             const userVisible = isPublic || isUserMatch;
             const countryMatch = !selectedCountry || photo.country === selectedCountry;
