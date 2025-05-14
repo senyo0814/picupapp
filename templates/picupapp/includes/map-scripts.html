@@ -1,7 +1,7 @@
 ﻿<script>
     let markers = [];
     let map;
-    let clusteredMarkers = [];
+    let clusteredBounds = null;
 
     const globalUserColorMap = {};
     const allColors = [
@@ -80,6 +80,7 @@
     function renderMarkers() {
         markers.forEach(m => m.setMap(null));
         markers = [];
+        clusteredBounds = null;
 
         const bounds = new google.maps.LatLngBounds();
         const legendList = document.getElementById('legendList');
@@ -164,11 +165,10 @@
             });
         });
 
-        clusteredMarkers = createdMarkers;
+        clusteredBounds = bounds;
 
         if (createdMarkers.length > 0) {
-            map.fitBounds(bounds);
-
+            map.fitBounds(clusteredBounds);
             new markerClusterer.MarkerClusterer({
                 map,
                 markers: createdMarkers,
@@ -202,11 +202,9 @@
         modal.classList.add('hidden');
         img.src = '';
 
-        // ✅ Recenter map only to currently clustered markers
-        if (clusteredMarkers.length > 0 && map) {
-            const bounds = new google.maps.LatLngBounds();
-            clusteredMarkers.forEach(marker => bounds.extend(marker.getPosition()));
-            map.fitBounds(bounds);
+        // ✅ Recenter using stored bounds
+        if (clusteredBounds && map) {
+            map.fitBounds(clusteredBounds);
         }
     }
 </script>
