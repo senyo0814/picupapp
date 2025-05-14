@@ -163,18 +163,18 @@
 
                 const popup = `
                     <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
-                        <!-- Image fills container -->
+                        <!-- Image -->
                         <img src="${photo.image_url}" 
                              class="absolute inset-0 w-full h-full object-cover cursor-pointer" 
                              onclick="showFullscreenImage('${photo.image_url}')" />
 
-                        <!-- Overlay: Top Right Close Icon -->
-                        <button title="Close" onclick="google.maps.event.trigger(map, 'click')" 
-                                class="absolute top-2 right-2 text-white bg-black/60 backdrop-blur-sm rounded-full p-1 text-xs hover:bg-black/80">
+                        <!-- Custom close button -->
+                        <button onclick="closeImageModal()" 
+                                class="absolute top-2 right-2 bg-black/50 text-white text-lg px-2 rounded hover:bg-black/80 z-10">
                             &times;
                         </button>
 
-                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
+                        <!-- Bottom overlay info -->
                         <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
                             <p class="font-semibold">
                                 ${user}
@@ -184,6 +184,11 @@
                             <p class="text-[10px] text-white/70">${photo.taken}</p>
                         </div>
                     </div>`;
+
+                infowindow.addListener("domready", () => {
+                    const closeBtn = document.querySelector(".gm-ui-hover-effect");
+                    if (closeBtn) closeBtn.style.display = "none";
+                });
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
