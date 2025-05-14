@@ -172,21 +172,29 @@
                     infowindow.open(map, marker);
                 });
 
-                // ✅ Recenter to cluster when the popup is closed
                 infowindow.addListener('closeclick', () => {
                     if (map && marker.getPosition()) {
-                        const singleBounds = new google.maps.LatLngBounds();
-                        singleBounds.extend(marker.getPosition());
+                        const center = marker.getPosition();
+
+                        // Approx. 0.9 degrees latitude ≈ 100km
+                        const offsetLat = 0.9;
+                        const offsetLng = 0.9 / Math.cos(center.lat() * (Math.PI / 180)); // Adjust for latitude
+
+                        const bounds = new google.maps.LatLngBounds(
+                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
+                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
+                        );
 
                         setTimeout(() => {
                             google.maps.event.trigger(map, 'resize');
                             setTimeout(() => {
-                                map.fitBounds(singleBounds);
-                                console.log(`✅ Zoomed to marker at ${marker.getPosition().toUrlValue()}`);
+                                map.fitBounds(bounds);
+                                console.log(`✅ Fit to ~100km radius around ${center.toUrlValue()}`);
                             }, 200);
                         }, 200);
                     }
                 });
+
 
                 createdMarkers.push(marker);
                 bounds.extend(pos);
