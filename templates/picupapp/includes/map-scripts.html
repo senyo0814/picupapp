@@ -238,19 +238,21 @@
         modal.classList.add('hidden');
         img.src = '';
 
-        // ✅ Ensure map is re-rendered and recentered
+        // ✅ Only run recenter logic if clusteredBounds is valid
         if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
             console.log('Re-centering map using clusteredBounds:', clusteredBounds.toString());
 
             setTimeout(() => {
                 google.maps.event.trigger(map, 'resize');
 
-                // Slight delay ensures DOM settles first
                 setTimeout(() => {
                     map.fitBounds(clusteredBounds);
                 }, 100);
             }, 200);
+        } else {
+            console.warn('clusteredBounds is null or empty, skipping recenter.');
         }
     }
+
 
 </script>
