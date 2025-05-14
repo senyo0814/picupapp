@@ -174,18 +174,19 @@
 
                 // ✅ Recenter to cluster when the popup is closed
                 infowindow.addListener('closeclick', () => {
-                    if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
-                        // Delay ensures map layout is stable before fitting
+                    if (map && marker.getPosition()) {
+                        const singleBounds = new google.maps.LatLngBounds();
+                        singleBounds.extend(marker.getPosition());
+
                         setTimeout(() => {
                             google.maps.event.trigger(map, 'resize');
                             setTimeout(() => {
-                                map.fitBounds(clusteredBounds);
-                                console.log('✅ Recentered after InfoWindow close');
+                                map.fitBounds(singleBounds);
+                                console.log(`✅ Zoomed to marker at ${marker.getPosition().toUrlValue()}`);
                             }, 200);
                         }, 200);
                     }
                 });
-
 
                 createdMarkers.push(marker);
                 bounds.extend(pos);
@@ -228,16 +229,6 @@
         const img = document.getElementById('fullscreenImage');
         modal.classList.add('hidden');
         img.src = '';
-
-        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
-            setTimeout(() => {
-                google.maps.event.trigger(map, 'resize');
-                setTimeout(() => {
-                    map.fitBounds(clusteredBounds);
-                    console.log('✅ map.fitBounds(clusteredBounds) executed.');
-                }, 200);
-            }, 200);
-        }
     }
 
     function showFullscreenImage(src) {
