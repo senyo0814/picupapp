@@ -254,11 +254,14 @@
         });
     }
 
+    // This should be outside and global
     function closeImageModal() {
         const modal = document.getElementById('fullscreenImageModal');
         const img = document.getElementById('fullscreenImage');
-        modal.classList.add('hidden');
-        img.src = '';
+        if (modal && img) {
+            modal.classList.add('hidden');
+            img.src = '';
+        }
     }
 
     function showFullscreenImage(src) {
