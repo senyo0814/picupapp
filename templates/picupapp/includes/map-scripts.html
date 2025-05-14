@@ -1,5 +1,4 @@
-﻿
-<script>
+﻿<script>
     let markers = [];
     let map;
     const globalUserColorMap = {};
@@ -30,6 +29,28 @@
         }
     }
 
+    const clusterRenderer = {
+        render: ({ count, position }) => {
+            const isDark = document.documentElement.classList.contains("dark");
+            const fillColor = isDark ? "#facc15" : "#2563eb";
+            const textColor = isDark ? "#000000" : "#ffffff";
+
+            return new google.maps.Marker({
+                position,
+                icon: {
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                        <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
+                            <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" font-family="Arial" fill="${textColor}">${count}</text>
+                        </svg>
+                    `)}`,
+                    scaledSize: new google.maps.Size(50, 50),
+                },
+                zIndex: google.maps.Marker.MAX_ZINDEX + count,
+            });
+        }
+    };
+
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             zoom: 2,
@@ -53,29 +74,6 @@
             renderMarkers();
         });
     }
-
-    // Custom cluster renderer
-    const clusterRenderer = {
-        render: ({ count, position }) => {
-            const isDark = document.documentElement.classList.contains("dark");
-            const fillColor = isDark ? "#facc15" : "#2563eb"; // Yellow or Blue
-            const textColor = isDark ? "#000000" : "#ffffff";
-
-            return new google.maps.Marker({
-                position,
-                icon: {
-                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                    <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
-                        <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" font-family="Arial" fill="${textColor}">${count}</text>
-                    </svg>
-                `)}`,
-                    scaledSize: new google.maps.Size(50, 50),
-                },
-                zIndex: google.maps.Marker.MAX_ZINDEX + count,
-            });
-        }
-    };
 
     function renderMarkers() {
         markers.forEach(m => m.setMap(null));
@@ -120,11 +118,11 @@
 
             const li = document.createElement('li');
             li.innerHTML = `
-            <button data-user="${user}"
-                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                <span>${highlightMatch(user, keyword)}</span>
-            </button>`;
+                <button data-user="${user}"
+                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                    <span>${highlightMatch(user, keyword)}</span>
+                </button>`;
             legendList.appendChild(li);
 
             photos.forEach(photo => {
@@ -133,19 +131,19 @@
                     position: pos,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                            <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                        </svg>`)}`,
+                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                                <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                            </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
-                    <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
-                    <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
-                    <p>${photo.comment || 'No comment'}</p>
-                    <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
-                </div>`;
+                    <div class="text-sm text-gray-800 dark:text-white bg-white dark:bg-gray-800 p-2 rounded shadow">
+                        <img src="${photo.image_url}" class="max-w-full max-h-[300px] object-contain mx-auto mb-2 rounded cursor-pointer" onclick="showFullscreenImage('${photo.image_url}')" />
+                        <p><strong>${user}</strong>${photo.visibility === 'private' ? ' <i class="fas fa-lock text-gray-500 dark:text-gray-300" title="Private photo"></i>' : ''}</p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs">${photo.taken}</p>
+                    </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
@@ -167,7 +165,6 @@
         if (createdMarkers.length > 0) {
             map.fitBounds(bounds);
 
-            // ✅ Create cluster with custom renderer
             new markerClusterer.MarkerClusterer({
                 map,
                 markers: createdMarkers,
@@ -193,79 +190,5 @@
                 renderMarkers();
             });
         });
-    }
-
-</script>
-
-
-<script>
-    const darkIcon = document.getElementById('darkModeIcon');
-    const darkContainer = document.getElementById('darkModeToggleContainer');
-
-    function applyThemeIcon(isDark) {
-        darkIcon.classList.remove('fa-sun', 'fa-moon');
-        darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
-        darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-    }
-
-    const prefersDark = localStorage.getItem('theme') === 'dark' ||
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    if (prefersDark) {
-        document.documentElement.classList.add('dark');
-        applyThemeIcon(true);
-    } else {
-        document.documentElement.classList.remove('dark');
-        applyThemeIcon(false);
-    }
-
-    darkContainer.addEventListener('click', () => {
-        const isDark = document.documentElement.classList.toggle('dark');
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-        applyThemeIcon(isDark);
-    });
-</script>
-
-<script>
-    let activeCountry = '';
-
-    function populateCountryDropdown() {
-        const countrySet = new Set();
-        allPhotos.forEach(p => {
-            if (p.country && !countrySet.has(p.country)) {
-                countrySet.add(p.country);
-            }
-        });
-
-        const select = document.getElementById('countryFilter');
-        select.innerHTML = '<option value="">All Countries</option>'; // Clear duplicates
-
-        [...countrySet].sort().forEach(country => {
-            const opt = document.createElement('option');
-            opt.value = country;
-            opt.textContent = country;
-            select.appendChild(opt);
-        });
-
-        select.addEventListener('change', () => {
-            activeCountry = select.value;
-            renderMarkers();
-        });
-    }
-
-    // Call it after allPhotos is defined
-    document.addEventListener('DOMContentLoaded', populateCountryDropdown);
-</script>
-<script>
-    function showFullscreenImage(src) {
-        const modal = document.getElementById('fullscreenImageModal');
-        const img = document.getElementById('fullscreenImage');
-        img.src = src;
-        modal.classList.remove('hidden');
-    }
-
-    function closeImageModal() {
-        document.getElementById('fullscreenImageModal').classList.add('hidden');
-        document.getElementById('fullscreenImage').src = '';
     }
 </script>
