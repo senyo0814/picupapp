@@ -196,21 +196,7 @@
         });
     }
 
-    function closeImageModal() {
-        const modal = document.getElementById('fullscreenImageModal');
-        const img = document.getElementById('fullscreenImage');
-        modal.classList.add('hidden');
-        img.src = '';
-
-        // ✅ Give time for map to resize after DOM changes
-        if (map && clusteredBounds) {
-            setTimeout(() => {
-                google.maps.event.trigger(map, 'resize'); // Force Google Maps to re-calc layout
-                map.fitBounds(clusteredBounds);
-            }, 300); // Slight delay to allow modal animation to finish
-        }
-    }
-
+    
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
@@ -245,6 +231,27 @@
             renderMarkers();
         });
     }
+
+    function closeImageModal() {
+        const modal = document.getElementById('fullscreenImageModal');
+        const img = document.getElementById('fullscreenImage');
+        modal.classList.add('hidden');
+        img.src = '';
+
+        // ✅ Ensure map is re-rendered and recentered
+        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
+            setTimeout(() => {
+                google.maps.event.trigger(map, 'resize');
+
+                // Slight delay ensures DOM settles first
+                setTimeout(() => {
+                    map.fitBounds(clusteredBounds);
+                }, 100);
+            }, 200);
+        }
+    }
+
+
 
 
 </script>
