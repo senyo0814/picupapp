@@ -25,10 +25,19 @@
             return map.getBounds()?.contains(latLng);
         });
 
-        const count = visiblePhotos.length;
+        const countryCountMap = {};
+        visiblePhotos.forEach(p => {
+            if (!p.country) return;
+            countryCountMap[p.country] = (countryCountMap[p.country] || 0) + 1;
+        });
+
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
+
+        const count = selectedCountry && countryCountMap[selectedCountry]
+            ? countryCountMap[selectedCountry]
+            : visiblePhotos.length;
 
         if (nameEl && countEl && suffixEl) {
             nameEl.textContent = selectedCountry || 'All Countries';
@@ -37,30 +46,27 @@
         }
     }
 
-    function populateCountryDropdown() {
-        const countrySet = new Set();
-        allPhotos.forEach(p => {
-            if (p.country) {
-                countrySet.add(p.country.trim());
-            }
-        });
+    const clusterRenderer = {
+        render: ({ count, position }) => {
+            const isDark = document.documentElement.classList.contains("dark");
+            const fillColor = isDark ? "#facc15" : "#2563eb";
+            const textColor = isDark ? "#000000" : "#ffffff";
 
-        const select = document.getElementById('countryFilter');
-        if (!select) return;
-
-        select.innerHTML = '<option value="">All Countries</option>';
-        [...countrySet].sort().forEach(country => {
-            const opt = document.createElement('option');
-            opt.value = country;
-            opt.textContent = country;
-            select.appendChild(opt);
-        });
-
-        // ✅ Trigger filter on change
-        select.addEventListener('change', () => {
-            renderMarkers();
-        });
-    }
+            return new google.maps.Marker({
+                position,
+                icon: {
+                    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
+                        <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
+                            <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" font-family="Arial" fill="${textColor}">${count}</text>
+                        </svg>
+                    `)}`,
+                    scaledSize: new google.maps.Size(50, 50),
+                },
+                zIndex: google.maps.Marker.MAX_ZINDEX + count,
+            });
+        }
+    };
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -86,10 +92,13 @@
         });
 
         map.addListener('bounds_changed', () => {
-            const selectedCountry = document.getElementById('countryFilter')?.value || '';
-            if (window.filteredPhotos) {
-                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
-            }
+            const selectedCountry = document.getElementById('countryFilter')?.value || "";
+            const filteredPhotos = allPhotos.filter(photo => {
+                const photoCountry = (photo.country || "").trim();
+                return (!selectedCountry || photoCountry === selectedCountry) &&
+                    (!activeUsers.size || activeUsers.has(photo.user || 'Unknown')) &&
+                    photo.latitude && photo.longitude;
+            });
         });
     }
 
@@ -102,17 +111,11 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
-        const selectedCountry = document.getElementById('countryFilter')?.value.trim() || "";
-        console.log("Selected country:", selectedCountry);
-
+        const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const photoCountry = (photo.country || "").trim();
-            const include = (!selectedCountry || photoCountry === selectedCountry) &&
+            return (!selectedCountry || photo.country === selectedCountry) &&
                 (!activeUsers.size || activeUsers.has(photo.user || 'Unknown')) &&
                 photo.latitude && photo.longitude;
-
-            if (include) console.log("Included photo country:", photoCountry);
-            return include;
         });
 
         window.filteredPhotos = filteredPhotos;
@@ -155,7 +158,7 @@
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
                             <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
                                 <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`,
+                            </svg>`)}`
                     }
                 });
 
@@ -170,6 +173,28 @@
                 const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
                     infowindow.open(map, marker);
+                });
+
+                infowindow.addListener('closeclick', () => {
+                    if (map && marker.getPosition()) {
+                        const center = marker.getPosition();
+
+                        const offsetLat = 0.0009; // ≈ 100 meters in latitude
+                        const offsetLng = 0.0009 / Math.cos(center.lat() * (Math.PI / 180)); // Adjust for latitude
+
+                        const bounds = new google.maps.LatLngBounds(
+                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
+                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
+                        );
+
+                        setTimeout(() => {
+                            google.maps.event.trigger(map, 'resize');
+                            setTimeout(() => {
+                                map.fitBounds(bounds);
+                                console.log(`✅ Fit to ~100m radius around ${center.toUrlValue()}`);
+                            }, 200);
+                        }, 200);
+                    }
                 });
 
                 createdMarkers.push(marker);
@@ -222,5 +247,27 @@
             img.src = src;
             modal.classList.remove('hidden');
         }
+    }
+
+    function populateCountryDropdown() {
+        const countrySet = new Set();
+        allPhotos.forEach(p => {
+            if (p.country) countrySet.add(p.country);
+        });
+
+        const select = document.getElementById('countryFilter');
+        if (!select) return;
+
+        select.innerHTML = '<option value="">All Countries</option>';
+        [...countrySet].sort().forEach(country => {
+            const opt = document.createElement('option');
+            opt.value = country;
+            opt.textContent = country;
+            select.appendChild(opt);
+        });
+
+        select.addEventListener('change', () => {
+            renderMarkers();
+        });
     }
 </script>
