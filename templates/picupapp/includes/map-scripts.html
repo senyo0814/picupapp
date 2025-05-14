@@ -25,24 +25,16 @@
             return map.getBounds()?.contains(latLng);
         });
 
-        // 🔍 Get unique countries in visible markers
-        const countries = new Set();
-        visiblePhotos.forEach(p => {
-            if (p.country) countries.add(p.country.trim());
-        });
-
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
-
         const count = visiblePhotos.length;
 
         if (nameEl && countEl && suffixEl) {
-            if (countries.size === 1) {
-                nameEl.textContent = [...countries][0];
-            } else {
-                nameEl.textContent = 'Var Countries';
-            }
+            nameEl.textContent = visiblePhotos.length === 0 ? 'None' :
+                [...new Set(visiblePhotos.map(p => p.country))].length === 1
+                    ? visiblePhotos[0].country
+                    : 'Var Countries';
             countEl.textContent = count;
             suffixEl.textContent = count === 1 ? '' : 's';
         }
@@ -81,7 +73,7 @@
 
         document.getElementById('legendSearch').addEventListener('input', () => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase().trim();
-            activeUsers = new Set();
+            activeUsers.clear();
 
             if (keyword) {
                 allPhotos.forEach(p => {
@@ -92,12 +84,21 @@
                 });
             }
 
-            // Reset "Select All" if anything is filtered
             const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
             if (allFilter) allFilter.checked = activeUsers.size === 0;
 
-            renderMarkers(); // 🔁 re-render map markers
+            renderMarkers();
         });
+
+        const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
+        if (allFilter) {
+            allFilter.addEventListener('change', e => {
+                if (e.target.checked) {
+                    activeUsers.clear();
+                    renderMarkers();
+                }
+            });
+        }
 
         map.addListener('bounds_changed', () => {
             const selectedCountry = document.getElementById('countryFilter')?.value || '';
@@ -172,12 +173,9 @@
 
                 const popup = `
                     <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
-                        <!-- Image fills container -->
-                        <img src="${photo.image_url}" 
-                             class="absolute inset-0 w-full h-full object-cover cursor-pointer" 
+                        <img src="${photo.image_url}"
+                             class="absolute inset-0 w-full h-full object-cover cursor-pointer"
                              onclick="showFullscreenImage('${photo.image_url}')" />
-
-                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
                         <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
                             <p class="font-semibold">
                                 ${user}
@@ -189,30 +187,8 @@
                     </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
-
                 marker.addListener("click", () => {
                     infowindow.open(map, marker);
-                });
-
-                infowindow.addListener('closeclick', () => {
-                    if (map && marker.getPosition()) {
-                        const center = marker.getPosition();
-                        const offsetLat = 0.0045; // ~500 meters
-                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
-
-                        const bounds = new google.maps.LatLngBounds(
-                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
-                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
-                        );
-
-                        setTimeout(() => {
-                            google.maps.event.trigger(map, 'resize');
-                            setTimeout(() => {
-                                map.fitBounds(bounds);
-                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
-                            }, 200);
-                        }, 200);
-                    }
                 });
 
                 createdMarkers.push(marker);
@@ -239,23 +215,13 @@
                 } else {
                     activeUsers.add(user);
                 }
-                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
-                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-                document.querySelector('input[name="legendFilter"][value="all"]').checked =
-                    allUsers.size === activeUsers.size &&
-                    [...allUsers].every(u => activeUsers.has(u));
+                const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
+                if (allFilter) allFilter.checked = false;
 
                 renderMarkers();
             });
         });
-    }
-
-    function closeImageModal() {
-        const modal = document.getElementById('fullscreenImageModal');
-        const img = document.getElementById('fullscreenImage');
-        modal.classList.add('hidden');
-        img.src = '';
     }
 
     function showFullscreenImage(src) {
@@ -265,6 +231,13 @@
             img.src = src;
             modal.classList.remove('hidden');
         }
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('fullscreenImageModal');
+        const img = document.getElementById('fullscreenImage');
+        modal.classList.add('hidden');
+        img.src = '';
     }
 
     function populateCountryDropdown() {
@@ -289,6 +262,7 @@
         });
     }
 </script>
+
 <script>
     const darkIcon = document.getElementById('darkModeIcon');
     const darkContainer = document.getElementById('darkModeToggleContainer');
