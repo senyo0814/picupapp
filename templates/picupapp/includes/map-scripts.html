@@ -103,31 +103,31 @@
             renderMarkers();
         });
 
-        // 🌍 Sync filters with visible map content
         let updateFiltersTimeout;
         map.addListener('bounds_changed', () => {
             clearTimeout(updateFiltersTimeout);
             updateFiltersTimeout = setTimeout(() => {
-                if (userFilterManuallySet) return;
                 const bounds = map.getBounds();
                 const selectedCountry = document.getElementById('countryFilter')?.value || '';
 
                 if (!bounds || !window.filteredPhotos) return;
 
-                // ✅ Get photos within visible map bounds
                 const visiblePhotos = window.filteredPhotos.filter(photo => {
                     if (!photo.latitude || !photo.longitude) return false;
                     const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
                     return bounds.contains(latLng);
                 });
 
-                // ✅ Update country count display
+                // ✅ Always update country count
                 updateCountryPhotoCount(visiblePhotos, selectedCountry);
 
-                // ✅ Set active users based on visible photos
+                // 🚫 Stop here if user has manually filtered users
+                if (userFilterManuallySet) return;
+
+                // ✅ Only update activeUsers from visible photos if not manually set
                 activeUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
 
-                // ✅ Update Select All state
+                // ✅ Update "Select All"
                 const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
                 const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
                 if (allFilter) {
@@ -136,10 +136,10 @@
                         [...allUsers].every(u => activeUsers.has(u));
                 }
 
-                // ✅ Re-render markers and legend based on activeUsers
                 renderMarkers();
             }, 300); // debounce
         });
+
     }
 
 
