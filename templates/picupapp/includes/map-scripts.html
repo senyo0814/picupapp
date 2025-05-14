@@ -80,23 +80,23 @@
         populateCountryDropdown();
 
         document.getElementById('legendSearch').addEventListener('input', () => {
-            const keyword = document.getElementById('legendSearch').value.toLowerCase();
+            const keyword = document.getElementById('legendSearch').value.toLowerCase().trim();
             activeUsers = new Set();
 
-            if (keyword.trim()) {
-                const matchedUsers = new Set(
-                    allPhotos
-                        .map(p => p.user || 'Unknown')
-                        .filter(user => user.toLowerCase().includes(keyword))
-                );
-                matchedUsers.forEach(u => activeUsers.add(u));
+            if (keyword) {
+                allPhotos.forEach(p => {
+                    const name = p.user || 'Unknown';
+                    if (name.toLowerCase().includes(keyword)) {
+                        activeUsers.add(name);
+                    }
+                });
             }
 
-            // Uncheck "All" filter when a keyword is typed
+            // Reset "Select All" if anything is filtered
             const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
-            if (allFilter) allFilter.checked = false;
+            if (allFilter) allFilter.checked = activeUsers.size === 0;
 
-            renderMarkers();
+            renderMarkers(); // 🔁 re-render map markers
         });
 
         map.addListener('bounds_changed', () => {
