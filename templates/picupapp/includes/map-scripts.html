@@ -254,8 +254,7 @@
         });
     }
 
-    // This should be outside and global
-    function closeImageModal() {
+    window.closeImageModal = function () {
         const modal = document.getElementById('fullscreenImageModal');
         const img = document.getElementById('fullscreenImage');
         if (modal && img) {
@@ -263,6 +262,7 @@
             img.src = '';
         }
     }
+
 
     function showFullscreenImage(src) {
         const modal = document.getElementById('fullscreenImageModal');
