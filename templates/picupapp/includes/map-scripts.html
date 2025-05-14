@@ -121,9 +121,10 @@
             const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
             const isPublic = photo.visibility === 'any';
 
-            return (!selectedCountry || photo.country === selectedCountry) &&
-                (isPublic || isUserMatch) &&
-                photo.latitude && photo.longitude;
+            const userVisible = isPublic || isUserMatch;
+            const countryMatch = !selectedCountry || photo.country === selectedCountry;
+
+            return userVisible && countryMatch && photo.latitude && photo.longitude;
         });
 
         window.filteredPhotos = filteredPhotos;
