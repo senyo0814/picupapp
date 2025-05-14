@@ -128,12 +128,20 @@
     });
 </script>
 
+<!-- Load modern clusterer FIRST -->
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
 
+<!-- Load your photo data and map logic -->
+<script id="userPhotosJson" type="application/json">{{ user_photos_json }}</script>
+<script id="otherPhotosJson" type="application/json">{{ other_photos_json }}</script>
+<script id="publicPhotosJson" type="application/json">{{ shared_photos_json }}</script>
+
+<!-- Load your logic scripts (initMap, renderMarkers, etc.) -->
 {% include 'picupapp/includes/map-scripts.html' %}
 
+<!-- Load Google Maps API LAST with callback -->
 <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
 </script>
-<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 
 {% endblock %}
