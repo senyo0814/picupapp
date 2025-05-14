@@ -99,12 +99,42 @@
             renderMarkers();
         });
 
+        let updateFiltersTimeout;
         map.addListener('bounds_changed', () => {
-            const selectedCountry = document.getElementById('countryFilter')?.value || '';
-            if (window.filteredPhotos) {
-                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
-            }
+            clearTimeout(updateFiltersTimeout);
+            updateFiltersTimeout = setTimeout(() => {
+                const bounds = map.getBounds();
+                const selectedCountry = document.getElementById('countryFilter')?.value || '';
+
+                if (!bounds || !window.filteredPhotos) return;
+
+                // Filter photos within map view
+                const visiblePhotos = window.filteredPhotos.filter(photo => {
+                    if (!photo.latitude || !photo.longitude) return false;
+                    const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
+                    return bounds.contains(latLng);
+                });
+
+                // ✅ Update country photo count
+                updateCountryPhotoCount(visiblePhotos, selectedCountry);
+
+                // ✅ Update activeUsers based on visible markers
+                const visibleUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
+                activeUsers = new Set(visibleUsers);
+
+                // ✅ Update "Select All" radio
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                const selectAllInput = document.querySelector('input[name="legendFilter"][value="all"]');
+                if (selectAllInput) {
+                    selectAllInput.checked =
+                        allUsers.size === activeUsers.size &&
+                        [...allUsers].every(u => activeUsers.has(u));
+                }
+
+                renderMarkers();  // Re-render to reflect updated user filter
+            }, 300); // debounce time
         });
+
     }
 
     function renderMarkers() {
@@ -173,8 +203,8 @@
                 const popup = `
                     <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
                         <!-- Image fills container -->
-                        <img src="${photo.image_url}" 
-                             class="absolute inset-0 w-full h-full object-cover cursor-pointer" 
+                        <img src="${photo.image_url}"
+                             class="absolute inset-0 w-full h-full object-cover cursor-pointer"
                              onclick="showFullscreenImage('${photo.image_url}')" />
 
                         <!-- Overlay: Bottom Info with blur and semi-transparent background -->
@@ -315,4 +345,39 @@
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
         applyThemeIcon(isDark);
     });
+
+    function updateFiltersFromMapBounds() {
+        if (!map || !window.filteredPhotos) return;
+
+        const bounds = map.getBounds();
+        const visiblePhotos = window.filteredPhotos.filter(photo => {
+            if (!photo.latitude || !photo.longitude) return false;
+            const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
+            return bounds.contains(latLng);
+        });
+
+        // 🌍 Update country dropdown
+        const countrySet = new Set(visiblePhotos.map(p => p.country).filter(Boolean));
+        const countryFilter = document.getElementById('countryFilter');
+        const currentValue = countryFilter?.value;
+
+        if (countryFilter && currentValue && !countrySet.has(currentValue)) {
+            countryFilter.value = ""; // Reset to "All Countries"
+        }
+
+        // 👤 Update legend based on visible users
+        const visibleUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
+        activeUsers = new Set(visibleUsers);
+
+        // Check if all users are visible
+        const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+        document.querySelector('input[name="legendFilter"][value="all"]').checked =
+            allUsers.size === activeUsers.size;
+
+        // Trigger re-render
+        renderMarkers();
+    }
+
+
 </script>
+
