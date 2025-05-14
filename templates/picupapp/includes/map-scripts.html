@@ -238,21 +238,33 @@
         modal.classList.add('hidden');
         img.src = '';
 
-        // ✅ Only run recenter logic if clusteredBounds is valid
-        if (map && clusteredBounds && !clusteredBounds.isEmpty()) {
-            console.log('Re-centering map using clusteredBounds:', clusteredBounds.toString());
+        // ✅ Log current clusteredBounds info
+        if (!map) {
+            console.warn('Map not initialized.');
+            return;
+        }
+
+        if (!clusteredBounds) {
+            console.warn('clusteredBounds is null.');
+            return;
+        }
+
+        if (clusteredBounds.isEmpty()) {
+            console.warn('clusteredBounds is empty.');
+            return;
+        }
+
+        console.log('✅ Re-centering map using clusteredBounds:', clusteredBounds.toString());
+
+        // Force map resize then fit bounds
+        setTimeout(() => {
+            google.maps.event.trigger(map, 'resize');
 
             setTimeout(() => {
-                google.maps.event.trigger(map, 'resize');
-
-                setTimeout(() => {
-                    map.fitBounds(clusteredBounds);
-                }, 100);
+                map.fitBounds(clusteredBounds);
+                console.log('✅ map.fitBounds(clusteredBounds) executed.');
             }, 200);
-        } else {
-            console.warn('clusteredBounds is null or empty, skipping recenter.');
-        }
+        }, 200);
     }
-
 
 </script>
