@@ -185,12 +185,13 @@
                         </div>
                     </div>`;
 
+                const infowindow = new google.maps.InfoWindow({ content: popup });
+
                 infowindow.addListener("domready", () => {
                     const closeBtn = document.querySelector(".gm-ui-hover-effect");
                     if (closeBtn) closeBtn.style.display = "none";
                 });
 
-                const infowindow = new google.maps.InfoWindow({ content: popup });
                 marker.addListener("click", () => {
                     infowindow.open(map, marker);
                 });
@@ -199,9 +200,8 @@
                     if (map && marker.getPosition()) {
                         const center = marker.getPosition();
 
-                        // ≈ 500 meters in degrees latitude (~0.0045)
-                        const offsetLat = 0.0045;
-                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180)); // Adjust for latitude
+                        const offsetLat = 0.0045; // ~500 meters
+                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
 
                         const bounds = new google.maps.LatLngBounds(
                             new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
