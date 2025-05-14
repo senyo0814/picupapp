@@ -1,11 +1,5 @@
 ﻿
 <script>
-    const userPhotos = JSON.parse(document.getElementById('userPhotosJson').textContent);
-    const otherPhotos = JSON.parse(document.getElementById('otherPhotosJson').textContent);
-    const allPhotos = [...userPhotos, ...otherPhotos];
-</script>
-
-<script>
     let markers = [];
     let map;
     const globalUserColorMap = {};
@@ -21,6 +15,19 @@
         if (!keyword) return text;
         const regex = new RegExp(`(${keyword})`, 'ig');
         return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
+    }
+
+    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
+        const count = filteredPhotos.length;
+        const nameEl = document.getElementById('selectedCountryName');
+        const countEl = document.getElementById('photoCountForCountry');
+        const suffixEl = document.getElementById('pluralSuffix');
+
+        if (nameEl && countEl && suffixEl) {
+            nameEl.textContent = selectedCountry || 'All Countries';
+            countEl.textContent = count;
+            suffixEl.textContent = count === 1 ? '' : 's';
+        }
     }
 
     function initMap() {
