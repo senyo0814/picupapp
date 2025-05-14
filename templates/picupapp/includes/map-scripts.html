@@ -179,37 +179,37 @@
                         </div>
                     </div>`;
 
-                                const infowindow = new google.maps.InfoWindow({ content: popup });
+                const infowindow = new google.maps.InfoWindow({ content: popup });
 
-                                marker.addListener("click", () => {
-                                    infowindow.open(map, marker);
-                                });
+                marker.addListener("click", () => {
+                    infowindow.open(map, marker);
+                });
 
-                                infowindow.addListener('closeclick', () => {
-                                    if (map && marker.getPosition()) {
-                                        const center = marker.getPosition();
-                                        const offsetLat = 0.0045; // ~500 meters
-                                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
+                infowindow.addListener('closeclick', () => {
+                    if (map && marker.getPosition()) {
+                        const center = marker.getPosition();
+                        const offsetLat = 0.0045; // ~500 meters
+                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
 
-                                        const bounds = new google.maps.LatLngBounds(
-                                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
-                                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
-                                        );
+                        const bounds = new google.maps.LatLngBounds(
+                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
+                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
+                        );
 
-                                        setTimeout(() => {
-                                            google.maps.event.trigger(map, 'resize');
-                                            setTimeout(() => {
-                                                map.fitBounds(bounds);
-                                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
-                                            }, 200);
-                                        }, 200);
-                                    }
-                                });
+                        setTimeout(() => {
+                            google.maps.event.trigger(map, 'resize');
+                            setTimeout(() => {
+                                map.fitBounds(bounds);
+                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
+                            }, 200);
+                        }, 200);
+                    }
+                });
 
-                                createdMarkers.push(marker);
-                                bounds.extend(pos);
-                            });
-                        });
+                createdMarkers.push(marker);
+                bounds.extend(pos);
+            });
+        });
 
         clusteredBounds = bounds;
 
