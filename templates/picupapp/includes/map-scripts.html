@@ -92,13 +92,10 @@
         });
 
         map.addListener('bounds_changed', () => {
-            const selectedCountry = document.getElementById('countryFilter')?.value || "";
-            const filteredPhotos = allPhotos.filter(photo => {
-                const photoCountry = (photo.country || "").trim();
-                return (!selectedCountry || photoCountry === selectedCountry) &&
-                    (!activeUsers.size || activeUsers.has(photo.user || 'Unknown')) &&
-                    photo.latitude && photo.longitude;
-            });
+            const selectedCountry = document.getElementById('countryFilter')?.value || '';
+            if (window.filteredPhotos) {
+                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
+            }
         });
     }
 

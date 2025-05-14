@@ -123,7 +123,7 @@ def extract_gps_and_datetime(file):
 
 # --- Landing View ---
 
-@login_required
+# @login_required
 def landing(request):
     try:
         from .models import PhotoGroup  # Ensure correct import
@@ -220,7 +220,7 @@ def landing(request):
 
 # --- Delete Photo ---
 
-@login_required
+# @login_required
 def delete_photo(request, photo_id):
     photo = get_object_or_404(PhotoUpload, id=photo_id, uploaded_by=request.user)
     photo.image.delete()
@@ -235,7 +235,7 @@ def logout_view(request):
 
 # --- Map View ---
 
-@login_required
+# @login_required
 def map_pics_view(request):
     user_photos = PhotoUpload.objects.filter(
         uploaded_by=request.user,
@@ -294,7 +294,7 @@ def check_media_access(request):
 
 # --- Metadata List View ---
 
-@login_required
+# @login_required
 def metadata_table_view(request):
     photos = PhotoUpload.objects.order_by('-uploaded_at')
     return render(request, 'picupapp/metadata_table.html', {
@@ -302,7 +302,7 @@ def metadata_table_view(request):
     })
 
 @csrf_exempt
-@login_required
+# @login_required
 def update_comment(request):
     if request.method == 'POST':
         photo_id = request.POST.get('photo_id')
@@ -334,7 +334,7 @@ from django.utils.safestring import mark_safe
 from geopy.geocoders import Nominatim
 import json
 
-@login_required
+# @login_required
 def photo_map_view(request):
     username = request.user.username
 
@@ -397,7 +397,7 @@ def photo_map_view(request):
     })
 
 
-@login_required
+# @login_required
 def create_group_view(request):
     selected_member_ids = []
 
@@ -422,7 +422,7 @@ def create_group_view(request):
         'selected_member_ids': selected_member_ids
     })
 
-@login_required
+# @login_required
 def get_user_groups(request):
     groups = PhotoGroup.objects.filter(created_by=request.user).values('id', 'name')
     return JsonResponse(list(groups), safe=False)
@@ -483,7 +483,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.shortcuts import render, redirect
 from django.contrib import messages
 
-@login_required
+# @login_required
 def change_profile_view(request):
     user = request.user
     password_form = PasswordChangeForm(user, request.POST or None)
