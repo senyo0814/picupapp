@@ -80,23 +80,23 @@
         populateCountryDropdown();
 
         document.getElementById('legendSearch').addEventListener('input', () => {
-            const keyword = document.getElementById('legendSearch').value.toLowerCase().trim();
+            const keyword = document.getElementById('legendSearch').value.toLowerCase();
             activeUsers = new Set();
 
-            if (keyword) {
-                allPhotos.forEach(p => {
-                    const name = p.user || 'Unknown';
-                    if (name.toLowerCase().includes(keyword)) {
-                        activeUsers.add(name);
-                    }
-                });
+            if (keyword.trim()) {
+                const matchedUsers = new Set(
+                    allPhotos
+                        .map(p => p.user || 'Unknown')
+                        .filter(user => user.toLowerCase().includes(keyword))
+                );
+                matchedUsers.forEach(u => activeUsers.add(u));
             }
 
-            // Reset "Select All" if anything is filtered
+            // Uncheck "All" filter when a keyword is typed
             const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
-            if (allFilter) allFilter.checked = activeUsers.size === 0;
+            if (allFilter) allFilter.checked = false;
 
-            renderMarkers(); // 🔁 re-render map markers
+            renderMarkers();
         });
 
         map.addListener('bounds_changed', () => {
@@ -118,12 +118,11 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const user = photo.user || 'Unknown';
-            const isSelectedUser = activeUsers.has(user);
-            const isUnfiltered = activeUsers.size === 0;
+            const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
+            const isPublic = photo.visibility === 'any';
 
             return (!selectedCountry || photo.country === selectedCountry) &&
-                (isUnfiltered || isSelectedUser) &&
+                (isPublic || isUserMatch) &&
                 photo.latitude && photo.longitude;
         });
 
