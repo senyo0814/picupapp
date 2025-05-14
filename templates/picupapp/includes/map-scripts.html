@@ -99,12 +99,52 @@
             renderMarkers();
         });
 
+        let updateFiltersTimeout;
         map.addListener('bounds_changed', () => {
-            const selectedCountry = document.getElementById('countryFilter')?.value || '';
-            if (window.filteredPhotos) {
-                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
-            }
+            clearTimeout(updateFiltersTimeout);
+            updateFiltersTimeout = setTimeout(() => {
+                const bounds = map.getBounds();
+                const selectedCountry = document.getElementById('countryFilter')?.value || '';
+
+                if (!bounds || !window.filteredPhotos) return;
+
+                // Get photos within the map view
+                const visiblePhotos = window.filteredPhotos.filter(photo => {
+                    if (!photo.latitude || !photo.longitude) return false;
+                    const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
+                    return bounds.contains(latLng);
+                });
+
+                // ✅ Update country count
+                updateCountryPhotoCount(visiblePhotos, selectedCountry);
+
+                // ✅ Update active users to only visible ones
+                activeUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
+
+                // ✅ Update "Select All" checkbox
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                const allRadio = document.querySelector('input[name="legendFilter"][value="all"]');
+                if (allRadio) {
+                    allRadio.checked =
+                        allUsers.size === activeUsers.size &&
+                        [...allUsers].every(u => activeUsers.has(u));
+                }
+
+                // ✅ Update legend buttons to reflect new active users
+                document.querySelectorAll('#legendList button[data-user]').forEach(btn => {
+                    const user = btn.getAttribute('data-user');
+                    if (activeUsers.has(user)) {
+                        btn.classList.add('bg-blue-100', 'text-blue-800', 'dark:bg-blue-600', 'dark:text-white', 'font-semibold');
+                    } else {
+                        btn.classList.remove('bg-blue-100', 'text-blue-800', 'dark:bg-blue-600', 'dark:text-white', 'font-semibold');
+                    }
+                });
+
+                // ✅ Re-render markers based on new user filter
+                renderMarkers();
+            }, 300);
         });
+
     }
 
     function renderMarkers() {
