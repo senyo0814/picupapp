@@ -82,14 +82,20 @@
         document.getElementById('legendSearch').addEventListener('input', () => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
             activeUsers = new Set();
-            allPhotos.forEach(p => {
-                const user = (p.user || 'Unknown');
-                if (user.toLowerCase().includes(keyword)) {
-                    activeUsers.add(user);
-                }
-            });
 
-            document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+            if (keyword.trim()) {
+                const matchedUsers = new Set(
+                    allPhotos
+                        .map(p => p.user || 'Unknown')
+                        .filter(user => user.toLowerCase().includes(keyword))
+                );
+                matchedUsers.forEach(u => activeUsers.add(u));
+            }
+
+            // Uncheck "All" filter when a keyword is typed
+            const allFilter = document.querySelector('input[name="legendFilter"][value="all"]');
+            if (allFilter) allFilter.checked = false;
+
             renderMarkers();
         });
 
@@ -112,8 +118,11 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
+            const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
+            const isPublic = photo.visibility === 'any';
+
             return (!selectedCountry || photo.country === selectedCountry) &&
-                (!activeUsers.size || activeUsers.has(photo.user || 'Unknown')) &&
+                (isPublic || isUserMatch) &&
                 photo.latitude && photo.longitude;
         });
 
