@@ -115,13 +115,12 @@
 
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
-            const isUserMatch = !activeUsers.size || activeUsers.has(photo.user || 'Unknown');
-            const isPublic = photo.visibility === 'any';
-
-            const userVisible = isPublic || isUserMatch;
+            const user = photo.user || 'Unknown';
+            const isUserMatch = activeUsers.size === 0 || activeUsers.has(user);
             const countryMatch = !selectedCountry || photo.country === selectedCountry;
 
-            return userVisible && countryMatch && photo.latitude && photo.longitude;
+            return isUserMatch && countryMatch && photo.latitude && photo.longitude;
+
         });
 
         window.filteredPhotos = filteredPhotos;
