@@ -3,7 +3,7 @@
     let map;
     let clusteredBounds = null;
     let clusterer = null;
-
+    let userManuallySelectedCountry = false;
 
     const globalUserColorMap = {};
     const allColors = [
@@ -27,21 +27,19 @@
             return map.getBounds()?.contains(latLng);
         });
 
-        // 🔍 Get unique countries in visible markers
-        const countries = new Set();
-        visiblePhotos.forEach(p => {
-            if (p.country) countries.add(p.country.trim());
-        });
-
+        const countries = new Set(visiblePhotos.map(p => p.country?.trim()).filter(Boolean));
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
 
         const count = visiblePhotos.length;
 
-        // ✅ Update count but never change filter selection
         if (nameEl && countEl && suffixEl) {
-            nameEl.textContent = selectedCountry || (countries.size === 1 ? [...countries][0] : 'Var Countries');
+            if (userManuallySelectedCountry) {
+                nameEl.textContent = selectedCountry || 'All Countries';
+            } else {
+                nameEl.textContent = countries.size === 1 ? [...countries][0] : 'Var Countries';
+            }
             countEl.textContent = count;
             suffixEl.textContent = count === 1 ? '' : 's';
         }
@@ -287,6 +285,7 @@
         });
 
         select.addEventListener('change', () => {
+            userManuallySelectedCountry = true;  // mark as manual
             renderMarkers();
         });
     }
