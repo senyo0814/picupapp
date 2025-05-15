@@ -104,6 +104,18 @@
                 updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
             }
         });
+
+        document.getElementById('legend-select-all')?.addEventListener('change', () => {
+            // Clear any manual user filters
+            activeUsers.clear();
+
+            // Clear search input
+            const searchInput = document.getElementById('legendSearch');
+            if (searchInput) searchInput.value = '';
+
+            renderMarkers();
+        });
+
     }
 
     function renderMarkers() {
