@@ -321,41 +321,7 @@
         applyThemeIcon(isDark);
     });
 
-    function updateFiltersFromMapBounds() {
-        if (!map || !window.filteredPhotos) return;
-
-        const bounds = map.getBounds();
-        const visiblePhotos = window.filteredPhotos.filter(photo => {
-            if (!photo.latitude || !photo.longitude) return false;
-            const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
-            return bounds.contains(latLng);
-        });
-
-        // 🌍 Update country dropdown
-        const countrySet = new Set(visiblePhotos.map(p => p.country).filter(Boolean));
-        const countryFilter = document.getElementById('countryFilter');
-        const currentValue = countryFilter?.value;
-
-        if (countryFilter && !currentValue) {
-            // Only auto-set when no country is selected
-            if (countrySet.size === 1) {
-                countryFilter.value = [...countrySet][0];
-            }
-        }
-
-        // 👤 Update legend based on visible users
-        const visibleUsers = new Set(visiblePhotos.map(p => p.user || 'Unknown'));
-        activeUsers = new Set(visibleUsers);
-
-        // Check if all users are visible
-        const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
-        document.querySelector('input[name="legendFilter"][value="all"]').checked =
-            allUsers.size === activeUsers.size;
-
-        // Trigger re-render
-        renderMarkers();
-    }
-
+    
 
 </script>
 
