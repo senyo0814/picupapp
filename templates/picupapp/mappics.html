@@ -146,7 +146,6 @@
             return map.getBounds()?.contains(latLng);
         });
 
-        // 🔍 Get unique countries in visible markers
         const countries = new Set();
         visiblePhotos.forEach(p => {
             if (p.country) countries.add(p.country.trim());
@@ -162,7 +161,7 @@
             if (countries.size === 1) {
                 nameEl.textContent = [...countries][0];
             } else {
-                nameEl.textContent = 'Var Countries';
+                nameEl.textContent = selectedCountry || 'All Countries';
             }
             countEl.textContent = count;
             suffixEl.textContent = count === 1 ? '' : 's';
@@ -224,19 +223,6 @@
                 updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
             }
         });
-    }
-
-    function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
-        const count = filteredPhotos.length;
-        const nameEl = document.getElementById('selectedCountryName');
-        const countEl = document.getElementById('photoCountForCountry');
-        const suffixEl = document.getElementById('pluralSuffix');
-
-        if (nameEl && countEl && suffixEl) {
-            nameEl.textContent = selectedCountry || 'All Countries';
-            countEl.textContent = count;
-            suffixEl.textContent = count === 1 ? '' : 's';
-        }
     }
 
     function renderMarkers() {
