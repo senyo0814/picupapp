@@ -2,6 +2,8 @@
     let markers = [];
     let map;
     let clusteredBounds = null;
+    let clusterer = null;
+
 
     const globalUserColorMap = {};
     const allColors = [
@@ -105,6 +107,11 @@
     }
 
     function renderMarkers() {
+        // 🔁 Clear previous markers and clusters
+        if (clusterer) {
+            clusterer.clearMarkers();
+            clusterer = null;
+        }
         markers.forEach(m => m.setMap(null));
         markers = [];
         clusteredBounds = null;
@@ -113,19 +120,19 @@
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
+        // 📦 Filter photos by user and country
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
             const user = photo.user || 'Unknown';
             const isUserMatch = activeUsers.size === 0 || activeUsers.has(user);
             const countryMatch = !selectedCountry || photo.country === selectedCountry;
-
             return isUserMatch && countryMatch && photo.latitude && photo.longitude;
-
         });
 
         window.filteredPhotos = filteredPhotos;
         updateCountryPhotoCount(filteredPhotos, selectedCountry);
 
+        // 🎨 Group photos by user for legend and marker coloring
         const userMarkersMap = {};
         filteredPhotos.forEach(photo => {
             const user = photo.user || 'Unknown';
@@ -139,76 +146,65 @@
 
         const createdMarkers = [];
 
+        // 📍 Create markers and legend items
         Object.entries(userMarkersMap).forEach(([user, photos]) => {
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
-
             const color = globalUserColorMap[user];
             const isActive = activeUsers.has(user);
 
+            // Legend item
             const li = document.createElement('li');
             li.innerHTML = `
-                <button data-user="${user}"
-                    class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
-                    <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
-                    <span>${highlightMatch(user, keyword)}</span>
-                </button>`;
+            <button data-user="${user}"
+                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                <span>${highlightMatch(user, keyword)}</span>
+            </button>`;
             legendList.appendChild(li);
 
+            // Markers
             photos.forEach(photo => {
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
                     position: pos,
                     icon: {
                         url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                            <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
-                                <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
-                            </svg>`)}`
+                        <svg xmlns='http://www.w3.org/2000/svg' width='24' height='36' viewBox='0 0 24 36' fill='${color}'>
+                            <path d='M12 0C7 0 3 4 3 9c0 6.5 9 18 9 18s9-11.5 9-18c0-5-4-9-9-9zM12 12.5c-2 0-3.5-1.5-3.5-3.5S10 5.5 12 5.5 15.5 7 15.5 9 14 12.5 12 12.5z'/>
+                        </svg>`)}`,
                     }
                 });
 
                 const popup = `
-                    <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
-                        <!-- Image fills container -->
-                        <img src="${photo.image_url}"
-                             class="absolute inset-0 w-full h-full object-cover cursor-pointer"
-                             onclick="showFullscreenImage('${photo.image_url}')" />
-
-                        <!-- Overlay: Bottom Info with blur and semi-transparent background -->
-                        <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
-                            <p class="font-semibold">
-                                ${user}
-                                ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
-                            </p>
-                            <p>${photo.comment || 'No comment'}</p>
-                            <p class="text-[10px] text-white/70">${photo.taken}</p>
-                        </div>
-                    </div>`;
+                <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
+                    <img src="${photo.image_url}"
+                         class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                         onclick="showFullscreenImage('${photo.image_url}')" />
+                    <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
+                        <p class="font-semibold">
+                            ${user}
+                            ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
+                        </p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-[10px] text-white/70">${photo.taken}</p>
+                    </div>
+                </div>`;
 
                 const infowindow = new google.maps.InfoWindow({ content: popup });
 
-                marker.addListener("click", () => {
-                    infowindow.open(map, marker);
-                });
-
-                infowindow.addListener('closeclick', () => {
-                    if (map && marker.getPosition()) {
-                        const center = marker.getPosition();
-                        const offsetLat = 0.0045; // ~500 meters
-                        const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
-
-                        const bounds = new google.maps.LatLngBounds(
-                            new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
-                            new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
-                        );
-
-                        setTimeout(() => {
-                            google.maps.event.trigger(map, 'resize');
-                            setTimeout(() => {
-                                map.fitBounds(bounds);
-                                console.log(`✅ Fit to ~500m radius around ${center.toUrlValue()}`);
-                            }, 200);
-                        }, 200);
-                    }
+                marker.addListener("click", () => infowindow.open(map, marker));
+                infowindow.addListener("closeclick", () => {
+                    const center = marker.getPosition();
+                    const offsetLat = 0.0045;
+                    const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
+                    const bounds = new google.maps.LatLngBounds(
+                        new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
+                        new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
+                    );
+                    setTimeout(() => {
+                        google.maps.event.trigger(map, 'resize');
+                        setTimeout(() => map.fitBounds(bounds), 200);
+                    }, 200);
                 });
 
                 createdMarkers.push(marker);
@@ -218,15 +214,17 @@
 
         clusteredBounds = bounds;
 
+        // ✅ Add markers to map
         if (createdMarkers.length > 0) {
             map.fitBounds(clusteredBounds);
-            new markerClusterer.MarkerClusterer({
+            clusterer = new markerClusterer.MarkerClusterer({
                 map,
                 markers: createdMarkers,
                 renderer: clusterRenderer
             });
         }
 
+        // ✅ Legend button logic
         legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const user = btn.getAttribute('data-user');
@@ -235,7 +233,6 @@
                 } else {
                     activeUsers.add(user);
                 }
-                document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
 
                 const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
                 document.querySelector('input[name="legendFilter"][value="all"]').checked =
