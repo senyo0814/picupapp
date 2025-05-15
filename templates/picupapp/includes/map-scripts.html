@@ -336,8 +336,11 @@
         const countryFilter = document.getElementById('countryFilter');
         const currentValue = countryFilter?.value;
 
-        if (countryFilter && currentValue && !countrySet.has(currentValue)) {
-            countryFilter.value = ""; // Reset to "All Countries"
+        if (countryFilter && !currentValue) {
+            // Only auto-set when no country is selected
+            if (countrySet.size === 1) {
+                countryFilter.value = [...countrySet][0];
+            }
         }
 
         // 👤 Update legend based on visible users
