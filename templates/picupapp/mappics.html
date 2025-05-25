@@ -3,42 +3,56 @@
 {% load humanize %}
 
 {% block content %}
-<!-- Bootstrap Container -->
+<!-- Container -->
 <div class="container-fluid px-4 py-3">
 
-    <!-- Row 1: Logo + Controls -->
+    <!-- Row 1: Title and Controls -->
     <div class="d-flex flex-wrap flex-sm-nowrap align-items-center justify-content-between gap-3 mb-3">
+        <!-- Logo -->
         <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="img-fluid" style="height: 40px;" />
 
-        <div class="d-flex align-items-center border rounded px-3 py-2 gap-2">
-            <a href="{% url 'picupapp:landing' %}" class="text-primary"><i class="fa-solid fa-arrow-left"></i></a>
-            <a href="{% url 'picupapp:about' %}?next=landing" class="text-primary"><i class="fas fa-info-circle"></i></a>
+        <!-- Spacer (automatically handled by justify-content-between) -->
+        <!-- Icons Group -->
+        <div class="d-flex align-items-center border rounded px-3 py-2 gap-3">
+            <a href="{% url 'picupapp:landing' %}" class="text-primary">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <a href="{% url 'picupapp:about' %}?next=landing" class="text-primary">
+                <i class="fas fa-info-circle"></i>
+            </a>
             <div id="darkModeToggleContainer" class="cursor-pointer">
                 <i id="darkModeIcon" class="fas fa-moon text-primary"></i>
             </div>
             {% if user.is_authenticated %}
-            <a href="{% url 'picupapp:change_profile' %}" class="text-primary"><i class="fas fa-user-cog"></i></a>
+            <a href="{% url 'picupapp:change_profile' %}" class="text-primary">
+                <i class="fas fa-user-cog"></i>
+            </a>
             {% endif %}
         </div>
     </div>
 
-    <!-- Row 2: Legend and Search -->
-    <div id="legend" class="mb-3 p-3 bg-light border rounded shadow-sm small overflow-auto">
+    <!-- Row 2: Legend with Search -->
+    <div id="legend" class="mb-4 p-3 bg-light border rounded shadow-sm small overflow-auto">
+        <!-- Search Box -->
         <div class="mb-2 d-flex align-items-center gap-2">
-            <input type="text" id="legendSearch" placeholder="Search user..." class="form-control form-control-sm w-100" style="max-width: 250px;">
+            <input type="text" id="legendSearch" placeholder="Search user..."
+                   class="form-control form-control-sm w-100" style="max-width: 250px;">
         </div>
+
+        <!-- Horizontal Legend -->
         <ul id="legendList" class="d-flex flex-wrap gap-3 list-unstyled mb-0">
             <li>
                 <label class="form-check-label text-dark">
-                    <input type="radio" name="legendFilter" value="all" class="form-check-input me-2" id="legend-select-all">
+                    <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="form-check-input me-2" />
                     Select All
                 </label>
             </li>
         </ul>
     </div>
 
-    <!-- Row 3: Filters -->
-    <div class="mb-3 d-flex flex-column flex-sm-row justify-content-between gap-3 text-secondary">
+    <!-- Row 3: Filter and Count -->
+    <div class="mb-4 d-flex flex-column flex-sm-row justify-content-between gap-3 text-secondary small">
+        <!-- Left: Country Filter -->
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
                 <label for="countryFilter" class="fw-semibold">Country:</label>
@@ -55,7 +69,8 @@
             </div>
         </div>
 
-        <div class="text-end small">
+        <!-- Right: User Counts -->
+        <div class="text-end">
             {% if user.is_authenticated %}
             <div>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</div>
             <div>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</div>
@@ -69,69 +84,96 @@
     <div class="position-relative rounded border shadow mb-4" style="height: 60vh;">
         <div id="map" class="h-100 w-100 rounded"></div>
     </div>
-</div>
 
-<!-- Fullscreen Modal -->
-<div id="fullscreenImageModal" class="modal fade" tabindex="-1" onclick="closeImageModal()" style="background-color: rgba(0,0,0,0.9);">
-    <div class="modal-dialog modal-dialog-centered modal-fullscreen">
-        <div class="modal-content bg-transparent border-0">
-            <div class="modal-body text-center">
-                <img id="fullscreenImage" class="img-fluid" alt="Fullscreen" />
+    <!-- Fullscreen Modal -->
+    <div id="fullscreenImageModal" class="modal fade" tabindex="-1" style="background-color: rgba(0,0,0,0.9);" onclick="closeImageModal()">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
+            <div class="modal-content bg-transparent border-0">
+                <div class="modal-body text-center">
+                    <img id="fullscreenImage" class="img-fluid" alt="Fullscreen" />
+                </div>
             </div>
         </div>
     </div>
+
 </div>
 
-<!-- JSON Data -->
 <script id="userPhotosJson" type="application/json">{{ user_photos_json }}</script>
 <script id="otherPhotosJson" type="application/json">{{ other_photos_json }}</script>
 
-<!-- Bootstrap JS + Google Maps Cluster -->
-<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap"></script>
-
-<!-- App Script -->
 <script>
     const userPhotos = JSON.parse(document.getElementById('userPhotosJson').textContent);
     const otherPhotos = JSON.parse(document.getElementById('otherPhotosJson').textContent);
     const allPhotos = [...userPhotos, ...otherPhotos];
-    let markers = [], map, clusterer = null, clusteredBounds = null;
-    const globalUserColorMap = {}, allColors = ['#e74c3c', '#3498db', '#2ecc71', '#9b59b6', '#f1c40f', '#e67e22', '#1abc9c', '#34495e', '#d35400', '#7f8c8d', '#8e44ad', '#16a085'];
-    let colorIndex = 0, activeUsers = new Set();
+</script>
+
+<script>
+
+    let markers = [];
+    let map;
+
+    let clusteredBounds = null;
+    let clusterer = null;
+
+    const globalUserColorMap = {};
+    const allColors = [
+        '#e74c3c', '#3498db', '#2ecc71', '#9b59b6',
+        '#f1c40f', '#e67e22', '#1abc9c', '#34495e',
+        '#d35400', '#7f8c8d', '#8e44ad', '#16a085'
+    ];
+    let colorIndex = 0;
+    let activeUsers = new Set();
 
     function highlightMatch(text, keyword) {
         if (!keyword) return text;
         const regex = new RegExp(`(${keyword})`, 'ig');
-        return text.replace(regex, '<mark class="bg-warning text-dark">$1</mark>');
+        return text.replace(regex, '<mark class="bg-yellow-300 dark:bg-yellow-500 text-black dark:text-white">$1</mark>');
     }
+
     function updateCountryPhotoCount(filteredPhotos, selectedCountry) {
-        const visiblePhotos = filteredPhotos.filter(p => {
-            if (!map || !p.latitude || !p.longitude) return false;
-            const latLng = new google.maps.LatLng(p.latitude, p.longitude);
+        const visiblePhotos = filteredPhotos.filter(photo => {
+            if (!map || !photo.latitude || !photo.longitude) return false;
+            const latLng = new google.maps.LatLng(photo.latitude, photo.longitude);
             return map.getBounds()?.contains(latLng);
         });
-        const countries = new Set(visiblePhotos.map(p => p.country?.trim()));
+
+        const countries = new Set();
+        visiblePhotos.forEach(p => {
+            if (p.country) countries.add(p.country.trim());
+        });
+
         const nameEl = document.getElementById('selectedCountryName');
         const countEl = document.getElementById('photoCountForCountry');
         const suffixEl = document.getElementById('pluralSuffix');
-        nameEl.textContent = countries.size === 1 ? [...countries][0] : selectedCountry || 'All Countries';
-        countEl.textContent = visiblePhotos.length;
-        suffixEl.textContent = visiblePhotos.length === 1 ? '' : 's';
+
+        const count = visiblePhotos.length;
+
+        if (nameEl && countEl && suffixEl) {
+            if (countries.size === 1) {
+                nameEl.textContent = [...countries][0];
+            } else {
+                nameEl.textContent = selectedCountry || 'All Countries';
+            }
+            countEl.textContent = count;
+            suffixEl.textContent = count === 1 ? '' : 's';
+        }
     }
 
     const clusterRenderer = {
         render: ({ count, position }) => {
             const isDark = document.documentElement.classList.contains("dark");
             const fillColor = isDark ? "#facc15" : "#2563eb";
-            const textColor = isDark ? "#000" : "#fff";
+            const textColor = isDark ? "#000000" : "#ffffff";
+
             return new google.maps.Marker({
                 position,
                 icon: {
                     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`
-                    <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
-                        <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" fill="${textColor}">${count}</text>
-                    </svg>`)}`,
+                        <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="22" fill="${fillColor}" stroke="white" stroke-width="4"/>
+                            <text x="50%" y="50%" text-anchor="middle" dy=".3em" font-size="16" font-family="Arial" fill="${textColor}">${count}</text>
+                        </svg>
+                    `)}`,
                     scaledSize: new google.maps.Size(50, 50),
                 },
                 zIndex: google.maps.Marker.MAX_ZINDEX + count,
@@ -139,15 +181,56 @@
         }
     };
 
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            zoom: 2,
+            center: { lat: 37.7749, lng: -122.4194 }
+        });
+
+        renderMarkers();
+        populateCountryDropdown();
+
+        document.getElementById('legendSearch').addEventListener('input', () => {
+            const keyword = document.getElementById('legendSearch').value.toLowerCase();
+
+            // Update activeUsers to match search
+            activeUsers = new Set();
+            allPhotos.forEach(p => {
+                const user = (p.user || 'Unknown');
+                if (user.toLowerCase().includes(keyword)) {
+                    activeUsers.add(user);
+                }
+            });
+
+            // Uncheck Select All if search narrows result
+            document.querySelector('input[name="legendFilter"][value="all"]').checked = false;
+
+            renderMarkers();
+        });
+
+        map.addListener('bounds_changed', () => {
+            const selectedCountry = document.getElementById('countryFilter')?.value || '';
+            if (window.filteredPhotos) {
+                updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
+            }
+        });
+    }
+
     function renderMarkers() {
-        if (clusterer) clusterer.clearMarkers();
+        // 🔁 Clear previous markers and clusters
+        if (clusterer) {
+            clusterer.clearMarkers();
+            clusterer = null;
+        }
         markers.forEach(m => m.setMap(null));
         markers = [];
+        clusteredBounds = null;
 
         const bounds = new google.maps.LatLngBounds();
         const legendList = document.getElementById('legendList');
         legendList.querySelectorAll('button[data-user]').forEach(el => el.parentElement.remove());
 
+        // 📦 Filter photos by user and country
         const selectedCountry = document.getElementById('countryFilter')?.value || "";
         const filteredPhotos = allPhotos.filter(photo => {
             const user = photo.user || 'Unknown';
@@ -159,25 +242,37 @@
         window.filteredPhotos = filteredPhotos;
         updateCountryPhotoCount(filteredPhotos, selectedCountry);
 
+        // 🎨 Group photos by user for legend and marker coloring
         const userMarkersMap = {};
         filteredPhotos.forEach(photo => {
             const user = photo.user || 'Unknown';
-            globalUserColorMap[user] ||= allColors[colorIndex++ % allColors.length];
-            userMarkersMap[user] ||= [];
+            if (!globalUserColorMap[user]) {
+                globalUserColorMap[user] = allColors[colorIndex % allColors.length];
+                colorIndex++;
+            }
+            if (!userMarkersMap[user]) userMarkersMap[user] = [];
             userMarkersMap[user].push(photo);
         });
 
+        const createdMarkers = [];
+
+        // 📍 Create markers and legend items
         Object.entries(userMarkersMap).forEach(([user, photos]) => {
-            const color = globalUserColorMap[user];
             const keyword = document.getElementById('legendSearch').value.toLowerCase();
+            const color = globalUserColorMap[user];
+            const isActive = activeUsers.has(user);
+
+            // Legend item
             const li = document.createElement('li');
             li.innerHTML = `
-        <button data-user="${user}" class="btn btn-sm w-100 text-start ${activeUsers.has(user) ? 'btn-primary text-white' : 'btn-outline-secondary'}">
-            <span class="me-2" style="display:inline-block;width:10px;height:10px;background:${color};border-radius:50%;"></span>
-            ${highlightMatch(user, keyword)}
-        </button>`;
+            <button data-user="${user}"
+                class="legend-btn px-2 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-200 hover:text-blue-600 transition w-full text-left ${isActive ? 'bg-blue-100 text-blue-800 dark:bg-blue-600 dark:text-white font-semibold' : ''}">
+                <span class="inline-block w-3 h-3 rounded-full" style="background-color: ${color}"></span>
+                <span>${highlightMatch(user, keyword)}</span>
+            </button>`;
             legendList.appendChild(li);
 
+            // Markers
             photos.forEach(photo => {
                 const pos = { lat: photo.latitude, lng: photo.longitude };
                 const marker = new google.maps.Marker({
@@ -189,106 +284,168 @@
                         </svg>`)}`,
                     }
                 });
+
                 const popup = `
-                <div class="card">
-                    <img src="${photo.image_url}" class="card-img-top" style="cursor:pointer" onclick="showFullscreenImage('${photo.image_url}')">
-                    <div class="card-body p-2">
-                        <h6 class="card-title">${user} ${photo.visibility === 'private' ? '<i class="fas fa-lock text-muted" title="Private"></i>' : ''}</h6>
-                        <p class="card-text">${photo.comment || 'No comment'}</p>
-                        <p class="text-muted small">${photo.taken}</p>
+                <div class="relative w-[300px] h-[300px] overflow-hidden rounded shadow">
+                    <img src="${photo.image_url}"
+                         class="absolute inset-0 w-full h-full object-cover cursor-pointer"
+                         onclick="showFullscreenImage('${photo.image_url}')" />
+                    <div class="absolute bottom-0 w-full text-white text-xs px-2 py-2 bg-black/40 backdrop-blur-sm">
+                        <p class="font-semibold">
+                            ${user}
+                            ${photo.visibility === 'private' ? ' <i class="fas fa-lock ml-1 text-white/70" title="Private photo"></i>' : ''}
+                        </p>
+                        <p>${photo.comment || 'No comment'}</p>
+                        <p class="text-[10px] text-white/70">${photo.taken}</p>
                     </div>
                 </div>`;
+
                 const infowindow = new google.maps.InfoWindow({ content: popup });
+
                 marker.addListener("click", () => infowindow.open(map, marker));
-                markers.push(marker);
+                infowindow.addListener("closeclick", () => {
+                    const center = marker.getPosition();
+                    const offsetLat = 0.0045;
+                    const offsetLng = 0.0045 / Math.cos(center.lat() * (Math.PI / 180));
+                    const bounds = new google.maps.LatLngBounds(
+                        new google.maps.LatLng(center.lat() - offsetLat, center.lng() - offsetLng),
+                        new google.maps.LatLng(center.lat() + offsetLat, center.lng() + offsetLng)
+                    );
+                    setTimeout(() => {
+                        google.maps.event.trigger(map, 'resize');
+                        setTimeout(() => map.fitBounds(bounds), 200);
+                    }, 200);
+                });
+
+                createdMarkers.push(marker);
                 bounds.extend(pos);
             });
         });
 
-        if (markers.length > 0) {
-            map.fitBounds(bounds);
-            clusterer = new markerClusterer.MarkerClusterer({ map, markers, renderer: clusterRenderer });
+        clusteredBounds = bounds;
+
+        // ✅ Add markers to map
+        if (createdMarkers.length > 0) {
+            map.fitBounds(clusteredBounds);
+            clusterer = new markerClusterer.MarkerClusterer({
+                map,
+                markers: createdMarkers,
+                renderer: clusterRenderer
+            });
         }
 
-        document.querySelectorAll('button[data-user]').forEach(btn => {
+        // ✅ Legend button logic
+        legendList.querySelectorAll('button[data-user]').forEach(btn => {
             btn.addEventListener('click', () => {
                 const user = btn.getAttribute('data-user');
-                activeUsers.has(user) ? activeUsers.delete(user) : activeUsers.add(user);
-                document.getElementById('legend-select-all').checked = false;
+                if (activeUsers.has(user)) {
+                    activeUsers.delete(user);
+                } else {
+                    activeUsers.add(user);
+                }
+
+                const allUsers = new Set(allPhotos.map(p => p.user || 'Unknown'));
+                document.querySelector('input[name="legendFilter"][value="all"]').checked =
+                    allUsers.size === activeUsers.size &&
+                    [...allUsers].every(u => activeUsers.has(u));
+
                 renderMarkers();
             });
         });
     }
+</script>
 
-    function initMap() {
-        map = new google.maps.Map(document.getElementById('map'), {
-            zoom: 2,
-            center: { lat: 37.7749, lng: -122.4194 }
-        });
-        renderMarkers();
-        populateCountryDropdown();
+<script>
+    const darkIcon = document.getElementById('darkModeIcon');
+    const darkContainer = document.getElementById('darkModeToggleContainer');
 
-        document.getElementById('legendSearch').addEventListener('input', () => {
-            const keyword = document.getElementById('legendSearch').value.toLowerCase();
-            activeUsers = new Set();
-            allPhotos.forEach(p => {
-                const user = p.user || 'Unknown';
-                if (user.toLowerCase().includes(keyword)) activeUsers.add(user);
-            });
-            document.getElementById('legend-select-all').checked = false;
-            renderMarkers();
-        });
-
-        map.addListener('bounds_changed', () => {
-            const selectedCountry = document.getElementById('countryFilter')?.value || '';
-            if (window.filteredPhotos) updateCountryPhotoCount(window.filteredPhotos, selectedCountry);
-        });
+    function applyThemeIcon(isDark) {
+        darkIcon.classList.remove('fa-sun', 'fa-moon');
+        darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
+        darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
     }
 
+    const prefersDark = localStorage.getItem('theme') === 'dark' ||
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    if (prefersDark) {
+        document.documentElement.classList.add('dark');
+        applyThemeIcon(true);
+    } else {
+        document.documentElement.classList.remove('dark');
+        applyThemeIcon(false);
+    }
+
+    darkContainer.addEventListener('click', () => {
+        const isDark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        applyThemeIcon(isDark);
+    });
+</script>
+
+<script>
+    let activeCountry = '';
+
     function populateCountryDropdown() {
+        const countrySet = new Set();
+        allPhotos.forEach(p => {
+            if (p.country && !countrySet.has(p.country)) {
+                countrySet.add(p.country);
+            }
+        });
+
         const select = document.getElementById('countryFilter');
-        select.innerHTML = '<option value="">All Countries</option>';
-        const unique = [...new Set(allPhotos.map(p => p.country).filter(Boolean))];
-        unique.sort().forEach(country => {
+        select.innerHTML = '<option value="">All Countries</option>'; // Clear duplicates
+
+        [...countrySet].sort().forEach(country => {
             const opt = document.createElement('option');
             opt.value = country;
             opt.textContent = country;
             select.appendChild(opt);
         });
-        select.addEventListener('change', () => renderMarkers());
+
+        select.addEventListener('change', () => {
+            activeCountry = select.value;
+            renderMarkers();
+        });
     }
 
+    // Call it after allPhotos is defined
+    document.addEventListener('DOMContentLoaded', populateCountryDropdown);
+</script>
+<script>
     function showFullscreenImage(src) {
-        const modal = new bootstrap.Modal(document.getElementById('fullscreenImageModal'));
-        document.getElementById('fullscreenImage').src = src;
-        modal.show();
+        const modal = document.getElementById('fullscreenImageModal');
+        const img = document.getElementById('fullscreenImage');
+        img.src = src;
+        modal.classList.remove('hidden');
     }
+
     function closeImageModal() {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('fullscreenImageModal'));
-        if (modal) modal.hide();
+        document.getElementById('fullscreenImageModal').classList.add('hidden');
         document.getElementById('fullscreenImage').src = '';
     }
-    function applyThemeIcon(isDark) {
-        const darkIcon = document.getElementById('darkModeIcon');
-        darkIcon.classList.remove('fa-sun', 'fa-moon');
-        darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
-        darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-        const isDark = localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        document.documentElement.classList.toggle('dark', isDark);
-        applyThemeIcon(isDark);
-        document.getElementById('darkModeToggleContainer')?.addEventListener('click', () => {
-            const newDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', newDark ? 'dark' : 'light');
-            applyThemeIcon(newDark);
-            updateLogoForTheme();
-        });
-    });
+</script>
+<script>
     function updateLogoForTheme() {
         const isDark = document.documentElement.classList.contains('dark');
         const logo = document.getElementById('appLogo');
         logo.src = isDark ? "{% static 'img/logosidedark.png' %}" : "{% static 'img/logoside.png' %}";
     }
+
+    // Run on page load
+    document.addEventListener('DOMContentLoaded', updateLogoForTheme);
+
+    // Hook into dark mode toggle
+    document.getElementById('darkModeToggleContainer')?.addEventListener('click', () => {
+        setTimeout(updateLogoForTheme, 100); // Delay slightly to allow class toggle
+    });
+</script>
+
+
+<script src="https://unpkg.com/@googlemaps/markerclusterer/dist/index.min.js"></script>
+
+<script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDD-kbmr3w3oN_M68drVB4ETtTmr3PGwn8&callback=initMap">
 </script>
 {% endblock %}
