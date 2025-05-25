@@ -1,9 +1,55 @@
-picupapp-f9caf3715baf.json
-*.json
-.env
-.env
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+env/
+venv/
+.venv/
+pip-log.txt
+
+# === Django ===
+*.sqlite3
+*.log
+*.pot
+*.pyc
 db.sqlite3
-data/db.sqlite3
+media/
+staticfiles/
+local_settings.py
+.env
+.env.*
+
+# === VS Code / Visual Studio ===
+.vscode/
 .vs/
 
+# === OS-generated files ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon?
+Desktop.ini
 
+# === Render build artifacts ===
+*.render-build/
+render.yaml
+
+# === Google credentials (for Render use Secret Files instead) ===
+google-service-account.json
+*.json
+
+# === Node/npm (if using Tailwind or npm builds) ===
+node_modules/
+package-lock.json
+npm-debug.log
+yarn-error.log
+
+# === JetBrains IDEs (if applicable) ===
+.idea/
+*.iml
