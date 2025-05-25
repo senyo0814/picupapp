@@ -9,12 +9,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="PicUp">
     <meta name="theme-color" content="#2196f3">
-    <script src="https://cdn.jsdelivr.net/npm/exifreader@4.12.0/dist/exif-reader.min.js"></script>
+    <!-- Preload critical assets -->
+    <link rel="preload" href="{% static 'img/logoside.png' %}" as="image">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- External CSS (Tailwind or replace with Bootstrap if needed) -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
 
-    <!-- Tailwind CDN first -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" defer>
+
 
     <!-- Then configure it -->
     <script>
@@ -313,6 +316,9 @@
     <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
         <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
+    <!-- Scripts -->
+    <script defer src="https://cdn.jsdelivr.net/npm/exifreader@4.12.0/dist/exif-reader.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/js/all.min.js"></script>
     <script>
         // Show spinner on page load
         window.addEventListener('load', () => {
@@ -489,28 +495,28 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                                                            <tr>
-                                                                                                                <td class="border px-4 py-2">${file.name}</td>
-                                                                                                                <td class="border px-4 py-2">${date}</td>
-                                                                                                                <td class="border px-4 py-2">${model}</td>
-                                                                                                                <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                                                <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                                                <td class="border px-4 py-2">
-                                                                                                                    ${lat && lon
+                                                                                                                <tr>
+                                                                                                                    <td class="border px-4 py-2">${file.name}</td>
+                                                                                                                    <td class="border px-4 py-2">${date}</td>
+                                                                                                                    <td class="border px-4 py-2">${model}</td>
+                                                                                                                    <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
+                                                                                                                    <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
+                                                                                                                    <td class="border px-4 py-2">
+                                                                                                                        ${lat && lon
                                 ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
                                 : 'N/A'}
-                                                                                                                </td>
-                                                                                                            </tr>
-                                                                                                        `;
+                                                                                                                    </td>
+                                                                                                                </tr>
+                                                                                                            `;
                         metadataWrapper.style.display = 'block';
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                                                <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                                                <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                                                <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                                            `;
+                                                                                                                    <input type="hidden" name="latitude_${index}" value="${lat}">
+                                                                                                                    <input type="hidden" name="longitude_${index}" value="${lon}">
+                                                                                                                    <input type="hidden" name="photo_taken_${index}" value="${date}">
+                                                                                                                `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
