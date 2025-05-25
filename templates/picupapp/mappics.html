@@ -3,99 +3,108 @@
 {% load humanize %}
 
 {% block content %}
-<!-- Container -->
-<div class="container-fluid px-4 py-3">
+<!-- Row 1: Title and Controls - Horizontal Layout -->
+<div class="flex items-center justify-between gap-6 mb-4 flex-wrap sm:flex-nowrap">
+    <!-- Logo -->
+    <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="h-10 w-auto" />
 
-    <!-- Row 1: Title and Controls -->
-    <div class="d-flex flex-wrap flex-sm-nowrap align-items-center justify-content-between gap-3 mb-3">
-        <!-- Logo -->
-        <img id="appLogo" src="{% static 'img/logoside.png' %}" alt="PicUp App Logo" class="img-fluid" style="height: 40px;" />
+    <!-- Spacer -->
+    <div class="flex-grow"></div>
 
-        <!-- Spacer (automatically handled by justify-content-between) -->
-        <!-- Icons Group -->
-        <div class="d-flex align-items-center border rounded px-3 py-2 gap-3">
-            <a href="{% url 'picupapp:landing' %}" class="text-primary">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <a href="{% url 'picupapp:about' %}?next=landing" class="text-primary">
-                <i class="fas fa-info-circle"></i>
-            </a>
-            <div id="darkModeToggleContainer" class="cursor-pointer">
-                <i id="darkModeIcon" class="fas fa-moon text-primary"></i>
-            </div>
-            {% if user.is_authenticated %}
-            <a href="{% url 'picupapp:change_profile' %}" class="text-primary">
-                <i class="fas fa-user-cog"></i>
-            </a>
-            {% endif %}
+    <!-- Icons Group: Home, About, Dark Mode, Change Profile -->
+    <div class="flex items-center border border-gray-400 rounded px-3 py-2 gap-3">
+        <!-- Home Icon -->
+        <a href="{% url 'picupapp:landing' %}" class="text-blue-600 dark:text-gray-300">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <!-- About Icon -->
+        <a href="{% url 'picupapp:about' %}?next=landing" class="text-blue-600 dark:text-gray-300">
+            <i class="fas fa-info-circle"></i>
+        </a>
+
+        <!-- Dark Mode Toggle Icon -->
+        <div id="darkModeToggleContainer" onclick="toggleDarkMode()" class="cursor-pointer">
+            <i id="darkModeIcon" class="fas fa-moon text-blue-600 dark:text-yellow-400 transition"></i>
+        </div>
+
+        <!-- Change Profile Icon -->
+        {% if user.is_authenticated %}
+        <a href="{% url 'picupapp:change_profile' %}" class="text-blue-600 dark:text-gray-300">
+            <i class="fas fa-user-cog"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+
+<!-- Row 2: Horizontal Legend -->
+<!-- Legend Row with Search -->
+<!-- Legend Row -->
+<div id="legend"
+     class="mb-4 w-full px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow text-sm overflow-x-auto">
+
+    <!-- Search Box -->
+    <div class="mb-2 flex items-center gap-2">
+        <input type="text" id="legendSearch" placeholder="Search user..."
+               class="w-full sm:max-w-xs px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-400 text-sm focus:outline-none focus:ring focus:ring-blue-400">
+    </div>
+
+    <!-- Horizontal Legend -->
+    <ul id="legendList" class="flex flex-wrap items-center gap-4">
+        <li>
+            <label for="legend-select-all"
+                   class="flex items-center gap-2 text-gray-700 dark:text-gray-200 cursor-pointer">
+                <input type="radio" id="legend-select-all" name="legendFilter" value="all"
+                       class="accent-blue-600" />
+                <span>Select All</span>
+            </label>
+        </li>
+    </ul>
+</div>
+<div class="mb-4 flex flex-col sm:flex-row justify-between gap-4 text-sm text-gray-600 dark:text-gray-300">
+
+    <!-- Left Side: Country Filter + Count -->
+    <div class="flex flex-col text-gray-700 dark:text-gray-200">
+        <div class="flex items-center gap-2">
+            <label for="countryFilter" class="font-semibold">Country:</label>
+            <select id="countryFilter" class="border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+                <option value="">All Countries</option>
+                {% for country in countries %}
+                <option value="{{ country }}">{{ country }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div id="countryPhotoCount" class="mt-1">
+            Showing photos from <strong id="selectedCountryName">All Countries</strong>:
+            <strong id="photoCountForCountry">0</strong> photo<span id="pluralSuffix">s</span>
         </div>
     </div>
 
-    <!-- Row 2: Legend with Search -->
-    <div id="legend" class="mb-4 p-3 bg-light border rounded shadow-sm small overflow-auto">
-        <!-- Search Box -->
-        <div class="mb-2 d-flex align-items-center gap-2">
-            <input type="text" id="legendSearch" placeholder="Search user..."
-                   class="form-control form-control-sm w-100" style="max-width: 250px;">
-        </div>
-
-        <!-- Horizontal Legend -->
-        <ul id="legendList" class="d-flex flex-wrap gap-3 list-unstyled mb-0">
-            <li>
-                <label class="form-check-label text-dark">
-                    <input type="radio" id="legend-select-all" name="legendFilter" value="all" class="form-check-input me-2" />
-                    Select All
-                </label>
-            </li>
-        </ul>
+    <!-- Right Side: Upload / Shared Count -->
+    <div class="flex flex-col sm:items-end text-gray-600 dark:text-gray-300">
+        {% if user.is_authenticated %}
+        <span>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</span>
+        <span>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+        {% else %}
+        <span>Publicly shared photos: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</span>
+        {% endif %}
     </div>
 
-    <!-- Row 3: Filter and Count -->
-    <div class="mb-4 d-flex flex-column flex-sm-row justify-content-between gap-3 text-secondary small">
-        <!-- Left: Country Filter -->
-        <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <label for="countryFilter" class="fw-semibold">Country:</label>
-                <select id="countryFilter" class="form-select form-select-sm bg-light text-dark w-auto">
-                    <option value="">All Countries</option>
-                    {% for country in countries %}
-                    <option value="{{ country }}">{{ country }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div id="countryPhotoCount" class="small">
-                Showing photos from <strong id="selectedCountryName">All Countries</strong>:
-                <strong id="photoCountForCountry">0</strong> photo<span id="pluralSuffix">s</span>
-            </div>
-        </div>
+</div>
 
-        <!-- Right: User Counts -->
-        <div class="text-end">
-            {% if user.is_authenticated %}
-            <div>You uploaded: <strong>{{ user_photo_count }}</strong> photo{{ user_photo_count|pluralize }}</div>
-            <div>Shared with you: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</div>
-            {% else %}
-            <div>Publicly shared photos: <strong>{{ shared_photo_count }}</strong> photo{{ shared_photo_count|pluralize }}</div>
-            {% endif %}
-        </div>
-    </div>
+<div class="relative h-[60vh] w-full rounded shadow border border-gray-300 dark:border-gray-600">
+    <div id="map" class="h-full w-full rounded"></div>
+</div>
 
-    <!-- Row 4: Map -->
-    <div class="position-relative rounded border shadow mb-4" style="height: 60vh;">
-        <div id="map" class="h-100 w-100 rounded"></div>
-    </div>
-
-    <!-- Fullscreen Modal -->
-    <div id="fullscreenImageModal" class="modal fade" tabindex="-1" style="background-color: rgba(0,0,0,0.9);" onclick="closeImageModal()">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen">
-            <div class="modal-content bg-transparent border-0">
-                <div class="modal-body text-center">
-                    <img id="fullscreenImage" class="img-fluid" alt="Fullscreen" />
-                </div>
-            </div>
-        </div>
-    </div>
-
+<!-- Fullscreen Modal -->
+<div id="fullscreenImageModal"
+     class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999] hidden"
+     onclick="closeImageModal()">
+    <img id="fullscreenImage"
+         class="max-w-full max-h-full object-contain cursor-zoom-out"
+         src=""
+         alt="Fullscreen" />
 </div>
 
 <script id="userPhotosJson" type="application/json">{{ user_photos_json }}</script>

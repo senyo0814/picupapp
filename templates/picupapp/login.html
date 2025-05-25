@@ -1,79 +1,90 @@
-<!-- login.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>PicUp Login</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light d-flex justify-content-center align-items-center min-vh-100">
+    <title>PicUp</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#2196f3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="PicUp">
 
-    <div class="card shadow p-4 w-100" style="max-width: 400px;">
-        <div class="text-center mb-3">
-            <img src="{% static 'img/logo.png' %}" alt="PicUp Logo" class="img-fluid" style="max-height: 100px;">
-            <a href="{% url 'picupapp:about' %}?next=landing" class="d-block mt-2 text-primary text-decoration-none">
-                <i class="bi bi-info-circle me-1"></i> About
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/logo192.png' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+
+    <div class="bg-white p-6 sm:p-8 rounded shadow-md w-full max-w-md">
+        <!-- Logo -->
+        <!-- Logo and Title -->
+        <div class="flex flex-col items-center space-y-1">
+            <img id="appLogo" src="{% static 'img/logo.png' %}" alt="PicUp App Logo" class="h-40" />
+            <a href="{% url 'picupapp:about' %}?next=landing"
+               class="text-sm text-blue-600 dark:text-gray-300 hover:underline">
+                <i class="fas fa-info-circle mr-1 text-blue-600 dark:text-gray-300"></i> About
             </a>
         </div>
+
 
         {% if error %}
-        <div class="alert alert-danger text-center">{{ error }}</div>
+        <p class="text-red-500 text-sm mb-4 text-center">{{ error }}</p>
         {% endif %}
 
-        <form method="post">
+        <form method="post" class="space-y-4">
             {% csrf_token %}
-            <div class="mb-3">
-                <input type="text" name="username" class="form-control" placeholder="Username" required>
-            </div>
-            <div class="mb-3">
-                <input type="password" name="password" class="form-control" placeholder="Password" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">Login</button>
+            <input type="text" name="username" placeholder="Username" required
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+            <input type="password" name="password" placeholder="Password" required
+                   class="w-full px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400">
+
+            <button type="submit"
+                    class="spinner-link w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded transition">
+                Login
+            </button>
+
+
         </form>
 
-        <div class="mt-3 text-center">
-            Don’t have an account? <a href="{% url 'picupapp:register' %}">Register here</a>
+        <div class="mt-4 text-sm text-center">
+            Don’t have an account?
+            <a href="{% url 'picupapp:register' %}" class="spinner-link text-blue-600 hover:underline">Register here</a>
         </div>
 
-        <div class="mt-3 text-center">
-            <a href="{% url 'picupapp:shared_photo_map' %}" class="btn btn-success btn-sm">
-                <i class="bi bi-globe"></i> View Shared Photo Map
+        <div class="mt-4 text-center">
+            <a href="{% url 'picupapp:shared_photo_map' %}"
+               class="spinner-link inline-block bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded shadow transition">
+                <i class="fas fa-globe mr-1"></i> View Shared Photo Map
             </a>
         </div>
     </div>
 
-    <!-- Loading Spinner (Bootstrap Version) -->
-    <div id="loadingSpinner" class="position-fixed top-0 start-0 w-100 h-100 bg-white bg-opacity-75 d-none justify-content-center align-items-center z-1050">
-        <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="fixed inset-0 bg-white bg-opacity-75 z-50 hidden flex items-center justify-center">
+        <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500 border-opacity-75"></div>
     </div>
-
 
     <script>
         window.addEventListener('load', () => {
-            document.getElementById('loadingSpinner').classList.add('d-none');
+            document.getElementById('loadingSpinner').classList.add('hidden');
         });
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', () => {
-                    document.getElementById('loadingSpinner').classList.remove('d-none');
+                    document.getElementById('loadingSpinner').classList.remove('hidden');
                 });
             });
 
             document.querySelectorAll('a.spinner-link').forEach(link => {
                 link.addEventListener('click', () => {
-                    document.getElementById('loadingSpinner').classList.remove('d-none');
+                    document.getElementById('loadingSpinner').classList.remove('hidden');
                 });
             });
         });
     </script>
-
     <script>
         function updateLogoForTheme() {
             const isDark = document.documentElement.classList.contains('dark');
