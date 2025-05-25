@@ -4,4 +4,6 @@ picupapp-f9caf3715baf.json
 .env
 db.sqlite3
 data/db.sqlite3
+.vs/
+
 

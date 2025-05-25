@@ -6,7 +6,7 @@ services:
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
-    startCommand: "gunicorn mysite.wsgi:application"
+    startCommand: gunicorn mysite.wsgi:application
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
@@ -17,19 +17,19 @@ services:
           name: picupapp-db
           property: connectionString
       - key: ALLOWED_HOSTS
-        value: "picupapp.onrender.com,.mypicupapp.com,127.0.0.1,localhost,mypicupapp.com,www.mypicupapp.com"
+        value: picupapp.onrender.com,.mypicupapp.com,127.0.0.1,localhost,mypicupapp.com,www.mypicupapp.com
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com"
+        value: https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com
       - key: GS_BUCKET_NAME
         value: mypicupapp-photos
-      - key: GOOGLE_APPLICATION_CREDENTIALS
-        value: picupapp-f9caf3715baf.json
+      - key: GS_CREDENTIAL_JSON
+        value: ${your_json_escaped_here}  # Replace with actual JSON string or use Render Secret File
 
   - type: static
     name: picupapp-static
     env: static
-    buildCommand: ""
     staticPublishPath: staticfiles
+    buildCommand: ""
     routes:
       - type: rewrite
         source: /static/(.*)
