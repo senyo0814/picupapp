@@ -36,159 +36,130 @@
 
         <h1 class="text-center fw-bold mb-4">Welcome, {{ username }}!</h1>
 
-        <form method="POST" enctype="multipart/form-data" id="upload-form" class="border-2 border-dashed border-gray-400 rounded p-6 bg-gray-50 dark:bg-gray-800 text-center" onsubmit="return handleUpload(event)">
+        <form method="POST" enctype="multipart/form-data" id="upload-form" class="border border-secondary rounded p-4 bg-light text-center" onsubmit="return handleUpload(event)">
             {% csrf_token %}
-            <p class="text-gray-500 dark:text-gray-300 mb-4">Drag and drop photos here or click to browse</p>
-            <input id="file-input" type="file" name="images" accept="image/*" multiple class="hidden" />
+            <p class="text-muted mb-3">Drag and drop photos here or click to browse</p>
+            <input id="file-input" type="file" name="images" accept="image/*" multiple class="d-none" />
 
-            <p id="photoCount" class="text-sm text-gray-600 dark:text-gray-300 mt-2 text-center">0 of 5 photos selected</p>
+            <p id="photoCount" class="text-muted small mt-2">0 of 5 photos selected</p>
 
-            <div id="drop-zone" class="cursor-pointer p-8 border rounded bg-white dark:bg-gray-700">
-                <p class="text-gray-600 dark:text-gray-300">Drop files here or click to select</p>
+            <div id="drop-zone" class="border border-secondary rounded bg-white p-5 cursor-pointer">
+                <p class="text-muted">Drop files here or click to select</p>
             </div>
 
-            <div id="preview" class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 dark:text-white">
+            <div id="preview" class="row row-cols-1 row-cols-sm-2 g-3 mt-4">
                 <!-- preview items inserted via JS -->
             </div>
-            <div id="comment-container" class="mt-4 grid grid-cols-1 gap-4 text-left dark:text-white">
+
+            <div id="comment-container" class="row row-cols-1 g-3 mt-4 text-start">
                 <!-- comment inputs inserted via JS -->
             </div>
 
-            <div id="metadata-wrapper" class="w-full overflow-x-auto mt-6" style="display: none;">
-                <table id="metadata-table" class="table-auto w-full text-sm text-left border border-gray-300 dark:border-gray-600">
-                    <thead class="bg-gray-100 dark:bg-gray-700">
+            <div id="metadata-wrapper" class="table-responsive mt-4" style="display: none;">
+                <table id="metadata-table" class="table table-bordered table-sm">
+                    <thead class="table-light">
                         <tr>
-                            <th class="border px-4 py-2">Image</th>
-                            <th class="border px-4 py-2">Date Taken</th>
-                            <th class="border px-4 py-2">Camera</th>
-                            <th class="border px-4 py-2">Latitude</th>
-                            <th class="border px-4 py-2">Longitude</th>
-                            <th class="border px-4 py-2">Map</th>
+                            <th>Image</th>
+                            <th>Date Taken</th>
+                            <th>Camera</th>
+                            <th>Latitude</th>
+                            <th>Longitude</th>
+                            <th>Map</th>
                         </tr>
                     </thead>
                     <tbody id="metadata-body"></tbody>
                 </table>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-200">Visibility</label>
-                <div class="mt-1 space-x-4">
-                    <label>
-                        <input type="radio" name="visibility" value="private">
-                        <span class="ml-1">Private</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="visibility" value="any" checked>
-                        <span class="ml-1">Any User</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="visibility" value="group">
-                        <span class="ml-1">Group</span>
-                    </label>
-                    <label>
-                        <input type="radio" name="visibility" value="shared">
-                        <span class="ml-1">Shared</span>
-                    </label>
+            <div class="mb-3 text-start">
+                <label class="form-label fw-semibold">Visibility</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="visibility" value="private" id="visPrivate">
+                    <label class="form-check-label" for="visPrivate">Private</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="visibility" value="any" id="visAny" checked>
+                    <label class="form-check-label" for="visAny">Any User</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="visibility" value="group" id="visGroup">
+                    <label class="form-check-label" for="visGroup">Group</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="visibility" value="shared" id="visShared">
+                    <label class="form-check-label" for="visShared">Shared</label>
                 </div>
             </div>
 
-            <!-- Group dropdown -->
-            <div class="mb-4" id="groupDropdown" style="display: none;">
-                <label for="photoGroup" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Select Group</label>
-                <select name="photo_group" id="photoGroup" class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+            <div class="mb-3" id="groupDropdown" style="display: none;">
+                <label for="photoGroup" class="form-label">Select Group</label>
+                <select name="photo_group" id="photoGroup" class="form-select">
                     {% for group in user_groups %}
                     <option value="{{ group.id }}">{{ group.name }}</option>
                     {% endfor %}
                 </select>
-                <div class="mt-2 text-right">
-                    <a href="{% url 'picupapp:create_group' %}" class="text-blue-600 hover:underline text-sm">+ Create New Group</a>
+                <div class="mt-2 text-end">
+                    <a href="{% url 'picupapp:create_group' %}" class="text-decoration-none text-primary small">+ Create New Group</a>
                 </div>
             </div>
 
-            <!-- Shared user multi-select -->
-            <div class="mb-4" id="sharedUserSelect" style="display: none;">
-                <label for="sharedWith" class="block text-sm font-medium text-gray-700 dark:text-gray-200">Share with specific users</label>
-                <select name="shared_with" id="sharedWith" multiple class="w-full border border-gray-300 dark:border-gray-600 rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
+            <div class="mb-3" id="sharedUserSelect" style="display: none;">
+                <label for="sharedWith" class="form-label">Share with specific users</label>
+                <select name="shared_with" id="sharedWith" multiple class="form-select">
                     {% for user in all_users %}
                     <option value="{{ user.id }}">{{ user.username }}</option>
                     {% endfor %}
                 </select>
-                <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (Cmd) to select multiple users.</p>
+                <small class="text-muted">Hold Ctrl (Cmd) to select multiple users.</small>
             </div>
 
-            <button type="submit" class="spinner-link mt-6 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded">
-                Upload Photos
-            </button>
+            <button type="submit" class="btn btn-primary mt-3 spinner-link">Upload Photos</button>
 
-            <p class="text-xs text-gray-500 dark:text-gray-300 mt-2">
-                Note: A watermark with your name and the PicUp logo will be added before upload.
-            </p>
-
+            <p class="form-text text-muted mt-2">Note: A watermark with your name and the PicUp logo will be added before upload.</p>
         </form>
 
-        <hr class="my-6">
+        <hr class="my-5">
 
-        <div class="flex justify-center mb-4">
-            <a href="{% url 'picupapp:mappics' %}" class="spinner-link bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded">
-                View Photo Map
-            </a>
-            <!-- Shared Photo Map Button -->
-            <a href="{% url 'picupapp:shared_photo_map' %}"
-               class="ms-2 text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded shadow transition">
-                <i class="fas fa-globe"></i> View Public Photo Map
+        <div class="d-flex justify-content-center gap-2 mb-4">
+            <a href="{% url 'picupapp:mappics' %}" class="btn btn-success spinner-link">View Photo Map</a>
+            <a href="{% url 'picupapp:shared_photo_map' %}" class="btn btn-success spinner-link">
+                <i class="fas fa-globe me-1"></i> View Public Photo Map
             </a>
         </div>
 
-        <h2 class="text-lg font-semibold mb-4">Uploaded Photos</h2>
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <h2 class="fs-5 fw-semibold mb-4">Uploaded Photos</h2>
+        <div class="row row-cols-2 row-cols-md-3 g-3">
             {% for photo in photos %}
             {% if photo.image %}
-            <div class="bg-white dark:bg-gray-700 rounded shadow p-2">
-                <button onclick="showExifModal(
-                    '{{ photo.image.url }}',
-                    '{{ photo.comment|escapejs }}',
-                    '{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}',
-                    '{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}',
-                    '{{ photo.latitude }}',
-                    '{{ photo.longitude }}',
-                    '{{ photo.id }}',
-                    '{{ photo.shared_with.all|join:", " }}',
-                    '{{ photo.uploaded_by.username }}',
-                    '{{ photo.visibility }}',
-                    '{{ photo.group.id|default_if_none:"" }}'
-                )"
-                        class="spinner-link w-full">
-                    <img src="{{ photo.image.url }}" alt="Photo" class="rounded w-full" />
-                </button>
-
-                <p class="text-xs text-gray-500 mt-1">By {{ photo.uploaded_by.username }}</p>
-                {% if photo.comment %}
-                <p class="text-sm mt-1 text-gray-700 dark:text-gray-300 italic">"{{ photo.comment }}"</p>
-                {% endif %}
-                {% if photo.uploaded_by == request.user %}
-                <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
-                    {% csrf_token %}
-                    <button type="submit" class="spinner-link text-red-600 text-sm hover:underline">Delete</button>
-                </form>
-                {% endif %}
-                <div class="text-sm mt-1 text-gray-600 dark:text-gray-300">
-                    {% if photo.visibility == 'any' %}
-                    <i class="fa-solid fa-users mr-1"></i> Any User
-                    {% elif photo.visibility == 'group' %}
-                    <i class="fa-solid fa-user-group mr-1"></i> Group
-                    {% elif photo.visibility == 'shared' %}
-                    <i class="fa-solid fa-user-plus mr-1"></i> Shared
-                    <br />
-                    <span class="ml-5">
-                        {% for u in photo.shared_with.all %}
-                        {{ u.username }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                        (none)
-                        {% endfor %}
-                    </span>
-                    {% else %}
-                    <i class="fa-solid fa-lock mr-1"></i> Private
-                    {% endif %}
+            <div class="col">
+                <div class="card">
+                    <button onclick="showExifModal('{{ photo.image.url }}','{{ photo.comment|escapejs }}','{{ photo.uploaded_at|date:"Y-m-d H:i:s" }}','{{ photo.photo_taken_date|default:"N/A"|date:"Y-m-d H:i:s" }}','{{ photo.latitude }}','{{ photo.longitude }}','{{ photo.id }}','{{ photo.shared_with.all|join:", " }}','{{ photo.uploaded_by.username }}','{{ photo.visibility }}','{{ photo.group.id|default_if_none:"" }}')" class="btn p-0 spinner-link">
+                        <img src="{{ photo.image.url }}" class="card-img-top rounded" alt="Photo">
+                    </button>
+                    <div class="card-body">
+                        <p class="text-muted small mb-1">By {{ photo.uploaded_by.username }}</p>
+                        {% if photo.comment %}<p class="fst-italic small">"{{ photo.comment }}"</p>{% endif %}
+                        {% if photo.uploaded_by == request.user %}
+                        <form method="POST" action="{% url 'picupapp:delete_photo' photo.id %}" class="mt-2">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link text-danger btn-sm spinner-link">Delete</button>
+                        </form>
+                        {% endif %}
+                        <div class="small text-muted">
+                            {% if photo.visibility == 'any' %}
+                            <i class="fa-solid fa-users me-1"></i> Any User
+                            {% elif photo.visibility == 'group' %}
+                            <i class="fa-solid fa-user-group me-1"></i> Group
+                            {% elif photo.visibility == 'shared' %}
+                            <i class="fa-solid fa-user-plus me-1"></i> Shared<br />
+                            <span class="ms-4">
+                                {% for u in photo.shared_with.all %}{{ u.username }}{% if not forloop.last %}, {% endif %}{% empty %}(none){% endfor %}
+                            </span>
+                            {% else %}
+                            <i class="fa-solid fa-lock me-1"></i> Private
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
             {% endif %}
@@ -197,93 +168,87 @@
             {% endfor %}
         </div>
     </div>
-
     <!-- Modal update to allow visibility toggle -->
-    <div id="exifModal" class="fixed inset-0 bg-black bg-opacity-60 z-50 hiddend-flex items-center justify-center p-2">
-        <div class="bg-white dark:bg-gray-800 rounded p-4 max-w-xl sm:mx-auto mx-2 relative overflow-y-auto max-h-[90vh]">
-            <button onclick="closeExifModal()" class="absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs">&times;</button>
-            <img id="modalImage" src="" alt="Full Photo" class="rounded w-full max-h-[80vh] object-contain my-4" />
-            <div class="text-sm mt-3">
-                <form method="POST" action="/update-comment/" id="commentForm">
-                    {% csrf_token %}
-                    <input type="hidden" name="photo_id" id="modalPhotoId">
-                    <label for="modalComment" class="block font-semibold">Comment:</label>
-                    <textarea name="comment" id="modalComment" class="w-full border rounded p-2 mt-1 dark:bg-gray-700 dark:text-white"></textarea>
-                    <div class="mt-2">
-                        <label for="modalVisibility" class="font-semibold">Visibility:</label>
-                        <select name="visibility" id="modalVisibility" class="ml-2 border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-                            <option value="private">Private</option>
-                            <option value="any">Public (Any User)</option>
-                            <option value="group">Group</option>
-                            <option value="shared">Share with Users</option>
-                        </select>
-                    </div>
-
-                    <div id="modalSharedWithContainer" class="mt-2 hidden">
-                        <label for="modalSharedWith" class="font-semibold">Share with other users:</label>
-                        <select name="shared_with_modal" id="modalSharedWith" multiple class="w-full border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-                            <option value="__select_all__">(Select All Users)</option>
-                            {% for user in all_users %}
-                            <option value="{{ user.id }}">{{ user.username }}</option>
-                            {% endfor %}
-                        </select>
-                        <p class="text-sm text-gray-500 dark:text-gray-300 mt-1">Hold Ctrl (or Cmd) to select multiple users.</p>
-                    </div>
-                    <div id="modalGroupContainer" class="mt-2 hidden">
-                        <label for="modalGroup" class="font-semibold">Select Group:</label>
-                        <select name="group_id" id="modalGroup" class="w-full border rounded px-2 py-1 dark:bg-gray-700 dark:text-white">
-                            <option value="">-- Choose Group --</option>
-                            {% for group in user_groups %}
-                            <option value="{{ group.id }}">{{ group.name }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div class="mt-2d-flexflex-wrap gap-2 items-center">
-                        <button type="submit" class="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600">Save</button>
-                        <button type="button" onclick="closeExifModal()" class="bg-red-500 text-white px-4 py-1 rounded hover:bg-red-600">Close</button>
-                        <a id="modalMapLink"
-                           href="#"
-                           target="_blank"
-                           class="hidden bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700">
-                            View on Map
-                        </a>
-                        <a id="modalFacebookShare"
-                           href="#"
-                           target="_blank"
-                           class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">
-                            Share on Facebook
-                        </a>
-                    </div>
-                </form>
-
-                <table class="table-auto w-full border border-gray-300 mt-4 dark:border-gray-600">
-                    <tbody>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded By:</th>
-                            <td id="modalUploader" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Uploaded At:</th>
-                            <td id="modalUploaded" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Date Taken:</th>
-                            <td id="modalTaken" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Shared With:</th>
-                            <td id="modalSharedWith" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Latitude:</th>
-                            <td id="modalLat" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                        <tr>
-                            <th class="bg-gray-200 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 font-normal">Longitude:</th>
-                            <td id="modalLon" class="border-collapse border border-gray-300 dark:border-gray-600 ps-2"></td>
-                        </tr>
-                    </tbody>
-                </table>
+    <div class="modal fade" id="exifModal" tabindex="-1" aria-labelledby="exifModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exifModalLabel">Photo Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <img id="modalImage" src="" alt="Full Photo" class="img-fluid rounded mb-3">
+                    <form method="POST" action="/update-comment/" id="commentForm">
+                        {% csrf_token %}
+                        <input type="hidden" name="photo_id" id="modalPhotoId">
+                        <div class="mb-3">
+                            <label for="modalComment" class="form-label">Comment:</label>
+                            <textarea name="comment" id="modalComment" class="form-control"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="modalVisibility" class="form-label">Visibility:</label>
+                            <select name="visibility" id="modalVisibility" class="form-select">
+                                <option value="private">Private</option>
+                                <option value="any">Public (Any User)</option>
+                                <option value="group">Group</option>
+                                <option value="shared">Share with Users</option>
+                            </select>
+                        </div>
+                        <div id="modalSharedWithContainer" class="mb-3 d-none">
+                            <label for="modalSharedWith" class="form-label">Share with other users:</label>
+                            <select name="shared_with_modal" id="modalSharedWith" multiple class="form-select">
+                                <option value="__select_all__">(Select All Users)</option>
+                                {% for user in all_users %}
+                                <option value="{{ user.id }}">{{ user.username }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="form-text text-muted">Hold Ctrl (or Cmd) to select multiple users.</small>
+                        </div>
+                        <div id="modalGroupContainer" class="mb-3 d-none">
+                            <label for="modalGroup" class="form-label">Select Group:</label>
+                            <select name="group_id" id="modalGroup" class="form-select">
+                                <option value="">-- Choose Group --</option>
+                                {% for group in user_groups %}
+                                <option value="{{ group.id }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 align-items-center">
+                            <button type="submit" class="btn btn-primary">Save</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <a id="modalMapLink" href="#" target="_blank" class="btn btn-success d-none">View on Map</a>
+                            <a id="modalFacebookShare" href="#" target="_blank" class="btn btn-info text-white">Share on Facebook</a>
+                        </div>
+                    </form>
+                    <table class="table table-bordered table-sm mt-4">
+                        <tbody>
+                            <tr>
+                                <th scope="row">Uploaded By:</th>
+                                <td id="modalUploader"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Uploaded At:</th>
+                                <td id="modalUploaded"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Date Taken:</th>
+                                <td id="modalTaken"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Shared With:</th>
+                                <td id="modalSharedWith"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Latitude:</th>
+                                <td id="modalLat"></td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Longitude:</th>
+                                <td id="modalLon"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -294,31 +259,28 @@
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
+
     <script>
-        // Show spinner on page load
+        // Spinner handling
         window.addEventListener('load', () => {
-            document.getElementById('loadingSpinner').classList.add('hidden');
+            document.getElementById('loadingSpinner').classList.add('d-none');
         });
 
-        // Show spinner on form submit
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('form').forEach(form => {
                 form.addEventListener('submit', () => {
-                    document.getElementById('loadingSpinner').classList.remove('hidden');
+                    document.getElementById('loadingSpinner').classList.remove('d-none');
                 });
             });
 
-            // Optionally show spinner on links like map page
-            document.querySelectorAll('a').forEach(link => {
-                if (link.classList.contains('spinner-link')) {
-                    link.addEventListener('click', () => {
-                        document.getElementById('loadingSpinner').classList.remove('hidden');
-                    });
-                }
+            document.querySelectorAll('a.spinner-link').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.getElementById('loadingSpinner').classList.remove('d-none');
+                });
             });
         });
-    </script>
-    <script>
+
+        // Modal handling
         function showExifModal(url, comment, uploaded, taken, lat, lon, photoId, sharedWith, uploader, visibility, groupId) {
             document.getElementById('modalImage').src = url;
             document.getElementById('modalComment').value = comment;
@@ -336,48 +298,44 @@
             const groupSelect = document.getElementById('modalGroup');
 
             visSelect.value = visibility || 'private';
-            sharedBox.style.display = 'none';
-            groupBox.style.display = 'none';
+            sharedBox.classList.add('d-none');
+            groupBox.classList.add('d-none');
             sharedSelect.value = "";
 
-            // Handle visibility
             if (visibility === 'shared') {
-                sharedBox.style.display = 'block';
+                sharedBox.classList.remove('d-none');
                 const sharedList = (sharedWith || "").split(",").map(name => name.trim());
                 for (let opt of sharedSelect.options) {
                     opt.selected = sharedList.includes(opt.text);
                 }
             } else if (visibility === 'group') {
-                groupBox.style.display = 'block';
+                groupBox.classList.remove('d-none');
                 if (groupSelect && groupId) {
                     groupSelect.value = groupId;
                 }
             }
 
-            // Set Facebook share link
             const encodedUrl = encodeURIComponent(url);
             document.getElementById('modalFacebookShare').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
 
-            // Set map link if lat/lon exist
             const mapLink = document.getElementById('modalMapLink');
             if (lat && lon) {
                 mapLink.href = `https://www.google.com/maps?q=${lat},${lon}`;
-                mapLink.classList.remove('hidden');
+                mapLink.classList.remove('d-none');
             } else {
-                mapLink.classList.add('hidden');
+                mapLink.classList.add('d-none');
             }
 
-            document.getElementById('exifModal').classList.remove('hidden');
-            document.getElementById('exifModal').classList.add('flex');
+            const modal = new bootstrap.Modal(document.getElementById('exifModal'));
+            modal.show();
         }
 
         function closeExifModal() {
-            document.getElementById('exifModal').classList.remove('flex');
-            document.getElementById('exifModal').classList.add('hidden');
+            const modalEl = document.getElementById('exifModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
         }
 
-    </script>
-    <script>
         const dropZone = document.getElementById('drop-zone');
         const fileInput = document.getElementById('file-input');
         const preview = document.getElementById('preview');
@@ -388,28 +346,25 @@
         dropZone.addEventListener('click', () => fileInput.click());
         dropZone.addEventListener('dragover', e => {
             e.preventDefault();
-            dropZone.classList.add('bg-blue-100');
+            dropZone.classList.add('bg-primary-subtle');
         });
         dropZone.addEventListener('dragleave', () => {
-            dropZone.classList.remove('bg-blue-100');
+            dropZone.classList.remove('bg-primary-subtle');
         });
         dropZone.addEventListener('drop', e => {
             e.preventDefault();
-            dropZone.classList.remove('bg-blue-100');
+            dropZone.classList.remove('bg-primary-subtle');
             fileInput.files = e.dataTransfer.files;
             showPreview(e.dataTransfer.files);
         });
         fileInput.addEventListener('change', () => {
             showPreview(fileInput.files);
         });
-    </script>
 
-    <script>
         let selectedFiles = [];
 
         function showPreview(files) {
             const maxPhotos = 5;
-
             const newFiles = Array.from(files);
             const combined = [...selectedFiles, ...newFiles];
 
@@ -419,11 +374,10 @@
             }
 
             selectedFiles = combined;
-
             preview.innerHTML = '';
             commentContainer.innerHTML = '';
             metadataBody.innerHTML = '';
-            metadataWrapper.style.display = 'none';
+            metadataWrapper.classList.add('d-none');
 
             selectedFiles.forEach((file, index) => {
                 if (!file.type.startsWith('image/')) return;
@@ -431,16 +385,16 @@
                 const previewReader = new FileReader();
                 previewReader.onload = e => {
                     const container = document.createElement('div');
-                    container.className = 'relative';
+                    container.className = 'position-relative';
 
                     const img = document.createElement('img');
                     img.src = e.target.result;
-                    img.className = 'rounded shadow w-full mb-2';
+                    img.className = 'img-fluid rounded shadow mb-2';
                     container.appendChild(img);
 
                     const removeBtn = document.createElement('button');
                     removeBtn.innerHTML = '&times;';
-                    removeBtn.className = 'absolute top-0 right-0 bg-red-600 text-white px-2 py-1 rounded-bl text-xs';
+                    removeBtn.className = 'position-absolute top-0 end-0 btn btn-danger btn-sm rounded-start';
                     removeBtn.onclick = () => {
                         selectedFiles.splice(index, 1);
                         fileInput.files = createFileList(selectedFiles);
@@ -470,28 +424,26 @@
                         const lon = getGPSDecimal(lonCoord, lonRef);
 
                         metadataBody.innerHTML += `
-                                                                                                                    <tr>
-                                                                                                                        <td class="border px-4 py-2">${file.name}</td>
-                                                                                                                        <td class="border px-4 py-2">${date}</td>
-                                                                                                                        <td class="border px-4 py-2">${model}</td>
-                                                                                                                        <td class="border px-4 py-2">${lat ?? 'N/A'}</td>
-                                                                                                                        <td class="border px-4 py-2">${lon ?? 'N/A'}</td>
-                                                                                                                        <td class="border px-4 py-2">
-                                                                                                                            ${lat && lon
-                                ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-blue-500 underline">View</a>`
-                                : 'N/A'}
-                                                                                                                        </td>
-                                                                                                                    </tr>
-                                                                                                                `;
-                        metadataWrapper.style.display = 'block';
+                            <tr>
+                                <td class="border p-2">${file.name}</td>
+                                <td class="border p-2">${date}</td>
+                                <td class="border p-2">${model}</td>
+                                <td class="border p-2">${lat ?? 'N/A'}</td>
+                                <td class="border p-2">${lon ?? 'N/A'}</td>
+                                <td class="border p-2">
+                                    ${lat && lon ? `<a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" class="text-primary text-decoration-underline">View</a>` : 'N/A'}
+                                </td>
+                            </tr>
+                        `;
+                        metadataWrapper.classList.remove('d-none');
 
                         if (lat !== null && lon !== null) {
                             const hiddenInputs = document.createElement('div');
                             hiddenInputs.innerHTML = `
-                                                                                                                        <input type="hidden" name="latitude_${index}" value="${lat}">
-                                                                                                                        <input type="hidden" name="longitude_${index}" value="${lon}">
-                                                                                                                        <input type="hidden" name="photo_taken_${index}" value="${date}">
-                                                                                                                    `;
+                                <input type="hidden" name="latitude_${index}" value="${lat}">
+                                <input type="hidden" name="longitude_${index}" value="${lon}">
+                                <input type="hidden" name="photo_taken_${index}" value="${date}">
+                            `;
                             document.getElementById('upload-form').appendChild(hiddenInputs);
                         }
 
@@ -502,38 +454,34 @@
                 exifReader.readAsArrayBuffer(file);
             });
 
-            // Update count display
             document.getElementById('photoCount').textContent = `${selectedFiles.length} of ${maxPhotos} photos selected`;
         }
-
 
         function createFileList(files) {
             const dt = new DataTransfer();
             files.forEach(file => dt.items.add(file));
             return dt.files;
         }
-    </script>
-    <script>
+
         function createCommentInput(file, index) {
             const container = document.createElement('div');
-            container.className = 'relative dark:bg-gray-800 p-2 rounded';
+            container.className = 'mt-2';
 
             const label = document.createElement('label');
-            label.className = 'block text-sm font-medium text-gray-700 dark:text-gray-200';
+            label.className = 'form-label';
             label.textContent = `Comment for ${file.name}`;
 
             const input = document.createElement('input');
             input.type = 'text';
             input.name = `comment_${index}`;
-            input.className = 'mt-1 block w-full rounded border-gray-300 dark:border-gray-600 shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm dark:bg-gray-100 dark:text-black';
+            input.className = 'form-control';
 
             container.appendChild(label);
             container.appendChild(input);
 
             return container;
         }
-    </script>
-    <script>
+
         function getGPSDecimal(coord, refTag) {
             if (!coord || coord.length !== 3) return null;
 
@@ -556,194 +504,49 @@
 
             const refRaw = (typeof refTag === 'string' ? refTag : refTag?.description || '').trim();
             const ref = refRaw.charAt(0).toUpperCase();
-            console.log('Longitude refTag:', refTag, '| Normalized ref:', ref);
-
             if (ref === 'S' || ref === 'W') result *= -1;
 
             return result.toFixed(6);
         }
-    </script>
-    <script>
-        async function handleUpload(event) {
-            event.preventDefault();
 
-            const maxPhotos = 5;
-            if (selectedFiles.length === 0) {
-                alert("Please select at least one photo.");
-                return false;
-            }
-
-            const formData = new FormData();
-            selectedFiles.forEach((file, index) => {
-                formData.append('images', file);
-                const comment = document.querySelector(`[name="comment_${index}"]`)?.value || '';
-                formData.append(`comment_${index}`, comment);
-            });
-
-            document.querySelectorAll('#upload-form input[type="hidden"]').forEach(input => {
-                formData.append(input.name, input.value);
-            });
-
-            const visibility = document.querySelector('input[name="visibility"]:checked')?.value || 'private';
-            formData.append('visibility', visibility);
-
-            // ✅ Add group ID if visibility is "group"
-            if (visibility === 'group') {
-                const groupId = document.getElementById('photoGroup')?.value;
-                if (!groupId) {
-                    alert("Please select a group.");
-                    return false;
-                }
-                formData.append('photo_group', groupId);
-            }
-
-            document.querySelectorAll('select[name="shared_with"] option:checked').forEach(option => {
-                formData.append('shared_with', option.value);
-            });
-
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-            formData.append('csrfmiddlewaretoken', csrfToken);
-
-            try {
-                document.getElementById('loadingSpinner').classList.remove('hidden');
-
-                const response = await fetch("", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    location.reload();
-                } else {
-                    alert("Upload failed. Try again.");
-                    document.getElementById('loadingSpinner').classList.add('hidden');
-                }
-            } catch (error) {
-                console.error("Upload error:", error);
-                alert("Upload failed.");
-                document.getElementById('loadingSpinner').classList.add('hidden');
-            }
-
-            return false;
-        }
-    </script>
-
-    <script>
         document.querySelectorAll('input[name="visibility"]').forEach(radio => {
             radio.addEventListener('change', () => {
-                const val = radio.value;
-                document.getElementById('groupDropdown').style.display = val === 'group' ? 'block' : 'none';
-                document.getElementById('sharedUserSelect').style.display = val === 'shared' ? 'block' : 'none';
+                document.getElementById('groupDropdown').classList.toggle('d-none', radio.value !== 'group');
+                document.getElementById('sharedUserSelect').classList.toggle('d-none', radio.value !== 'shared');
             });
         });
-    </script>
 
-    <script>
         document.getElementById('modalVisibility').addEventListener('change', function () {
             const sharedBox = document.getElementById('modalSharedWithContainer');
             const groupBox = document.getElementById('modalGroupContainer');
-
-            sharedBox.style.display = 'none';
-            groupBox.style.display = 'none';
-
+            sharedBox.classList.add('d-none');
+            groupBox.classList.add('d-none');
             if (this.value === 'shared') {
-                sharedBox.style.display = 'block';
+                sharedBox.classList.remove('d-none');
             } else if (this.value === 'group') {
-                groupBox.style.display = 'block';
+                groupBox.classList.remove('d-none');
             }
         });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sharedWith = document.getElementById('modalSharedWith');
 
-            sharedWith.addEventListener('change', function (e) {
-                const isSelectAll = Array.from(sharedWith.selectedOptions)
-                    .some(option => option.value === '__select_all__');
-
-                if (isSelectAll) {
-                    // Select all real users
-                    Array.from(sharedWith.options).forEach(option => {
-                        if (option.value !== '__select_all__') {
-                            option.selected = true;
-                        } else {
-                            option.selected = false; // Unselect the "Select All" itself
-                        }
-                    });
-                }
-            });
-        });
-    </script>
-
-    <script>
-        const darkIcon = document.getElementById('darkModeIcon');
-        const darkContainer = document.getElementById('darkModeToggleContainer');
-
-        function applyThemeIcon(isDark) {
-            darkIcon.classList.remove('fa-sun', 'fa-moon');
-            darkIcon.classList.add(isDark ? 'fa-sun' : 'fa-moon');
-            darkIcon.title = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-        }
-
-        const prefersDark = localStorage.getItem('theme') === 'dark' ||
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-        if (prefersDark) {
-            document.documentElement.classList.add('dark');
-            applyThemeIcon(true);
-        } else {
-            document.documentElement.classList.remove('dark');
-            applyThemeIcon(false);
-        }
-
-        darkContainer.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.toggle('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            applyThemeIcon(isDark);
-        });
-    </script>
-    <script>
-        document.querySelectorAll('input[name="visibility"]').forEach(radio => {
-            radio.addEventListener('change', () => {
-                const groupDropdown = document.getElementById('groupDropdown');
-                groupDropdown.style.display = radio.value === 'group' ? 'block' : 'none';
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const shouldRefresh = new URLSearchParams(window.location.search).get('new_group');
-            if (shouldRefresh === '1') {
-                fetch("{% url 'picupapp:get_user_groups' %}")
-                    .then(res => res.json())
-                    .then(groups => {
-                        const groupDropdown = document.getElementById('photoGroup');
-                        if (!groupDropdown) return;
-                        groupDropdown.innerHTML = '';
-                        groups.forEach(g => {
-                            const opt = document.createElement('option');
-                            opt.value = g.id;
-                            opt.textContent = g.name;
-                            groupDropdown.appendChild(opt);
-                        });
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                    });
+        document.getElementById('modalSharedWith')?.addEventListener('change', function () {
+            const isSelectAll = Array.from(this.selectedOptions).some(opt => opt.value === '__select_all__');
+            if (isSelectAll) {
+                Array.from(this.options).forEach(opt => {
+                    opt.selected = opt.value !== '__select_all__';
+                });
             }
         });
-    </script>
-    <script>
+
+        // Dark Mode Logo
         function updateLogoForTheme() {
             const isDark = document.documentElement.classList.contains('dark');
             const logo = document.getElementById('appLogo');
             logo.src = isDark ? "{% static 'img/logosidedark.png' %}" : "{% static 'img/logoside.png' %}";
         }
 
-        // Run on page load
         document.addEventListener('DOMContentLoaded', updateLogoForTheme);
-
-        // Hook into dark mode toggle
         document.getElementById('darkModeToggleContainer')?.addEventListener('click', () => {
-            setTimeout(updateLogoForTheme, 100); // Delay slightly to allow class toggle
+            setTimeout(updateLogoForTheme, 100);
         });
     </script>
 
