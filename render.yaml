@@ -3,35 +3,58 @@ services:
     name: picupapp
     env: python
     plan: free
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Build Command: install deps, collectstatic, then run migrations
+    # ────────────────────────────────────────────────────────────────────────────
     buildCommand: |
       pip install -r requirements.txt
       python manage.py collectstatic --noinput
+      python manage.py makemigrations
+      python manage.py migrate
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Start Command: point Gunicorn at the “mysite.wsgi” module, bind to $PORT
+    # ────────────────────────────────────────────────────────────────────────────
     startCommand: >
-      gunicorn mysite.wsgi:application
-        --bind 0.0.0.0:$PORT
+      gunicorn mysite.wsgi:application --bind 0.0.0.0:$PORT --workers 3
+
+    # ────────────────────────────────────────────────────────────────────────────
+    # Environment Variables
+    # ────────────────────────────────────────────────────────────────────────────
     envVars:
       - key: DJANGO_SECRET_KEY
         generateValue: true
+
       - key: DJANGO_DEBUG
-        value: false
+        value: "False"
+
       - key: DATABASE_URL
         fromDatabase:
           name: picupapp-db
           property: connectionString
+
       - key: ALLOWED_HOSTS
-        value: picupapp.onrender.com,.mypicupapp.com,127.0.0.1,localhost,mypicupapp.com,www.mypicupapp.com
+        value: picupapp.onrender.com,mypicupapp.com,www.mypicupapp.com
+
       - key: CSRF_TRUSTED_ORIGINS
         value: https://picupapp.onrender.com,https://mypicupapp.com,https://www.mypicupapp.com
+
       - key: GS_BUCKET_NAME
         value: mypicupapp-photos
-      - key: GS_CREDENTIAL_JSON
-        value: ${your_json_escaped_here}  # Replace with actual JSON string or use Render Secret File
+
+      # Reference your GCS credentials as a Render Secret File.
+      # Upload the JSON file in the Dashboard → Secret Files → “+ New Secret File,”
+      # then reference it by its mount path below.
+      - key: GOOGLE_APPLICATION_CREDENTIALS
+        value: /etc/secrets/picupapp-f9caf3715baf.json
 
   - type: static
     name: picupapp-static
     env: static
     staticPublishPath: staticfiles
     buildCommand: ""
+
     routes:
       - type: rewrite
         source: /static/(.*)
