@@ -40,7 +40,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'picupapp.middleware.BlockBotProbeMiddleware',
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Required for static file serving
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Required for serving static files
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -48,6 +48,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+# === URLs and WSGI ===
+ROOT_URLCONF = 'mysite.urls'
+WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # === Templates ===
 TEMPLATES = [
@@ -65,10 +69,6 @@ TEMPLATES = [
         },
     },
 ]
-
-# === URLs and WSGI ===
-ROOT_URLCONF = 'mysite.urls'
-WSGI_APPLICATION = 'mysite.wsgi.application'
 
 # === Database ===
 DATABASES = {
@@ -128,20 +128,29 @@ LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {'format': '{levelname} {asctime} {module} {message}', 'style': '{'},
-        'simple': {'format': '{levelname} {message}', 'style': '{'},
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{'
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{'
+        },
     },
     'handlers': {
-        'console': {'class': 'logging.StreamHandler', 'formatter': 'simple'},
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        },
     },
     'root': {
         'handlers': ['console'],
-        'level': 'DEBUG',
+        'level': 'INFO',
     },
     'loggers': {
         'django.request': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'ERROR',
             'propagate': False,
         },
     },
